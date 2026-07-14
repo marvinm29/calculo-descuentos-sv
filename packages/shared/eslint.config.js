@@ -1,0 +1,1 @@
+export { default } from '@calc/config/eslint';

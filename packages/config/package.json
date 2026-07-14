@@ -1,0 +1,19 @@
+{
+  "name": "@calc/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./eslint": "./eslint.config.js"
+  },
+  "files": [
+    "tsconfig",
+    "eslint.config.js"
+  ],
+  "dependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.7.0",
+    "typescript-eslint": "8.64.0"
+  }
+}
