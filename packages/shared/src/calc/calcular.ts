@@ -1,7 +1,7 @@
 import type { CalcularRequest, CalcularResponse } from '../types';
-import { calcularSalarioHora, calcularPagoSegmentos, round2 } from './horasExtra';
-import { calcularDescuentos } from './descuentos';
-import { calcularPrestaciones } from './prestaciones';
+import { calcularSalarioHora, calcularPagoSegmentos, round2 } from './horasExtra.js';
+import { calcularDescuentos } from './descuentos.js';
+import { calcularPrestaciones } from './prestaciones.js';
 
 export function calcular(request: CalcularRequest): CalcularResponse {
   const { salarioBase, tipoPago, antiguedad, fechaIngreso, fechaFin, segmentos } =

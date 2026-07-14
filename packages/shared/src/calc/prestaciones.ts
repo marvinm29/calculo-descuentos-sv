@@ -1,6 +1,6 @@
 import type { Antiguedad, PrestacionesResponse } from '../types';
-import { AGUINALDO_DIAS, VACACIONES, QUINCENA_25 } from '../tasas';
-import { round2, calcularSalarioHora } from './horasExtra';
+import { AGUINALDO_DIAS, VACACIONES, QUINCENA_25 } from '../tasas.js';
+import { round2, calcularSalarioHora } from './horasExtra.js';
 
 export function calcularAguinaldo(
   salarioMensual: number,

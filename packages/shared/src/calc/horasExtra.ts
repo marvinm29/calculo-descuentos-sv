@@ -1,5 +1,5 @@
 import type { SegmentoHorario, TipoJornada } from '../types';
-import { HORAS_EXTRA } from '../tasas';
+import { HORAS_EXTRA } from '../tasas.js';
 
 const DIAS_LABORALES = 30;
 const HORAS_DIURNAS_AL_DIA = 8;

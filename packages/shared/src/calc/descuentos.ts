@@ -1,6 +1,6 @@
 import type { TipoPago, DescuentosResponse } from '../types';
-import { ISSS, AFP, RENTA_TRAMOS_MENSUAL } from '../tasas';
-import { round2 } from './horasExtra';
+import { ISSS, AFP, RENTA_TRAMOS_MENSUAL } from '../tasas.js';
+import { round2 } from './horasExtra.js';
 
 interface TramosRenta {
   tramo: number;
