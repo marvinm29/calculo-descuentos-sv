@@ -1,0 +1,38 @@
+{
+  "name": "@calc/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@calc/shared": "workspace:*",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "recharts": "2.15.4"
+  },
+  "devDependencies": {
+    "@calc/config": "workspace:*",
+    "@tailwindcss/vite": "4.3.2",
+    "@testing-library/jest-dom": "6.6.3",
+    "@testing-library/react": "16.3.0",
+    "@testing-library/user-event": "14.6.1",
+    "@types/node": "26.1.1",
+    "@types/react": "19.1.6",
+    "@types/react-dom": "19.1.6",
+    "@vitejs/plugin-react": "6.0.3",
+    "@vitest/coverage-v8": "4.1.10",
+    "eslint": "10.7.0",
+    "jsdom": "26.1.0",
+    "tailwindcss": "4.1.7",
+    "typescript": "5.9.3",
+    "vite": "8.0.0",
+    "vitest": "4.1.10"
+  }
+}

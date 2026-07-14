@@ -1,0 +1,18 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: #1f2937;
+  --color-primary-light: #374151;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}

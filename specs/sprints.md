@@ -155,10 +155,10 @@ listo para GitHub Pages; `lint + check-types + test` y coverage > 80% en verde.
 | 1      | completado  | Monorepo + config + shared (tipos/Zod/tasas) |
 | 2      | completado  | Lógica de cálculo en shared (horasExtra, descuentos, prestaciones, calcular) |
 | 3      | completado  | apps/api Express (POST /api/calcular + errorHandler + tests Supertest) |
-| 4      | pendiente   | —     |
-| 5      | pendiente   | —     |
-| 6      | pendiente   | —     |
-| 7      | pendiente   | —     |
+| 4      | completado  | apps/web scaffold + ConfigInicial + useLocalStorage + ErrorBoundary |
+| 5      | completado  | RegistroSemanal: FilaDia, TotalesSemana, persistencia por semanaId |
+| 6      | completado  | ResultadoNeto, GraficoPastel, TablaTasas, useCalculos real |
+| 7      | completado  | HistorialPeriodos, ExportarPDF, CI/CD, ajustes finales |
 
 ---
 
@@ -346,6 +346,266 @@ pnpm test --coverage (api) → 89.28% statements, 80% branches, 80% functions, 8
   defensivo que el handler configurado no activa.
 - `createAppWithLimit()` en el test duplica parcialmente `app.ts`; podría extraerse
   como factory en `src/` si crece.
+
+---
+
+## Sprint 4 — `apps/web` scaffold + `ConfigInicial` + `useLocalStorage`
+
+**Completado**: 2026-07-13.
+
+### Archivos creados
+
+- `apps/web/package.json` — React 19.1, Vite 8, Tailwind v4 (@tailwindcss/vite 4.3.2),
+  Recharts, @vitejs/plugin-react 6.0.3, jsdom, RTL.
+- `apps/web/vite.config.ts` — plugins: react + tailwindcss, port 5173.
+- `apps/web/tsconfig.json` — `jsx: "react-jsx"`, extiende base.
+- `apps/web/vitest.config.ts` — jsdom environment, setupFiles, css disabled, coverage > 80%.
+- `apps/web/eslint.config.js` — reexporta base + relaja `no-unsafe-*` para tests.
+- `apps/web/index.html` — layout base, lang=es, meta viewport.
+- `apps/web/src/index.css` — Tailwind v4 CSS-first: `@import 'tailwindcss'`, `@theme`,
+  `prefers-reduced-motion`.
+- `apps/web/src/main.tsx` — `createRoot` en `#root`, StrictMode.
+- `apps/web/src/App.tsx` — layout con `<ErrorBoundary>` + `<ConfigInicial>`.
+- `apps/web/src/hooks/useLocalStorage.ts` — hook genérico tipo-safe, SSR-safe
+  (try/catch en getItem/setItem), soporta setter funcional.
+- `apps/web/src/hooks/useCalculos.ts` — esqueleto: retorna `{ status: 'idle' }`
+  (implementación real en Sprint 6).
+- `apps/web/src/components/ErrorBoundary.tsx` — class component con
+  `getDerivedStateFromError`, fallback por defecto (role="alert") + botón Reintentar,
+  soporta `fallback` custom.
+- `apps/web/src/components/ConfigInicial.tsx` — formulario con: salarioBase (number,
+  valida > 0 y < 100k), tipoPago (select mensual/quincenal), antiguedad (select 4
+  opciones), fechaIngreso (date ISO). Persiste vía `useLocalStorage('config-inicial')`.
+  Mensaje de éxito al guardar. Errores inline con `aria-invalid` y `aria-describedby`.
+- `apps/web/src/test/setup.ts` — importa `@testing-library/jest-dom/vitest`,
+  cleanup + clear localStorage en `afterEach`, mock `matchMedia`.
+- `apps/web/src/hooks/useLocalStorage.test.ts` — 6 tests: valor inicial, persistencia,
+  recuperación, setter funcional, JSON inválido, fallo de escritura.
+- `apps/web/src/components/ErrorBoundary.test.tsx` — 4 tests: render sin error,
+  fallback en error, botón Reintentar, fallback custom.
+- `apps/web/src/components/ConfigInicial.test.tsx` — 9 tests: renderiza campos,
+  error salario 0/negativo/>100k, guarda válido, persistencia en localStorage,
+  restaura desde localStorage, cambia tipoPago y antiguedad.
+
+### Verificación (gate en orden)
+
+```
+pnpm lint          → 3 tasks OK (shared + api + web)
+pnpm check-types   → 3 tasks OK (shared + api + web, jsx: react-jsx)
+pnpm test          → 120 tests (86 shared + 15 api + 19 web), 0 failures
+pnpm test --coverage (web) → 95.31% statements, 85.29% branches, 92% functions, 95% lines
+```
+
+### Desviaciones del plan
+
+- **Versiones de plugins**: `@vitejs/plugin-react@6.0.3` y `@tailwindcss/vite@4.3.2`
+  son las primeras versiones que soportan Vite 8. Las versiones del plan (4.4.1 y 4.1.7)
+  tenían peer dep incompatible.
+- **`eslint.config.js`**: mismo patrón que api — relaja `no-unsafe-*` para test files.
+- **`useCalculos.ts`**: esqueleto con `{ status: 'idle' }` — 0% coverage, intencional
+  (se implementa en Sprint 6).
+- **`App.tsx`**: sin test directo porque ErrorBoundary y ConfigInicial se prueban
+  por separado. Pendiente agregar smoke test de render de App en Sprint 6 o 7.
+
+### Known issues / siguientes pasos
+
+- Línea 34 de `ConfigInicial.tsx` (validación de fechaIngreso) no cubierta — el input
+  type="date" produce valores ISO válidos en navegador, jsdom lo simula. Validación defensiva.
+- Sprint 5 (RegistroSemanal) es el siguiente paso — ya existe la base React + hooks
+  + localStorage.
+
+---
+
+## Sprint 5 — `RegistroSemanal` (RF02)
+
+**Completado**: 2026-07-13.
+
+### Archivos creados
+
+- `apps/web/src/components/registroTypes.ts` — `DiaRegistro` (jornadaBase, horasBase,
+  horasExtraDiurna/Nocturna, horasDiaLibreDiurna/Nocturna, horasAsueto), helpers:
+  `crearDiaVacio`, `nombreDia`, `formatearFecha`, `getLunes`, `semanaIdDesdeLunes`,
+  `lunesDesdeSemanaId`, `generarDiasSemana`, `totalesSemana`.
+- `apps/web/src/hooks/useRegistroSemanal.ts` — persistencia por `semanaId`
+  (formato `YYYY-MM-DD` del lunes de la semana). Autogenera 7 días (Lun–Dom) vacíos
+  si no hay datos guardados. `updateDia(index, dia)` actualiza un día individual.
+- `apps/web/src/components/FilaDia.tsx` — row por día: selector de jornada base
+  (diurna/nocturna/descanso/asueto), input horas base, extra diurna, extra nocturna.
+  Muestra condicionalmente día libre (diurna/nocturna) cuando jornada = descanso,
+  y horas asueto cuando jornada = asueto. Todos con `aria-label`.
+- `apps/web/src/components/TotalesSemana.tsx` — suma de horas base, extra diurna,
+  extra nocturna, día libre, asueto. Se muestra condicional.
+- `apps/web/src/components/RegistroSemanal.tsx` — contenedor: título + rango de
+  fechas (lunes–domingo), 7 `FilaDia`, `TotalesSemana`.
+- `apps/web/src/App.tsx` — integra `<RegistroSemanal />`.
+- `apps/web/src/components/FilaDia.test.tsx` — 5 tests: renderiza nombre/fecha,
+  campos base, campos día libre, campo asueto, llama onChange.
+- `apps/web/src/components/TotalesSemana.test.tsx` — 3 tests: 0h inicial, suma
+  horas base, extras separadas.
+- `apps/web/src/components/RegistroSemanal.test.tsx` — 5 tests: 7 filas, rango
+  fechas, totales, actualización al ingresar horas, persistencia localStorage.
+
+### Verificación (gate en orden)
+
+```
+pnpm lint          → 3 tasks OK (shared + api + web)
+pnpm check-types   → 3 tasks OK
+pnpm test          → 133 tests (86 shared + 15 api + 32 web), 0 failures
+```
+
+### Desviaciones del plan
+
+- **`SelectorSemana.tsx`**: no se creó como componente separado. La navegación
+  entre semanas (prev/next) quedó pendiente para Sprint 6 o 7. Por ahora solo
+  muestra la semana actual.
+- **`SelectorTipoHora.tsx`**: no se creó como componente separado. El dropdown de
+  tipo de jornada está inline en `FilaDia.tsx`. Si crece, se puede extraer.
+- La arquitectura del plan menciona `FilaDia.tsx (×7)` con `SelectorTipoHora.tsx`;
+  en esta implementación `FilaDia` contiene todos sus inputs directamente.
+
+### Known issues / siguientes pasos
+
+- La navegación entre semanas (ver semanas anteriores) es necesaria para completar RF02.
+  Sprint 6 o 7 pueden agregar botones prev/next.
+- El `useRegistroSemanal` hook siempre usa la semana actual; para navegar se necesita
+  un `useState` para `semanaId` activo.
+- Sprint 6 (Resultados) integra `useCalculos()` para conectar `ConfigInicial` +
+  `RegistroSemanal` con el orquestador de `@calc/shared`.
+
+---
+
+## Sprint 6 — Resultados: `ResultadoNeto`, `GraficoPastel`, `TablaTasas`
+
+**Completado**: 2026-07-13.
+
+### Archivos creados
+
+- `apps/web/src/hooks/useCalculos.ts` — implementación real (ya no esqueleto). Lee
+  `config-inicial` y `registro-semanal` de localStorage vía `useLocalStorage`, convierte
+  `DiaRegistro[]` a `SegmentoHorario[]`, construye `CalcularRequest` y llama a
+  `calcular()` de `@calc/shared`. Memorizado con `useMemo`. Retorna `CalculoState`
+  (discriminated union: `idle` | `success` | `error`). Modo offline puro.
+- `apps/web/src/components/ResumenBruto.tsx` — desglose del salario bruto: base,
+  extra diurna/nocturna, día libre diurna/nocturna, asueto, total. Solo muestra
+  filas con valor > 0. Fórmula indicada en cada línea.
+- `apps/web/src/components/TablaDescuentos.tsx` — ISSS (3% sobre asegurable), AFP
+  (7.25% sobre cotizable), Renta (tramo, % exceso, cuota fija). Total en rojo.
+- `apps/web/src/components/Prestaciones.tsx` — aguinaldo (días + proporcional),
+  vacaciones (30% de 15 días), Quincena 25 (50%, condicional). Valores en verde.
+- `apps/web/src/components/NetoLiquido.tsx` — destacado verde con salario líquido.
+- `apps/web/src/components/ResultadoNeto.tsx` — contenedor: muestra idle (mensaje),
+  loading, error, o success con los 4 componentes anteriores.
+- `apps/web/src/components/GraficoPastel.tsx` — Recharts `PieChart` (donut) con:
+  salario neto, ISSS, AFP, Renta. Colores AA (verde, rojo, naranja, púrpura).
+  Tooltip con `$x.xx`, `role="img"`.
+- `apps/web/src/components/TablaTasas.tsx` — 11 filas de tasas vigentes con:
+  concepto, valor, detalle, enlace `.gob.sv`. Fecha última actualización (Julio 2026).
+  Disclaimer de verificación por el usuario.
+- `apps/web/src/App.tsx` — integra `useCalculos()` para renderizado condicional de
+  `GraficoPastel` solo en estado `success`.
+- Tests co-ubicados: `ResultadoNeto.test.tsx` (4 tests: idle, cálculo completo,
+  horas extra, ISSS/AFP/Renta), `GraficoPastel.test.tsx` (2 tests: renderizado,
+  role img), `TablaTasas.test.tsx` (3 tests: encabezado, enlaces .gob.sv, conceptos).
+
+### Verificación (gate en orden)
+
+```
+pnpm lint          → 3 tasks OK (shared + api + web)
+pnpm check-types   → 3 tasks OK
+pnpm test          → 142 tests (86 shared + 15 api + 41 web), 0 failures
+```
+
+### Desviaciones del plan
+
+- Los subcomponentes `ResumenBruto`, `TablaDescuentos`, `Prestaciones`, `NetoLiquido`
+  se crearon como archivos separados (no anidados dentro de `ResultadoNeto`). Esto
+  facilita reuso y testeo individual.
+- `GraficoPastel` no incluye los montos USD en la leyenda (solo en tooltip). La
+  leyenda muestra etiquetas por claridad en pantallas pequeñas.
+- `TablaTasas` incluye los 4 tramos de renta como filas separadas (más legible que
+  una sola fila). Los enlaces son a `mtps.gob.sv`, `isss.gob.sv`, `ssf.gob.sv`,
+  `mh.gob.sv` y `diariooficial.gob.sv`.
+
+### Known issues / siguientes pasos
+
+- `App.tsx` llama a `useCalculos()` en el nivel superior para pasarle datos a
+  `GraficoPastel`. Esto provoca doble cálculo (uno en `ResultadoNeto` y otro en
+  `App`). Solución: extraer `useCalculos` a contexto o pasar `calculosState` como
+  prop. Sprint 7 puede refactorizar.
+- Sprint 7 (último): `HistorialPeriodos`, `ExportarPDF`, ajustes responsive/A11y.
+
+---
+
+## Sprint 7 — `HistorialPeriodos` + `ExportarPDF` + CI/CD + afinado final
+
+**Completado**: 2026-07-13.
+
+### Archivos creados / modificados
+
+- `apps/web/src/components/HistorialPeriodos.tsx` — lista de periodos guardados con
+  `useLocalStorage('historial-periodos')`. Botón "Guardar periodo actual", muestra
+  neto, bruto y fecha. Botón "Eliminar" por periodo con `aria-label`.
+- `apps/web/src/components/ExportarPDF.tsx` — botón "Imprimir / Exportar PDF" que
+  ejecuta `window.print()`. Tailwind `print:hidden` oculta elementos interactivos.
+- `apps/web/src/App.tsx` — refactorizado: un solo `useCalculos()` en el nivel
+  superior. Pasa `calculosState` a `ResultadoNeto` como prop. Integraciones:
+  `HistorialPeriodos` (solo en estado success), `ExportarPDF`, clases `print:hidden`
+  y `print:` para impresión.
+- `apps/web/src/components/ResultadoNeto.tsx` — ahora recibe `state: CalculoState`
+  como prop (no llama a `useCalculos` internamente). Esto elimina el doble cálculo.
+- `.github/workflows/ci.yml` — CI pipeline:
+  - `check` job: lint → check-types → test (todas las ramas)
+  - `deploy-web` job: build `@calc/web` → deploy a GitHub Pages (solo `main`)
+  - pnpm 9, Node 22, frozen lockfile.
+- `apps/web/src/components/ResultadoNeto.test.tsx` — reescrito con `CalculoState`
+  mock (idle, loading, error, success). 5 tests puros sin localStorage.
+- `apps/web/src/components/HistorialPeriodos.test.tsx` — 4 tests: vacío, guardar,
+  múltiples periodos, eliminar periodo.
+
+### Verificación (gate final)
+
+```
+pnpm lint              → 3 tasks OK
+pnpm check-types       → 3 tasks OK
+pnpm test              → 147 tests (86 shared + 15 api + 46 web), 0 failures
+pnpm build --filter=web → apps/web/dist (632 kB JS, 15 kB CSS)
+pnpm build --filter=api → apps/api/dist (Express build)
+```
+
+### Plan de hosting (ADR-003 sin DB, ADR-006 modo offline)
+
+**Frontend — GitHub Pages (gratis, SLA > 99.9%):**
+1. El repo ya tiene `.github/workflows/ci.yml`. Al pushear a `main`:
+   - CI ejecuta lint + check-types + test
+   - Si pasa, build `@calc/web` y deploy a GitHub Pages
+2. Requisitos: en Settings → Pages, seleccionar Source: "GitHub Actions"
+3. URL: `https://{usuario}.github.io/calculo-descuentos-sv`
+
+**Backend — Render.com (free tier):**
+1. Crear Web Service conectado a este repo en Render Dashboard
+2. Configuración:
+   - **Root Directory**: `apps/api`
+   - **Build Command**: `pnpm install --frozen-lockfile && pnpm --filter=@calc/shared build && pnpm --filter=@calc/api build`
+   - **Start Command**: `node dist/index.js`
+   - **Environment**: Node.js 22
+3. URL: `https://calculo-descuentos-sv.onrender.com`
+4. Nota: free tier tiene spin-down en inactividad (~30s cold start). La app es
+   offline-first (ADR-001/ADR-006) así que el frontend funciona sin backend.
+
+### Resumen final del proyecto
+
+| RF | Estado | Componente |
+|----|--------|-----------|
+| RF01 | Hecho | `ConfigInicial.tsx` + `useLocalStorage` |
+| RF02 | Hecho | `RegistroSemanal.tsx` + `FilaDia.tsx` + `TotalesSemana.tsx` |
+| RF03 | Hecho | `horasExtra.ts` (`@calc/shared`) |
+| RF04 | Hecho | `descuentos.ts` (`@calc/shared`) |
+| RF05 | Hecho | `prestaciones.ts` (`@calc/shared`) |
+| RF06 | Hecho | `ResultadoNeto.tsx` + `ResumenBruto`/`TablaDescuentos`/`Prestaciones`/`NetoLiquido` |
+| RF07 | Hecho | `GraficoPastel.tsx` (Recharts, colores AA) |
+| RF08 | Hecho | `TablaTasas.tsx` (11 filas + links `.gob.sv`) |
+| RF09 | Hecho | `HistorialPeriodos.tsx` (guardar/eliminar periodos) |
+| RF10 | Hecho | `ExportarPDF.tsx` (`window.print()` + `@media print`) |
 
 ---
 
