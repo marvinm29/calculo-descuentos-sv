@@ -153,8 +153,8 @@ listo para GitHub Pages; `lint + check-types + test` y coverage > 80% en verde.
 | Sprint | Estado      | Notas |
 |--------|-------------|-------|
 | 1      | completado  | Monorepo + config + shared (tipos/Zod/tasas) |
-| 2      | pendiente   | —     |
-| 3      | pendiente   | —     |
+| 2      | completado  | Lógica de cálculo en shared (horasExtra, descuentos, prestaciones, calcular) |
+| 3      | completado  | apps/api Express (POST /api/calcular + errorHandler + tests Supertest) |
 | 4      | pendiente   | —     |
 | 5      | pendiente   | —     |
 | 6      | pendiente   | —     |
@@ -221,3 +221,131 @@ pnpm --filter=@calc/shared build  → dist/ generado con .js + .d.ts + sourcemap
   declaraciones); el umbral > 80% es exigente a partir de Sprint 2 cuando se agreguen los
   módulos `calc/*`. En Sprint 2 esos tests son los que establecen la real cobertura.
 - `.gitignore` ya ignora `dist`, `coverage`, `node_modules`, `.turbo`, `*.tsbuildinfo`.
+
+---
+
+## Sprint 2 — Lógica de cálculo en `packages/shared`
+
+**Completado**: 2026-07-13.
+
+### Archivos creados
+
+- `packages/shared/src/calc/horasExtra.ts` — `calcularSalarioHora()`, `calcularPagoSegmentos()`, `round2()`.
+  Factores según Art. 168-173 CT importados de `tasas.ts`.
+- `packages/shared/src/calc/descuentos.ts` — `calcularDescuentos()`: ISSS (3%, tope $30 mensual),
+  AFP (7.25%, tope $6,843.48), Renta (tabla mensual tramos I-IV y quincenal con tramos/2).
+- `packages/shared/src/calc/prestaciones.ts` — `calcularAguinaldo()` (proporcional < 1 año,
+  15/19/21 días), `calcularVacaciones()` (30% de 15 días), `calcularQuincena25()` (50% si ≤ $1,500).
+- `packages/shared/src/calc/calcular.ts` — `calcular()`, orquestador principal: recibe
+  `CalcularRequest`, retorna `CalcularResponse` con bruto, descuentos, prestaciones, neto.
+- `packages/shared/src/calc/__tests__/horasExtra.test.ts` — 12 tests: salario/hora, factores,
+  fixture $800/mes de `specs/tasas-legales.md`.
+- `packages/shared/src/calc/__tests__/descuentos.test.ts` — 21 tests: ISSS/AFP/Renta mensual
+  y quincenal, casos borde (tope, tramo límite, salario 0).
+- `packages/shared/src/calc/__tests__/prestaciones.test.ts` — 14 tests: aguinaldo proporcional
+  y por tramos, vacaciones, Quincena 25 eligibility.
+- `packages/shared/src/calc/__tests__/calcular.test.ts` — 25 tests: fixture quincenal
+  de `specs/api-contract.md`, modo mensual, consistencia interna, sin segmentos.
+- `packages/shared/src/index.ts` — actualizado con barrel export de `calc/*`.
+
+### Verificación (gate en orden)
+
+```
+pnpm lint          → 1 task OK
+pnpm check-types   → 1 task OK (tsc --noEmit strict)
+pnpm test          → 86 tests, 5 files, 0 failures
+pnpm test --coverage → statements 99.19%, branches 96.29%, functions 100%, lines 99.18%
+```
+
+### Desviaciones del plan
+
+- **Renta quincenal**: el API contract (`api-contract.md`) usa la tabla mensual directamente
+  sobre base gravable quincenal. La spec (`tasas-legales.md`) dice "dividir tramos y cuotas
+  fijas entre 2". Se implementó la división de tabla según la spec. La diferencia de valores
+  se documenta abajo.
+- **API contract numéricos**: hay discrepancias de redondeo entre los cálculos de este sprint
+  y los ejemplos del `api-contract.md`:
+  - `horasExtraDiurna`: API contract dice $12.50, fórmula da $13.33 (2h × $3.3333 × 2.00).
+    Posible error de redondeo en el contrato.
+  - `diaLibreNocturna`: API contract dice $19.69, fórmula da $17.50 (3h × $3.3333 × 1.75).
+    Diferencia inexplicable por la fórmula estándar.
+  - Las tasas (ISSS 3%, AFP 7.25%) y prestaciones (aguinaldo 19 días, vacaciones $120)
+    sí coinciden con el contrato.
+  - Se verificó contra `misalariosv.com` que las tasas base son correctas a julio 2026.
+- `Quincena 25`: el API contract lo pone como `null` para el ejemplo $800. La spec dice
+  que aplica a salarios ≤ $1,500. Este sprint lo retorna no-null ($400) porque $800 califica.
+
+### Known issues / siguientes pasos
+
+- Una línea sin cubrir en `prestaciones.ts` (default del switch, rama no alcanzable por el
+  tipo `Antiguedad`).
+
+---
+
+## Sprint 3 — `apps/api` Express
+
+**Completado**: 2026-07-13.
+
+### Archivos creados
+
+- `apps/api/package.json` — Express 5.1.0, cors, express-rate-limit 7.5, zod, tsx (dev),
+  supertest 7.1 (test), vitest, @types/express 5.
+- `apps/api/tsconfig.json` — `noEmit: true`, extiende `@calc/config/tsconfig/base.json`.
+- `apps/api/tsconfig.build.json` — output `dist/`.
+- `apps/api/vitest.config.ts` — node environment, coverage > 80%, exclude `src/index.ts`.
+- `apps/api/eslint.config.js` — reexporta base + relaja `no-unsafe-*` para `test/**`.
+- `apps/api/src/app.ts` — Express 5 app: CORS, `express.json()`, rate limiter (100/min,
+  429 custom handler), routes `/api/calcular`, errorHandler middleware.
+- `apps/api/src/index.ts` — server entry (port 3001).
+- `apps/api/src/middleware/errorHandler.ts` — ZodError → 400 `VALIDATION_ERROR` con
+  `details[]` (`field` + `message` por cada `ZodIssue`), RateLimitError → 429,
+  desconocido → 500 `INTERNAL_ERROR`.
+- `apps/api/src/routes/calcular/calcular.routes.ts` — `POST /api/calcular`.
+- `apps/api/src/routes/calcular/calcular.controller.ts` — valida con
+  `calcularRequestSchema.parse()`, chequea reglas de negocio (`validarNegocio()`),
+  delega al servicio.
+- `apps/api/src/routes/calcular/calcular.service.ts` — wrapper sobre `calcular()` de
+  `@calc/shared` (ADR-001: lógica única en shared).
+- `apps/api/test/calcular.test.ts` — 15 tests Supertest:
+  - Happy path: 200 con `CalcularResponse` (bruto, descuentos, prestaciones, neto).
+  - 400 `VALIDATION_ERROR` con `details` (Zod): salario negativo, salario 0,
+    salario > $100k, horas fuera de [0,24], fechaInicio > fechaFin,
+    fechaIngreso posterior al periodo, tipoPago inválido.
+  - 400 reglas de negocio: periodo > 31 días.
+  - 429 `RATE_LIMIT_EXCEEDED`: 3 requests OK → 4º retorna 429.
+  - 500 `INTERNAL_ERROR`: error handler unitario.
+- `apps/api/eslint.config.js` — actualizado con reglas relajadas para tests.
+
+### Verificación (gate en orden)
+
+```
+pnpm lint          → 2 tasks OK (shared + api)
+pnpm check-types   → 2 tasks OK (shared + api, strict + verbatimModuleSyntax)
+pnpm test          → 101 tests (86 shared + 15 api), 0 failures
+pnpm test --coverage (api) → 89.28% statements, 80% branches, 80% functions, 89.28% lines
+```
+
+### Desviaciones del plan
+
+- **`verbatimModuleSyntax`**: el `tsconfig` base activa esta opción. Requiere usar
+  `import type` para tipos. En algunos casos (Express `Router` como tipo) se usó
+  `const router: Router = Router()` donde Router es tanto valor como tipo.
+- **`@types/express@5` + `express-rate-limit@7`**: el rate limiter maneja 429 con
+  una función `handler` (respuesta directa, no pasa por el errorHandler). El
+  errorHandler tiene un fallback para `RateLimitError` por si cambia en el futuro.
+- **`supertest@7.1.0` deprecated**: tiene un warning `WARN deprecated supertest@7.1.0`.
+  Se mantiene por compatibilidad con el stack; alternativas como `supertest@7.0.0` o
+  migrar a `fetch` nativo para tests se evaluarán si causa problemas.
+- No se usó `express-rate-limit` para test de 429 desde el errorHandler porque el
+  handler configurado responde directo (no lanza error al siguiente middleware).
+
+### Known issues / siguientes pasos
+
+- `src/index.ts` excluido de coverage (tiene `app.listen()` que bloquearía Supertest).
+- Una línea sin cubrir en `errorHandler.ts` (rama `RateLimitError`) — es un fallback
+  defensivo que el handler configurado no activa.
+- `createAppWithLimit()` en el test duplica parcialmente `app.ts`; podría extraerse
+  como factory en `src/` si crece.
+
+---
+
