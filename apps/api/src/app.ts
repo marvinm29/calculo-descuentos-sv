@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
-import { calcularRoutes } from './routes/calcular/calcular.routes';
-import { errorHandler } from './middleware/errorHandler';
+import { calcularRoutes } from './routes/calcular/calcular.routes.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 const app: express.Express = express();
 

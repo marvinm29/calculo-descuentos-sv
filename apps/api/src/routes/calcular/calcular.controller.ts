@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { calcularRequestSchema, validarNegocio } from '@calc/shared';
-import { calcularService } from './calcular.service';
+import { calcularService } from './calcular.service.js';
 
 export function calcularController(
   req: Request,
