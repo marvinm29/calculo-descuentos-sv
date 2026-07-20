@@ -36,6 +36,8 @@ export function errorHandler(
     return;
   }
 
+  console.error('[ERROR]', err instanceof Error ? err.stack : err);
+
   res.status(500).json({
     error: 'INTERNAL_ERROR',
     message: 'Error interno del servidor',

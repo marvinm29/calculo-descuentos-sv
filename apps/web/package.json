@@ -14,6 +14,7 @@
   "dependencies": {
     "@calc/shared": "workspace:*",
     "@clerk/react": "^6.12.5",
+    "@sentry/react": "^9.0.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "recharts": "2.15.4"

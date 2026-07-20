@@ -4,6 +4,16 @@ set -e
 # ============================================================
 # Setup script for Calculadora de Descuentos droplet
 # Corre como root en Ubuntu 24.04
+#
+# REQUIERE variables de entorno (pasalas inline):
+#
+#   CLERK_SECRET_KEY=sk_... \
+#   SENTRY_DSN=https://...  \
+#   DD_API_KEY=xxxxxxxxxx    \
+#   bash < setup-droplet.sh
+#
+# O creá /opt/calculo-descuentos/apps/api/.env manualmente
+# despues de correr el script.
 # ============================================================
 
 echo "=== 1. Actualizando sistema ==="
@@ -40,16 +50,21 @@ cd /opt/calculo-descuentos
 
 echo "=== 8. Clonando repositorio ==="
 git clone https://github.com/marvinm29/calculo-descuentos-sv.git .
-# Si el repo es privado o quieres usar SSH, descomenta la línea de abajo
-# y comenta la de arriba:
-# git clone git@github.com:marvinm29/calculo-descuentos-sv.git .
 
 echo "=== 9. Creando archivo .env ==="
-cat > /opt/calculo-descuentos/apps/api/.env << 'EOF'
-CLERK_SECRET_KEY=sk_test_GK2dwWTODf0aSE2wQjWz6vhepnkVgJNzgiQdKrcEvV
+cat > /opt/calculo-descuentos/apps/api/.env << EOF
+# Obligatorio
+CLERK_SECRET_KEY=${CLERK_SECRET_KEY:-}
 DATABASE_PATH=./data/calculos.db
 PORT=3001
 NODE_ENV=production
+
+# Opcional — Sentry
+SENTRY_DSN=${SENTRY_DSN:-}
+
+# Opcional — Datadog
+DD_API_KEY=${DD_API_KEY:-}
+DD_SITE=${DD_SITE:-datadoghq.com}
 EOF
 
 echo "=== 10. Instalando dependencias ==="
@@ -78,7 +93,7 @@ api.marvinmelendez.engineer {
     reverse_proxy localhost:3001
     header Access-Control-Allow-Origin *
     header Access-Control-Allow-Methods "GET, POST, DELETE, OPTIONS"
-    header Access-Control-Allow-Headers "Content-Type, Authorization"
+    header Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
 
     @options {
         method OPTIONS
@@ -87,26 +102,23 @@ api.marvinmelendez.engineer {
         respond 204
     }
 }
-
-marvinmelendez.engineer {
-    redir https://marvinm29.github.io/calculo-descuentos-sv{uri} permanent
-}
 CADDYEOF
 
 systemctl restart caddy
 
 echo ""
 echo "============================================"
-echo "  ✅ Setup completado"
+echo "  Setup completado"
 echo "============================================"
 echo ""
 echo "  API corriendo en: http://localhost:3001"
 echo "  Caddy reverse proxy listo para api.marvinmelendez.engineer"
 echo ""
-echo "  Próximos pasos:"
-echo "  1. Configurar DNS: api.marvinmelendez.engineer → 159.223.146.165"
-echo "  2. Agregar dominio marvinmelendez.engineer en GitHub Pages Settings"
-echo "  3. En Clerk Dashboard, cambiar URLs a producción"
+echo "  Proximos pasos:"
+echo "  1. Verificar que DNS apunte: api.marvinmelendez.engineer -> <IP_droplet>"
+echo "  2. En Clerk Dashboard, cambiar URLs de test a produccion"
+echo "  3. Verificar Sentry capturando errores (si configuraste SENTRY_DSN)"
+echo "  4. Verificar Datadog APM (si configuraste DD_API_KEY)"
 echo ""
 pm2 status
 caddy version

@@ -1,6 +1,9 @@
 import baseConfig from '@calc/config/eslint';
 
 export default [
+  {
+    ignores: ['ecosystem.config.cjs'],
+  },
   ...baseConfig,
   {
     files: ['test/**/*.ts'],
