@@ -11,3 +11,7 @@ coverage/
 *.tsbuildinfo
 .DS_Store
 clerk-react/
+.agents/
+.opencode/skills/
+skills-lock.json
+docs/debug-droplet.sh

@@ -24,7 +24,7 @@ Cada paquete tiene sus propios scripts: `pnpm --filter=<paquete> test`.
 - **eslint.config.js por paquete**: ESLint 10 flat config no busca upward. Cada paquete (`apps/*`, `packages/*`) necesita su propio `eslint.config.js`.
 - **Tailwind v4**: CSS-first (`@import 'tailwindcss'` en `index.css`), sin `tailwind.config.js`. Config vía `@theme` en CSS. Plugin `@tailwindcss/vite`.
 - **ErrorBoundary**: única clase (excepción a "functional components"). El resto son componentes funcionales + hooks.
-- **Auth**: Clerk (`@clerk/clerk-react` en frontend, `@clerk/express` en backend). Usar `getAuth(req)` para obtener `userId`. `clerkMiddleware()` va en app-level.
+- **Auth**: Clerk (`@clerk/react` en frontend, `@clerk/express` en backend). Usar `getAuth(req)` para obtener `userId`. `clerkMiddleware()` va scoped a `/api/history`.
 - **BD**: SQLite vía `better-sqlite3` en `apps/api/data/calculos.db`. `:memory:` para tests. Singleton en `apps/api/src/db.ts`. Directorio se crea automáticamente.
 - **Historial**: endpoints `GET/POST/DELETE /api/history` autenticados. Servicio en `routes/history/`. Frontend sincroniza con server cuando logueado, cae a localStorage si no.
 - **Sin BD relacional** (salvo SQLite para historial): persistencia principal sigue siendo `localStorage` — hook genérico `useLocalStorage<T>()`.
@@ -33,8 +33,8 @@ Cada paquete tiene sus propios scripts: `pnpm --filter=<paquete> test`.
 ## Arquitectura
 
 ```
-apps/web/src/            → React SPA (deploy: GitHub Pages)
-apps/api/src/            → Express REST API (deploy: Render.com)
+apps/web/src/            → React SPA (deploy: GitHub Pages — marvinmelendez.engineer)
+apps/api/src/            → Express REST API (deploy: DigitalOcean — api.marvinmelendez.engineer)
 packages/shared/src/     → tipos, Zod schemas, tasas legales, lógica de cálculo
 packages/config/         → ESLint flat config, tsconfig/base.json
 ```

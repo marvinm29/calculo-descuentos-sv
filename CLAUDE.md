@@ -1,5 +1,8 @@
-@AGENTS.md
+# Claude Code — Configuracion del proyecto
 
-## Claude Code
-Usar plan mode para cambios bajo cualquier directorio.
-Siempre verificar con `pnpm lint && pnpm check-types && pnpm test` después de cambios.
+Este proyecto sigue las directrices de `AGENTS.md` para todas las operaciones.
+Usar plan mode para cambios estructurales. Verificar siempre con el gate:
+
+```bash
+pnpm lint && pnpm check-types && pnpm test
+```
