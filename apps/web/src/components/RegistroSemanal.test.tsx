@@ -5,41 +5,49 @@ import { renderWithContext } from '../test/testUtils';
 import { RegistroSemanal } from './RegistroSemanal';
 
 describe('RegistroSemanal', () => {
-  it('renderiza 7 filas de día (Lun a Dom)', () => {
-    renderWithContext(<RegistroSemanal />);
-
-    const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-    for (const dia of dias) {
-      expect(screen.getByText(dia)).toBeInTheDocument();
-    }
-  });
-
-  it('muestra el rango de fechas de la semana actual', () => {
+  it('renderiza el título y el date picker', () => {
     renderWithContext(<RegistroSemanal />);
 
     expect(
-      screen.getByText(/Registro Semanal/),
+      screen.getByText('Registro de Horas'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Seleccionar fecha'),
     ).toBeInTheDocument();
   });
 
-  it('muestra la sección de totales semanales', () => {
+  it('renderiza la fila de entrada para el día seleccionado', () => {
     renderWithContext(<RegistroSemanal />);
 
     expect(
-      screen.getByText(/Totales semanales/),
+      screen.getByText('Jornada base'),
     ).toBeInTheDocument();
   });
 
-  it('actualiza totales al ingresar horas extra', async () => {
+  it('muestra el resumen semanal visual con navegación', () => {
+    renderWithContext(<RegistroSemanal />);
+
+    expect(
+      screen.getByText(/Esta semana|Semana/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Semana anterior'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Semana siguiente'),
+    ).toBeInTheDocument();
+  });
+
+  it('actualiza datos al ingresar horas', async () => {
     const user = userEvent.setup();
     renderWithContext(<RegistroSemanal />);
 
-    const inputs = screen.getAllByLabelText(/Horas base para Lun/);
+    const inputs = screen.getAllByLabelText(/Horas base para/);
     await user.clear(inputs[0]!);
     await user.type(inputs[0]!, '8');
 
     expect(
-      screen.getByText(/Base: 8h/),
+      screen.getByText(/Total/),
     ).toBeInTheDocument();
   });
 
@@ -47,16 +55,14 @@ describe('RegistroSemanal', () => {
     const user = userEvent.setup();
     renderWithContext(<RegistroSemanal />);
 
-    const inputs = screen.getAllByLabelText(/Horas base para Lun/);
+    const inputs = screen.getAllByLabelText(/Horas base para/);
     await user.clear(inputs[0]!);
     await user.type(inputs[0]!, '8');
 
     await waitFor(() => {
-      expect(screen.getByText(/Base: 8h/)).toBeInTheDocument();
+      const stored = localStorage.getItem('registro-semanal');
+      expect(stored).not.toBeNull();
+      expect(stored).toContain('"horasBase":8');
     });
-
-    const stored = localStorage.getItem('registro-semanal');
-    expect(stored).not.toBeNull();
-    expect(stored).toContain('"horasBase":8');
   });
 });

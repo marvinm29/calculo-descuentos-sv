@@ -1,26 +1,37 @@
-import { useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import type { DiaRegistro } from '../components/registroTypes';
 import {
   getLunes,
   semanaIdDesdeLunes,
+  lunesDesdeSemanaId,
   generarDiasSemana,
 } from '../components/registroTypes';
 import { useAppContext } from '../context/AppContext';
 
-function getSemanaInicial(): { semanaId: string; dias: DiaRegistro[] } {
-  const lunes = getLunes(new Date());
-  const semanaId = semanaIdDesdeLunes(lunes);
-  return { semanaId, dias: generarDiasSemana(lunes) };
-}
-
 export function useRegistroSemanal() {
   const { registro: data, setRegistro: setData } = useAppContext();
+  const [semanaId, setSemanaId] = useState<string>(() => {
+    const lunes = getLunes(new Date());
+    return semanaIdDesdeLunes(lunes);
+  });
 
-  const inicial = useMemo(getSemanaInicial, []);
-  const semanaId = inicial.semanaId;
+  const lunes = lunesDesdeSemanaId(semanaId);
+  const domingo = new Date(lunes);
+  domingo.setDate(domingo.getDate() + 6);
 
-  const dias: DiaRegistro[] =
-    data[semanaId] ?? inicial.dias;
+  const dias: DiaRegistro[] = data[semanaId] ?? generarDiasSemana(lunes);
+
+  const semanaAnterior = useCallback(() => {
+    const l = lunesDesdeSemanaId(semanaId);
+    l.setDate(l.getDate() - 7);
+    setSemanaId(semanaIdDesdeLunes(l));
+  }, [semanaId]);
+
+  const semanaSiguiente = useCallback(() => {
+    const l = lunesDesdeSemanaId(semanaId);
+    l.setDate(l.getDate() + 7);
+    setSemanaId(semanaIdDesdeLunes(l));
+  }, [semanaId]);
 
   const setDias = useCallback(
     (nuevosDias: DiaRegistro[]) => {
@@ -38,5 +49,14 @@ export function useRegistroSemanal() {
     setDias(nuevos);
   }
 
-  return { semanaId, dias, updateDia, setDias };
+  return {
+    semanaId,
+    lunes,
+    domingo,
+    dias,
+    updateDia,
+    setDias,
+    semanaAnterior,
+    semanaSiguiente,
+  };
 }
