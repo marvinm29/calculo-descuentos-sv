@@ -90,7 +90,7 @@ mkdir -p /opt/calculo-descuentos/apps/api/data
 
 echo "=== 14. Iniciando API con PM2 ==="
 cd /opt/calculo-descuentos/apps/api
-pm2 start dist/index.js --name calculo-api
+pm2 start dist/index.js --name calculo-api -f
 
 echo "=== 15. Guardando configuración de PM2 ==="
 pm2 save
