@@ -63,18 +63,41 @@ packages/config/         → ESLint flat config, tsconfig/base.json
 
 - `sv-legal-calc` — fórmulas legales SV, invariantes de `tasas.ts`, fixtures.
 - `react-vite-tailwind4` — convenciones React 19 / Vite 8 / Tailwind v4.
+- `frontend-design` — UI/UX polish, theming, diseño visual.
 - `vitest-rtl-supertest` — patrones de testing, coverage > 80%.
 - `sprint-workflow` — cadencia de 7 sprints, gate y documentación.
 
 ## 🎯 Objetivo actual
 
-**Fix CI lint errors (10 errors) + produccionizar.**
+**Sprint 9 — UI/UX: Dark/light mode, mejora visual, vista día por día.**
 
 Ver plan detallado en `.opencode/plans/sprint8-deploy-2026-07-19.md`.
 
-**Prioridad**: Fix los 10 `no-unsafe-*` lint errors de ESLint type-aware en `apps/api/` (barrel exports de `@calc/shared`). Luego DNS Clerk, keys de prod, Sentry/Datadog.
+**Prioridad**: Unificar caracteres especiales (UTF-8 plano, sin HTML entities), implementar dark/light mode con toggle, mejorar diseño visual con frontend-design skill, y agregar vista día por día como alternativa a la semanal.
 
-**Bloqueante**: CI rojo → no deploy GitHub Pages. Ver `.github/workflows/ci.yml`. El gate local `pnpm lint && pnpm check-types && pnpm test` pasa, pero CI falla con 10 errors que aparecen solo en CI por `tsconfig.json` resolución distinta.
+## 🚀 Sprint 8 completado (2026-07-20)
+
+- ✅ **CI verde**: Fix a 10 lint errors `no-unsafe-*` en API + web ESLint configs
+- ✅ **check-types en CI**: `turbo.json` ahora tiene `"dependsOn": ["^build"]` para check-types
+- ✅ **DNS Clerk**: 5 CNAME records en name.com, todo verified + SSL emitido
+- ✅ **Clerk keys live**: `pk_live_` + `sk_live_` en `.env` files
+- ✅ **Sentry**: DSNs en web y API `.env` files
+- ✅ **Datadog**: `DD_API_KEY` + `DD_SITE` en API `.env`
+- ✅ **Web deploy**: GitHub Pages CI/CD operativo → `https://marvinmelendez.engineer`
+
+## Estado de producción
+
+| Servicio | URL | Estado |
+|----------|-----|--------|
+| API (DO droplet) | `https://api.marvinmelendez.engineer` | ✅ Live (PM2 + Caddy) |
+| Web (GitHub Pages) | `https://marvinmelendez.engineer` | ✅ Live (CI pasa, deploy automático) |
+
+## Quirks adicionales
+
+- **Dark mode**: Tailwind v4 class-based. Usar `@custom-variant dark (&:where(.dark, .dark *))` en CSS. El hook `useTheme()` persiste preferencia en localStorage. Toggle button en header con icono sol/luna.
+- **Colores frontend**: Definir paleta en `@theme` dentro de `index.css` usando `--color-*` custom properties. Aplicar `dark:` variants en todos los componentes.
+- **Caracteres españoles**: Usar UTF-8 plano (á, é, í, ó, ú, ñ, ü) directamente en JSX. React escapa automáticamente. No usar HTML entities (`&oacute;`, `&ntilde;`, etc.).
+- **Vista día por día**: Toggle `Vista semanal / Vista día` en el componente `RegistroSemanal`. En modo día: selector de fecha + inputs para un día. Misma estructura de datos `DiaRegistro[]`.
 
 ## Recursos clave
 

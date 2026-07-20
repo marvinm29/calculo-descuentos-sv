@@ -592,7 +592,65 @@ pnpm build --filter=api → apps/api/dist (Express build)
 4. Nota: free tier tiene spin-down en inactividad (~30s cold start). La app es
    offline-first (ADR-001/ADR-006) así que el frontend funciona sin backend.
 
-### Resumen final del proyecto
+## Sprint 8 — Producción: Deploy DigitalOcean + Monitoreo + Hardening ✅
+
+**Completado**: 2026-07-20.
+
+### Logros
+
+- **CI verde**: Fix 10 `no-unsafe-*` lint errors en API + web ESLint configs
+- **check-types en CI**: `turbo.json` `"dependsOn": ["^build"]` soluciona resolución de `@calc/shared`
+- **Clerk DNS**: 5 CNAME records en name.com, SSL emitido
+- **Clerk keys live**: `pk_live_` + `sk_live_` operativas
+- **Sentry**: DSNs en web y API
+- **Datadog**: `DD_API_KEY` + `DD_SITE` en API
+- **Deploy automático**: GitHub Pages CI/CD operativo
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `apps/api/eslint.config.js` | no-unsafe-* off para routes + ignore ecosystem.config.cjs |
+| `apps/web/eslint.config.js` | no-unsafe-* off para src/ |
+| `turbo.json` | check-types dependsOn ^build |
+| `apps/web/.env` | pk_live_ + VITE_API_URL prod + VITE_SENTRY_DSN |
+| `apps/api/.env` | sk_live_ + SENTRY_DSN + DD_API_KEY + DD_SITE |
+
+### Servicios en producción
+
+| Servicio | URL | Estado |
+|----------|-----|--------|
+| API | `https://api.marvinmelendez.engineer` | ✅ Live |
+| Web | `https://marvinmelendez.engineer` | ✅ Live |
+
+### Gate: `pnpm lint && pnpm check-types && pnpm test` ✅ 157 tests
+
+---
+
+## Sprint 9 — UI/UX: Dark/light mode, mejora visual, vista día por día 🔜
+
+**Fecha**: 2026-07-20. **En ejecución**.
+
+### Tareas
+
+1. **Unificar caracteres**: UTF-8 plano (sin HTML entities) en todo el frontend
+2. **Dark/light mode**: `@custom-variant dark` en Tailwind v4, hook `useTheme()`, toggle en header
+3. **Mejora visual**: Paleta de colores, sombras, animaciones, diseño pulido
+4. **Vista día por día**: Toggle semanal/diario en `RegistroSemanal`
+
+### Check-list
+
+- [ ] Unificar HTML entities → UTF-8 plano
+- [ ] `index.css`: agregar `@custom-variant dark`, paleta `@theme`
+- [ ] Hook `useTheme()` con localStorage
+- [ ] Toggle button en header
+- [ ] `dark:` variants en todos los componentes
+- [ ] Toggle vista semanal/día por día
+- [ ] `pnpm lint && pnpm check-types && pnpm test` pasa
+
+---
+
+### Resumen final del proyecto (post Sprint 8)
 
 | RF | Estado | Componente |
 |----|--------|-----------|
