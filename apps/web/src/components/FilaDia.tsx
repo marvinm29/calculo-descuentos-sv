@@ -15,21 +15,21 @@ export function FilaDia({ dia, onChange }: FilaDiaProps) {
   }
 
   return (
-    <div className="space-y-2 rounded-lg border border-border bg-surface p-3 shadow-sm">
+    <div className="glass-card space-y-2 rounded-xl p-3">
       <div className="flex items-center gap-2">
-        <span className="w-10 text-sm font-medium text-text">{nombre}</span>
+        <span className="w-10 text-sm font-semibold text-text">{nombre}</span>
         <span className="text-xs text-text-muted">{dia.fecha}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <div>
-          <label className="block text-xs text-text-secondary">Jornada base</label>
+          <label className="block text-xs font-medium text-text-secondary">Jornada base</label>
           <select
             value={dia.jornadaBase}
             onChange={(e) => {
               update('jornadaBase', e.target.value as DiaRegistro['jornadaBase']);
             }}
-            className="w-full rounded border border-border bg-surface px-2 py-1 text-xs text-text"
+            className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
             aria-label={`Tipo de jornada para ${nombre}`}
           >
             <option value="regular_diurna">Diurna</option>
@@ -40,7 +40,7 @@ export function FilaDia({ dia, onChange }: FilaDiaProps) {
         </div>
 
         <div>
-          <label className="block text-xs text-text-secondary">Horas base</label>
+          <label className="block text-xs font-medium text-text-secondary">Horas base</label>
           <input
             type="number"
             min={0}
@@ -50,13 +50,13 @@ export function FilaDia({ dia, onChange }: FilaDiaProps) {
             onChange={(e) => {
               update('horasBase', Number(e.target.value));
             }}
-            className="w-full rounded border border-border bg-surface px-2 py-1 text-xs text-text"
+            className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
             aria-label={`Horas base para ${nombre}`}
           />
         </div>
 
         <div>
-          <label className="block text-xs text-text-secondary">Extra diurna</label>
+          <label className="block text-xs font-medium text-text-secondary">Extra diurna</label>
           <input
             type="number"
             min={0}
@@ -66,13 +66,13 @@ export function FilaDia({ dia, onChange }: FilaDiaProps) {
             onChange={(e) => {
               update('horasExtraDiurna', Number(e.target.value));
             }}
-            className="w-full rounded border border-border bg-surface px-2 py-1 text-xs text-text"
+            className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
             aria-label={`Horas extra diurna para ${nombre}`}
           />
         </div>
 
         <div>
-          <label className="block text-xs text-text-secondary">Extra nocturna</label>
+          <label className="block text-xs font-medium text-text-secondary">Extra nocturna</label>
           <input
             type="number"
             min={0}
@@ -82,7 +82,7 @@ export function FilaDia({ dia, onChange }: FilaDiaProps) {
             onChange={(e) => {
               update('horasExtraNocturna', Number(e.target.value));
             }}
-            className="w-full rounded border border-border bg-surface px-2 py-1 text-xs text-text"
+            className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
             aria-label={`Horas extra nocturna para ${nombre}`}
           />
         </div>
@@ -90,7 +90,7 @@ export function FilaDia({ dia, onChange }: FilaDiaProps) {
         {dia.jornadaBase === 'descanso' && (
           <>
             <div>
-              <label className="block text-xs text-text-secondary">
+              <label className="block text-xs font-medium text-text-secondary">
                 Día libre diurna
               </label>
               <input
@@ -102,12 +102,12 @@ export function FilaDia({ dia, onChange }: FilaDiaProps) {
                 onChange={(e) => {
                   update('horasDiaLibreDiurna', Number(e.target.value));
                 }}
-                className="w-full rounded border border-border bg-surface px-2 py-1 text-xs text-text"
+                className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
                 aria-label={`Horas día libre diurna para ${nombre}`}
               />
             </div>
             <div>
-              <label className="block text-xs text-text-secondary">
+              <label className="block text-xs font-medium text-text-secondary">
                 Día libre nocturna
               </label>
               <input
@@ -119,7 +119,7 @@ export function FilaDia({ dia, onChange }: FilaDiaProps) {
                 onChange={(e) => {
                   update('horasDiaLibreNocturna', Number(e.target.value));
                 }}
-                className="w-full rounded border border-border bg-surface px-2 py-1 text-xs text-text"
+                className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
                 aria-label={`Horas día libre nocturna para ${nombre}`}
               />
             </div>
@@ -128,7 +128,7 @@ export function FilaDia({ dia, onChange }: FilaDiaProps) {
 
         {dia.jornadaBase === 'asueto' && (
           <div>
-            <label className="block text-xs text-text-secondary">
+            <label className="block text-xs font-medium text-text-secondary">
               Horas en asueto
             </label>
             <input
@@ -140,7 +140,7 @@ export function FilaDia({ dia, onChange }: FilaDiaProps) {
               onChange={(e) => {
                 update('horasAsueto', Number(e.target.value));
               }}
-              className="w-full rounded border border-border bg-surface px-2 py-1 text-xs text-text"
+              className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
               aria-label={`Horas en asueto para ${nombre}`}
             />
           </div>

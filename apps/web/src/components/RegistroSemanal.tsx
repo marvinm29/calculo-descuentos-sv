@@ -35,7 +35,7 @@ export function RegistroSemanal() {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-text">
+        <h2 className="text-lg font-bold text-text">
           Registro {vista === 'semanal' ? 'Semanal' : 'por Día'}
         </h2>
         <div className="flex items-center gap-2">
@@ -49,7 +49,7 @@ export function RegistroSemanal() {
               setVista((v) => (v === 'semanal' ? 'diaria' : 'semanal'));
             }}
             type="button"
-            className="rounded-lg border border-border bg-surface px-2 py-1 text-xs font-medium text-text-secondary hover:text-text focus:ring-2 focus:ring-primary focus:outline-none"
+            className="glass-card rounded-lg px-2.5 py-1.5 text-xs font-medium text-text-secondary hover:text-text"
           >
             {vista === 'semanal' ? 'Ver por día' : 'Ver semana'}
           </button>
@@ -71,7 +71,7 @@ export function RegistroSemanal() {
             onChange={(e) => {
               setFechaDia(e.target.value);
             }}
-            className="mt-1 block w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+            className="glass-input mt-1 block w-full rounded-xl px-3 py-2 text-sm"
           />
         </div>
       )}

@@ -11,10 +11,9 @@ export interface ResultadoNetoProps {
 export function ResultadoNeto({ state }: ResultadoNetoProps) {
   if (state.status === 'idle') {
     return (
-      <div className="rounded-lg border border-border bg-surface p-6 text-center print:hidden">
+      <div className="glass-card rounded-2xl p-8 text-center print:hidden">
         <p className="text-sm text-text-muted">
-          Configurá tu salario y registrá horas para ver el
-          cálculo.
+          Configurá tu salario y registrá horas para ver el cálculo.
         </p>
       </div>
     );
@@ -22,7 +21,7 @@ export function ResultadoNeto({ state }: ResultadoNetoProps) {
 
   if (state.status === 'loading') {
     return (
-      <div className="rounded-lg border border-border bg-surface p-6 text-center">
+      <div className="glass-card rounded-2xl p-8 text-center">
         <p className="text-sm text-text-muted">Calculando...</p>
       </div>
     );
@@ -30,7 +29,7 @@ export function ResultadoNeto({ state }: ResultadoNetoProps) {
 
   if (state.status === 'error') {
     return (
-      <div className="rounded-lg border border-danger bg-danger-bg p-6 text-center">
+      <div className="glass-card rounded-2xl border-danger/30 p-8 text-center">
         <p className="text-sm text-danger">{state.error}</p>
       </div>
     );
@@ -40,7 +39,7 @@ export function ResultadoNeto({ state }: ResultadoNetoProps) {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-lg font-semibold text-text">
+      <h2 className="text-lg font-bold text-text">
         Resultado del Periodo
       </h2>
 

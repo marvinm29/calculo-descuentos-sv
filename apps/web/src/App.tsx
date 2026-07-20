@@ -18,7 +18,7 @@ function ThemeToggle() {
     <button
       onClick={toggle}
       type="button"
-      className="rounded-lg border border-border bg-surface p-2 text-text-secondary hover:text-text focus:ring-2 focus:ring-primary focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+      className="glass-card rounded-lg p-2 text-text-secondary hover:text-text"
       aria-label={
         resolved === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'
       }
@@ -41,8 +41,16 @@ function AppContent() {
 
   return (
     <ErrorBoundary>
-      <div className="mx-auto min-h-screen max-w-2xl px-4 py-8 print:px-2 print:py-2">
-        <header className="mb-8 text-center print:mb-2">
+      {/* Animated background */}
+      <div className="bg-orbs" aria-hidden="true" />
+      <div className="bg-map" aria-hidden="true">
+        <svg viewBox="0 0 400 600" fill="var(--sv-blue)" xmlns="http://www.w3.org/2000/svg">
+          <path d="M280 40c30 10 60 30 80 55 20 25 35 55 38 85 3 30-5 60-18 88-13 28-30 54-50 76-20 22-42 40-60 62-18 22-30 48-38 76-8 28-10 58-6 88 4 30 14 58 28 85 14 27 32 52 50 76 8 10 12 24 8 36-4 12-14 22-26 28-12 6-26 8-40 6-14-2-26-10-36-20-10-10-18-22-24-36-6-14-10-28-14-42-4-14-6-28-6-42 0-14 2-28 6-42 4-14 10-28 18-40 8-12 18-22 28-32 10-10 18-22 24-36 12-28 20-58 22-88 2-30-2-60-12-88-10-28-26-52-46-72-20-20-44-36-70-46-26-10-54-16-82-16-28 0-56 6-82 16 14-30 34-56 58-78 24-22 52-40 82-52 30-12 62-18 94-18 32 0 64 6 92 18z" />
+        </svg>
+      </div>
+
+      <div className="relative z-10 mx-auto min-h-screen max-w-2xl px-4 py-6 print:px-2 print:py-2">
+        <header className="mb-8 text-center print:mb-2 animate-fade-in">
           <div className="flex items-center justify-between">
             <ThemeToggle />
             <div className="flex items-center gap-2">
@@ -50,7 +58,7 @@ function AppContent() {
                 <SignInButton>
                   <button
                     type="button"
-                    className="rounded-lg border border-border bg-surface px-3 py-1 text-xs font-medium text-text-secondary hover:text-text focus:ring-2 focus:ring-primary focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+                    className="glass-card rounded-lg px-3 py-1 text-xs font-medium text-text-secondary hover:text-text"
                   >
                     Iniciar sesión
                   </button>
@@ -61,7 +69,7 @@ function AppContent() {
               </Show>
             </div>
           </div>
-          <h1 className="mt-4 text-2xl font-bold text-text dark:text-slate-100">
+          <h1 className="mt-6 text-3xl font-bold text-text">
             Calculadora de Descuentos de Ley
           </h1>
           <p className="mt-2 text-sm text-text-muted print:hidden">
@@ -69,30 +77,36 @@ function AppContent() {
           </p>
         </header>
 
-        <main className="space-y-6 print:space-y-3">
-          <div className="print:hidden">
+        <main className="space-y-5 print:space-y-3">
+          <div className="print:hidden animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
             <ConfigInicial />
           </div>
-          <div className="print:hidden">
+          <div className="print:hidden animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
             <RegistroSemanal />
           </div>
 
-          <ResultadoNeto state={calculosState} />
+          <div className="animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
+            <ResultadoNeto state={calculosState} />
+          </div>
 
           {calculosState.status === 'success' && (
             <>
-              <div className="print:hidden">
+              <div className="print:hidden animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                 <ExportarPDF />
               </div>
-              <GraficoPastel
-                neto={calculosState.data.neto.salarioLiquido}
-                descuentos={calculosState.data.descuentos}
-              />
-              <HistorialPeriodos calculoState={calculosState} />
+              <div className="animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
+                <GraficoPastel
+                  neto={calculosState.data.neto.salarioLiquido}
+                  descuentos={calculosState.data.descuentos}
+                />
+              </div>
+              <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+                <HistorialPeriodos calculoState={calculosState} />
+              </div>
             </>
           )}
 
-          <div className="print:hidden">
+          <div className="print:hidden animate-fade-in-up" style={{ animationDelay: '0.35s' }}>
             <TablaTasas />
           </div>
         </main>

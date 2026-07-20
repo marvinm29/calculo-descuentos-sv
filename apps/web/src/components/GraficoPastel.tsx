@@ -1,7 +1,7 @@
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import type { DescuentosResponse } from '@calc/shared';
 
-const COLORS = ['#16a34a', '#dc2626', '#ea580c', '#7c3aed'];
+const COLORS = ['#10b981', '#ef4444', '#f59e0b', '#6366f1'];
 
 export interface GraficoPastelProps {
   neto: number;
@@ -17,8 +17,8 @@ export function GraficoPastel({ neto, descuentos }: GraficoPastelProps) {
   ].filter((d) => d.value > 0);
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
-      <h3 className="text-sm font-semibold text-text">
+    <div className="glass-card rounded-xl p-4">
+      <h3 className="text-sm font-bold text-text">
         Distribución del Salario Bruto
       </h3>
       <div className="flex justify-center">
@@ -50,6 +50,12 @@ export function GraficoPastel({ neto, descuentos }: GraficoPastelProps) {
           </Pie>
           <Tooltip
             formatter={(value: number) => `$${value.toFixed(2)}`}
+            contentStyle={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: '12px',
+              backdropFilter: 'blur(12px)',
+            }}
           />
           <Legend
             formatter={(value) => (

@@ -9,7 +9,7 @@ export function TotalesSemana({ dias }: TotalesSemanaProps) {
   const t = totalesSemana(dias);
 
   return (
-    <div className="rounded-lg bg-surface-raised px-4 py-2 shadow-sm">
+    <div className="glass-card rounded-xl px-4 py-3">
       <span className="text-sm font-semibold text-text">
         Totales semanales:{' '}
       </span>

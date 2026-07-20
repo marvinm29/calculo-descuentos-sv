@@ -144,14 +144,14 @@ export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
   );
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
+    <div className="glass-card rounded-xl p-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-text">
+        <h3 className="text-sm font-bold text-text">
           Historial de Periodos
         </h3>
         <button
           onClick={() => { void guardar(); }}
-          className="rounded bg-primary px-3 py-1 text-xs font-medium text-white hover:bg-primary-light focus:ring-2 focus:ring-primary focus:outline-none"
+          className="btn-accent rounded-lg px-3 py-1.5 text-xs"
         >
           Guardar periodo actual
         </button>
@@ -168,14 +168,14 @@ export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
       )}
 
       {periodos.length > 0 && (
-        <ul className="mt-2 divide-y divide-border">
+        <ul className="mt-3 divide-y divide-border">
           {periodos.map((p) => (
             <li
               key={p.id}
               className="flex items-center justify-between py-2"
             >
               <div className="text-xs text-text-secondary">
-                <span className="font-medium">
+                <span className="font-semibold text-glow-success">
                   ${p.neto.toFixed(2)}
                 </span>
                 <span className="ml-2 text-text-muted">

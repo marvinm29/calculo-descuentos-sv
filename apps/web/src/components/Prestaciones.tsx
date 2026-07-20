@@ -6,8 +6,8 @@ export interface PrestacionesProps {
 
 export function Prestaciones({ prestaciones }: PrestacionesProps) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
-      <h3 className="text-sm font-semibold text-text">Prestaciones</h3>
+    <div className="glass-card rounded-xl p-4">
+      <h3 className="text-sm font-bold text-text">Prestaciones</h3>
       <dl className="mt-2 space-y-1 text-xs text-text-secondary">
         {prestaciones.aguinaldo && (
           <div className="flex justify-between">

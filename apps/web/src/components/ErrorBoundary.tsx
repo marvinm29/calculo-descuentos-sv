@@ -30,9 +30,9 @@ export class ErrorBoundary extends Component<
         this.props.fallback ?? (
           <div
             role="alert"
-            className="mx-auto max-w-md rounded-lg border border-danger bg-danger-bg p-6 text-center"
+            className="glass-card mx-auto max-w-md rounded-2xl border-danger/20 p-8 text-center"
           >
-            <h2 className="text-lg font-semibold text-danger">
+            <h2 className="text-lg font-bold text-danger">
               Algo salió mal
             </h2>
             <p className="mt-2 text-sm text-danger">
@@ -43,7 +43,7 @@ export class ErrorBoundary extends Component<
               onClick={() => {
                 this.setState({ hasError: false, error: null });
               }}
-              className="mt-4 rounded bg-danger px-4 py-2 text-sm font-medium text-white hover:bg-danger focus:ring-2 focus:ring-danger focus:outline-none"
+              className="btn-accent mt-4 rounded-xl px-4 py-2 text-sm"
             >
               Reintentar
             </button>

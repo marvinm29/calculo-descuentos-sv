@@ -80,8 +80,8 @@ const TASAS = [
 
 export function TablaTasas() {
   return (
-    <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
-      <h3 className="text-sm font-semibold text-text">
+    <div className="glass-card rounded-xl p-4">
+      <h3 className="text-sm font-bold text-text">
         Tasas de Referencia Vigentes
       </h3>
       <p className="mt-1 text-xs text-text-muted">
@@ -92,24 +92,24 @@ export function TablaTasas() {
         <table className="w-full text-xs text-text-secondary">
           <thead>
             <tr className="border-b border-border text-left">
-              <th className="py-1 pr-2 font-medium">Concepto</th>
-              <th className="py-1 pr-2 font-medium">Valor</th>
-              <th className="py-1 pr-2 font-medium">Detalle</th>
-              <th className="py-1 font-medium">Fuente</th>
+              <th className="py-1.5 pr-2 font-bold">Concepto</th>
+              <th className="py-1.5 pr-2 font-bold">Valor</th>
+              <th className="py-1.5 pr-2 font-bold">Detalle</th>
+              <th className="py-1.5 font-bold">Fuente</th>
             </tr>
           </thead>
           <tbody>
             {TASAS.map((t) => (
               <tr key={t.concepto} className="border-b border-border-light">
-                <td className="py-1 pr-2">{t.concepto}</td>
-                <td className="py-1 pr-2 font-mono font-medium">{t.valor}</td>
-                <td className="py-1 pr-2">{t.detalle}</td>
-                <td className="py-1">
+                <td className="py-1.5 pr-2">{t.concepto}</td>
+                <td className="py-1.5 pr-2 font-mono font-semibold">{t.valor}</td>
+                <td className="py-1.5 pr-2">{t.detalle}</td>
+                <td className="py-1.5">
                   <a
                     href={t.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary hover:text-primary-light underline"
+                    className="text-primary hover:text-primary-light underline underline-offset-2"
                   >
                     {t.fuente}
                   </a>

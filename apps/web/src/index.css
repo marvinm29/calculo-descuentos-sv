@@ -1,44 +1,47 @@
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ── Dark-first custom properties ── */
 :root {
-  --surface: #ffffff;
-  --surface-alt: #f8fafc;
-  --surface-raised: #ffffff;
-  --border: #e2e8f0;
-  --border-light: #f1f5f9;
-  --text: #1e293b;
-  --text-secondary: #64748b;
+  --surface: rgba(255, 255, 255, 0.7);
+  --surface-alt: #f0f2f5;
+  --surface-raised: rgba(255, 255, 255, 0.85);
+  --border: rgba(0, 0, 0, 0.06);
+  --border-light: rgba(0, 0, 0, 0.04);
+  --text: #0f172a;
+  --text-secondary: #475569;
   --text-muted: #94a3b8;
-  --success-bg: #f0fdf4;
+  --success-bg: #ecfdf5;
   --danger-bg: #fef2f2;
-  --warning-bg: #fff7ed;
+  --warning-bg: #fffbeb;
 }
 
 .dark {
-  --surface: #1e293b;
-  --surface-alt: #0f172a;
-  --surface-raised: #334155;
-  --border: #475569;
-  --border-light: #334155;
+  --surface: rgba(255, 255, 255, 0.03);
+  --surface-alt: #070b15;
+  --surface-raised: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-light: rgba(255, 255, 255, 0.03);
   --text: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  --success-bg: #052e16;
-  --danger-bg: #450a0a;
-  --warning-bg: #431407;
+  --success-bg: rgba(16, 185, 129, 0.08);
+  --danger-bg: rgba(239, 68, 68, 0.08);
+  --warning-bg: rgba(245, 158, 11, 0.08);
 }
 
+/* ── Tailwind v4 tokens ── */
 @theme {
-  --color-primary: #1e3a5f;
-  --color-primary-light: #2d5a8e;
-  --color-primary-dark: #142a45;
-  --color-accent: #c9772e;
-  --color-accent-light: #d9914f;
-  --color-success: #16a34a;
-  --color-danger: #dc2626;
-  --color-warning: #ea580c;
+  --color-primary: #6366f1;
+  --color-primary-light: #818cf8;
+  --color-primary-dark: #4f46e5;
+  --color-accent: #06b6d4;
+  --color-accent-light: #22d3ee;
+  --color-success: #10b981;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
   --color-surface: var(--surface);
   --color-surface-alt: var(--surface-alt);
   --color-surface-raised: var(--surface-raised);
@@ -50,25 +53,194 @@
   --color-success-bg: var(--success-bg);
   --color-danger-bg: var(--danger-bg);
   --color-warning-bg: var(--warning-bg);
+  --color-sv-blue: #003b6f;
+  --font-body: 'Onest', sans-serif;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --animate-fade-in: fade-in 0.6s ease-out forwards;
+  --animate-fade-in-up: fade-in-up 0.6s ease-out forwards;
+  --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
+  --animate-shimmer: shimmer 4s ease-in-out infinite;
+  --animate-gradient-shift: gradient-shift 12s ease-in-out infinite;
 }
 
+/* ── Animations ── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Background orbs (floating gradient spheres) ── */
+.bg-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.bg-orbs::before,
+.bg-orbs::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+}
+
+.bg-orbs::before {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+  top: -200px;
+  right: -200px;
+  opacity: 0.15;
+  animation: gradient-shift 12s ease-in-out infinite;
+}
+
+.bg-orbs::after {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #06b6d4 0%, transparent 70%);
+  bottom: -150px;
+  left: -150px;
+  opacity: 0.12;
+  animation: gradient-shift 10s ease-in-out infinite reverse;
+}
+
+/* ── SV map watermark (subtle cameo) ── */
+.bg-map {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.bg-map svg {
+  position: absolute;
+  right: -5%;
+  bottom: -5%;
+  width: 55%;
+  height: auto;
+  opacity: 0.025;
+}
+
+/* ── Glass card utility ── */
+.glass-card {
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: var(--border);
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.08);
+}
+
+/* ── Glass input ── */
+.glass-input {
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  outline: none;
+}
+
+.glass-input:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* ── Gradient accent button ── */
+.btn-accent {
+  background: linear-gradient(135deg, #6366f1, #06b6d4);
+  background-size: 200% 100%;
+  animation: shimmer 4s ease-in-out infinite;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25);
+}
+
+.btn-accent:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.35);
+}
+
+.btn-accent:active {
+  transform: translateY(0);
+}
+
+/* ── Numeric glow variants ── */
+.text-glow-success {
+  color: var(--success);
+  text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.text-glow-danger {
+  color: var(--danger);
+  text-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+/* ── Layer base ── */
 @layer base {
   html {
     scroll-behavior: smooth;
+    font-family: 'Onest', sans-serif;
   }
 
   body {
     background-color: var(--surface-alt);
     color: var(--text);
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-family: 'Onest', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+  }
+
+  ::selection {
+    background: rgba(99, 102, 241, 0.25);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    html {
-      scroll-behavior: auto;
-    }
-    body {
-      transition: none;
+    html { scroll-behavior: auto; }
+    body { transition: none; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
     }
   }
 }
