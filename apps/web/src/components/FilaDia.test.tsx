@@ -19,7 +19,7 @@ describe('FilaDia', () => {
     expect(screen.getByText('2026-07-06')).toBeInTheDocument();
   });
 
-  it('renderiza campos de jornada base y horas base', () => {
+  it('renderiza campos de jornada, diurna y nocturna', () => {
     render(
       <FilaDia
         dia={diaVacio}
@@ -31,55 +31,25 @@ describe('FilaDia', () => {
       screen.getByLabelText(/Tipo de jornada para Lun/),
     ).toBeInTheDocument();
     expect(
-      screen.getByLabelText(/Horas base para Lun/),
+      screen.getByLabelText(/Horas diurna para Lun/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/Horas nocturna para Lun/),
     ).toBeInTheDocument();
   });
 
-  it('muestra campos de dia libre cuando jornada es descanso', () => {
-    const diaDescanso = { ...diaVacio, jornadaBase: 'descanso' as const };
-
-    render(
-      <FilaDia
-        dia={diaDescanso}
-        onChange={() => {}}
-      />,
-    );
-
-    expect(
-      screen.getByLabelText(/Horas día libre diurna para Lun/),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByLabelText(/Horas día libre nocturna para Lun/),
-    ).toBeInTheDocument();
-  });
-
-  it('muestra campo de asueto cuando jornada es asueto', () => {
-    const diaAsueto = { ...diaVacio, jornadaBase: 'asueto' as const };
-
-    render(
-      <FilaDia
-        dia={diaAsueto}
-        onChange={() => {}}
-      />,
-    );
-
-    expect(
-      screen.getByLabelText(/Horas en asueto para Lun/),
-    ).toBeInTheDocument();
-  });
-
-  it('llama a onChange al modificar horas base', async () => {
+  it('llama a onChange al modificar horas diurna', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
 
     render(<FilaDia dia={diaVacio} onChange={onChange} />);
 
-    const input = screen.getByLabelText(/Horas base para Lun/);
+    const input = screen.getByLabelText(/Horas diurna para Lun/);
     await user.clear(input);
     await user.type(input, '8');
 
     const lastCall = onChange.mock.calls.at(-1)?.[0];
     expect(lastCall).toBeDefined();
-    expect(lastCall.horasBase).toBe(8);
+    expect(lastCall.horasDiurna).toBe(8);
   });
 });

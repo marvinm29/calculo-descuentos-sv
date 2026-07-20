@@ -10,6 +10,13 @@ export function FilaDia({ dia, onChange }: FilaDiaProps) {
   const fecha = new Date(dia.fecha + 'T00:00:00');
   const nombre = nombreDia(fecha);
 
+  const jornadaLabel: Record<DiaRegistro['jornadaBase'], string> = {
+    regular_diurna: 'Diurna',
+    regular_nocturna: 'Nocturna',
+    descanso: 'Descanso',
+    asueto: 'Asueto',
+  };
+
   function update<K extends keyof DiaRegistro>(field: K, value: DiaRegistro[K]) {
     onChange({ ...dia, [field]: value });
   }
@@ -19,11 +26,14 @@ export function FilaDia({ dia, onChange }: FilaDiaProps) {
       <div className="flex items-center gap-2">
         <span className="w-10 text-sm font-semibold text-text">{nombre}</span>
         <span className="text-xs text-text-muted">{dia.fecha}</span>
+        <span className="ml-auto text-xs font-medium text-primary">
+          {jornadaLabel[dia.jornadaBase]}
+        </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="grid grid-cols-3 gap-2">
         <div>
-          <label className="block text-xs font-medium text-text-secondary">Jornada base</label>
+          <label className="block text-xs font-medium text-text-secondary">Jornada</label>
           <select
             value={dia.jornadaBase}
             onChange={(e) => {
@@ -40,111 +50,40 @@ export function FilaDia({ dia, onChange }: FilaDiaProps) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-text-secondary">Horas base</label>
+          <label className="block text-xs font-medium text-text-secondary">
+            Horas diurna
+          </label>
           <input
             type="number"
             min={0}
             max={24}
             step={0.5}
-            value={dia.horasBase || ''}
+            value={dia.horasDiurna || ''}
             onChange={(e) => {
-              update('horasBase', Number(e.target.value));
+              update('horasDiurna', Number(e.target.value));
             }}
             className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
-            aria-label={`Horas base para ${nombre}`}
+            aria-label={`Horas diurna para ${nombre}`}
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-text-secondary">Extra diurna</label>
+          <label className="block text-xs font-medium text-text-secondary">
+            Horas nocturna
+          </label>
           <input
             type="number"
             min={0}
             max={24}
             step={0.5}
-            value={dia.horasExtraDiurna || ''}
+            value={dia.horasNocturna || ''}
             onChange={(e) => {
-              update('horasExtraDiurna', Number(e.target.value));
+              update('horasNocturna', Number(e.target.value));
             }}
             className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
-            aria-label={`Horas extra diurna para ${nombre}`}
+            aria-label={`Horas nocturna para ${nombre}`}
           />
         </div>
-
-        <div>
-          <label className="block text-xs font-medium text-text-secondary">Extra nocturna</label>
-          <input
-            type="number"
-            min={0}
-            max={24}
-            step={0.5}
-            value={dia.horasExtraNocturna || ''}
-            onChange={(e) => {
-              update('horasExtraNocturna', Number(e.target.value));
-            }}
-            className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
-            aria-label={`Horas extra nocturna para ${nombre}`}
-          />
-        </div>
-
-        {dia.jornadaBase === 'descanso' && (
-          <>
-            <div>
-              <label className="block text-xs font-medium text-text-secondary">
-                Día libre diurna
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={24}
-                step={0.5}
-                value={dia.horasDiaLibreDiurna || ''}
-                onChange={(e) => {
-                  update('horasDiaLibreDiurna', Number(e.target.value));
-                }}
-                className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
-                aria-label={`Horas día libre diurna para ${nombre}`}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-text-secondary">
-                Día libre nocturna
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={24}
-                step={0.5}
-                value={dia.horasDiaLibreNocturna || ''}
-                onChange={(e) => {
-                  update('horasDiaLibreNocturna', Number(e.target.value));
-                }}
-                className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
-                aria-label={`Horas día libre nocturna para ${nombre}`}
-              />
-            </div>
-          </>
-        )}
-
-        {dia.jornadaBase === 'asueto' && (
-          <div>
-            <label className="block text-xs font-medium text-text-secondary">
-              Horas en asueto
-            </label>
-            <input
-              type="number"
-              min={0}
-              max={24}
-              step={0.5}
-              value={dia.horasAsueto || ''}
-              onChange={(e) => {
-                update('horasAsueto', Number(e.target.value));
-              }}
-              className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
-              aria-label={`Horas en asueto para ${nombre}`}
-            />
-          </div>
-        )}
       </div>
     </div>
   );

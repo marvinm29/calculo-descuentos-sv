@@ -6,15 +6,10 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  PieChart,
-  Pie,
-  Cell,
   ResponsiveContainer,
 } from 'recharts';
 import type { DiaRegistro } from './registroTypes';
 import { formatearFecha, totalesSemana } from './registroTypes';
-
-const HOUR_COLORS = ['#6366f1', '#06b6d4', '#a855f7', '#f59e0b', '#ef4444'];
 
 export interface ResumenSemanalVisualProps {
   dias: DiaRegistro[];
@@ -45,36 +40,15 @@ export function ResumenSemanalVisual({
   onSemanaSiguiente,
 }: ResumenSemanalVisualProps) {
   const t = totalesSemana(dias);
-  const totalHoras =
-    t.horasBase +
-    t.horasExtraDiurna +
-    t.horasExtraNocturna +
-    t.horasDiaLibreDiurna +
-    t.horasDiaLibreNocturna +
-    t.horasAsueto;
+  const totalHoras = t.horasDiurna + t.horasNocturna;
+  const pctNocturna = totalHoras > 0 ? (t.horasNocturna / totalHoras) * 100 : 0;
 
   const barData = dias.map((d) => ({
     label: diaLabel(d.fecha),
     date: diaMes(d.fecha),
-    Base: d.horasBase,
-    'Extra D': d.horasExtraDiurna,
-    'Extra N': d.horasExtraNocturna,
-    'Libre D': d.horasDiaLibreDiurna,
-    'Libre N': d.horasDiaLibreNocturna,
-    Asueto: d.horasAsueto,
+    Diurna: d.horasDiurna,
+    Nocturna: d.horasNocturna,
   }));
-
-  const donutData = [
-    { name: 'Base', value: t.horasBase },
-    { name: 'Extra D', value: t.horasExtraDiurna },
-    { name: 'Extra N', value: t.horasExtraNocturna },
-    { name: 'Libre D', value: t.horasDiaLibreDiurna },
-    { name: 'Libre N', value: t.horasDiaLibreNocturna },
-    { name: 'Asueto', value: t.horasAsueto },
-  ].filter((d) => d.value > 0);
-
-  const extraTotal = t.horasExtraDiurna + t.horasExtraNocturna;
-  const extraPct = totalHoras > 0 ? (extraTotal / totalHoras) * 100 : 0;
 
   const now = new Date();
   const semanaActual = getWeekNumber(lunes) === getWeekNumber(now);
@@ -145,65 +119,23 @@ export function ResumenSemanalVisual({
             <Legend
               wrapperStyle={{ fontSize: '10px', color: 'var(--text-secondary)' }}
             />
-            <Bar dataKey="Base" stackId="a" fill="#6366f1" radius={[2, 2, 0, 0]} />
-            <Bar dataKey="Extra D" stackId="a" fill="#06b6d4" radius={[2, 2, 0, 0]} />
-            <Bar dataKey="Extra N" stackId="a" fill="#a855f7" radius={[2, 2, 0, 0]} />
-            <Bar dataKey="Libre D" stackId="a" fill="#f59e0b" radius={[2, 2, 0, 0]} />
-            <Bar dataKey="Libre N" stackId="a" fill="#ef4444" radius={[2, 2, 0, 0]} />
-            <Bar dataKey="Asueto" stackId="a" fill="#10b981" radius={[2, 2, 0, 0]} />
+            <Bar dataKey="Diurna" stackId="a" fill="#6366f1" radius={[2, 2, 0, 0]} />
+            <Bar dataKey="Nocturna" stackId="a" fill="#a855f7" radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-4 gap-2 mb-4">
+      <div className="grid grid-cols-4 gap-2">
         <StatCard label="Total" value={`${totalHoras}h`} />
-        <StatCard label="Base" value={`${t.horasBase}h`} />
-        <StatCard label="Extra" value={`${extraTotal}h`} />
-        <StatCard label="% Extra" value={`${extraPct.toFixed(0)}%`} highlight={extraPct > 20} />
+        <StatCard label="Diurna" value={`${t.horasDiurna}h`} />
+        <StatCard label="Nocturna" value={`${t.horasNocturna}h`} />
+        <StatCard
+          label="% Nocturna"
+          value={`${pctNocturna.toFixed(0)}%`}
+          highlight={pctNocturna > 30}
+        />
       </div>
-
-      {/* Donut: hour type distribution */}
-      {donutData.length > 0 && (
-        <div>
-          <h4 className="text-xs font-semibold text-text-secondary mb-2">
-            Distribución de horas
-          </h4>
-          <ResponsiveContainer width="100%" height={140}>
-            <PieChart>
-              <Pie
-                data={donutData}
-                cx="50%"
-                cy="50%"
-                innerRadius={30}
-                outerRadius={55}
-                paddingAngle={2}
-                dataKey="value"
-              >
-                {donutData.map((_entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={HOUR_COLORS[index % HOUR_COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip
-                formatter={(value: number) => [`${value}h`, 'Horas']}
-                contentStyle={{
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '12px',
-                  backdropFilter: 'blur(12px)',
-                  fontSize: '12px',
-                }}
-              />
-              <Legend
-                wrapperStyle={{ fontSize: '10px', color: 'var(--text-secondary)' }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      )}
     </div>
   );
 }
