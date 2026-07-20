@@ -51,37 +51,37 @@ export function FilaDia({ dia, onChange }: FilaDiaProps) {
 
         <div>
           <label className="block text-xs font-medium text-text-secondary">
-            Horas diurna
+            Horas diurnas
           </label>
           <input
             type="number"
             min={0}
             max={24}
             step={0.5}
-            value={dia.horasDiurna || ''}
+            value={dia.horasDiurnas || ''}
             onChange={(e) => {
-              update('horasDiurna', Number(e.target.value));
+              update('horasDiurnas', Number(e.target.value));
             }}
             className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
-            aria-label={`Horas diurna para ${nombre}`}
+            aria-label={`Horas diurnas para ${nombre}`}
           />
         </div>
 
         <div>
           <label className="block text-xs font-medium text-text-secondary">
-            Horas nocturna
+            Horas nocturnas
           </label>
           <input
             type="number"
             min={0}
             max={24}
             step={0.5}
-            value={dia.horasNocturna || ''}
+            value={dia.horasNocturnas || ''}
             onChange={(e) => {
-              update('horasNocturna', Number(e.target.value));
+              update('horasNocturnas', Number(e.target.value));
             }}
             className="glass-input mt-0.5 w-full rounded-lg px-2 py-1 text-xs"
-            aria-label={`Horas nocturna para ${nombre}`}
+            aria-label={`Horas nocturnas para ${nombre}`}
           />
         </div>
       </div>

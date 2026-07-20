@@ -7,6 +7,7 @@ import { GraficoPastel } from './components/GraficoPastel';
 import { TablaTasas } from './components/TablaTasas';
 import { HistorialPeriodos } from './components/HistorialPeriodos';
 import { ExportarPDF } from './components/ExportarPDF';
+import { GuiaCalculos } from './components/GuiaCalculos';
 import { AppProvider } from './context/AppContext';
 import { useCalculos } from './hooks/useCalculos';
 import { useTheme } from './hooks/useTheme';
@@ -109,6 +110,18 @@ function AppContent() {
           <div className="print:hidden animate-fade-in-up" style={{ animationDelay: '0.35s' }}>
             <TablaTasas />
           </div>
+
+          <details className="animate-fade-in-up group" style={{ animationDelay: '0.4s' }}>
+            <summary className="glass-card cursor-pointer rounded-xl px-4 py-3 text-sm font-semibold text-text hover:text-primary list-none flex items-center justify-between">
+              <span>Guía de Cálculos</span>
+              <svg className="size-4 text-text-muted group-open:rotate-180 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+              </svg>
+            </summary>
+            <div className="mt-3">
+              <GuiaCalculos />
+            </div>
+          </details>
         </main>
       </div>
     </ErrorBoundary>

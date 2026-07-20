@@ -7,29 +7,29 @@ describe('TotalesSemana', () => {
   it('muestra 0h cuando no hay horas registradas', () => {
     const dias = [crearDiaVacio('2026-07-06')];
     render(<TotalesSemana dias={dias} />);
-    expect(screen.getByText(/Diurna: 0h/)).toBeInTheDocument();
-    expect(screen.getByText(/Nocturna: 0h/)).toBeInTheDocument();
+    expect(screen.getByText(/Diurnas: 0h/)).toBeInTheDocument();
+    expect(screen.getByText(/Nocturnas: 0h/)).toBeInTheDocument();
   });
 
-  it('suma horas diurna de todos los dias', () => {
+  it('suma horas diurnas de todos los dias', () => {
     const dias = [
-      { ...crearDiaVacio('2026-07-06'), horasDiurna: 8 },
-      { ...crearDiaVacio('2026-07-07'), horasDiurna: 8 },
+      { ...crearDiaVacio('2026-07-06'), horasDiurnas: 8 },
+      { ...crearDiaVacio('2026-07-07'), horasDiurnas: 8 },
     ];
     render(<TotalesSemana dias={dias} />);
-    expect(screen.getByText(/Diurna: 16h/)).toBeInTheDocument();
+    expect(screen.getByText(/Diurnas: 16h/)).toBeInTheDocument();
   });
 
-  it('muestra separadas diurna y nocturna', () => {
+  it('muestra separadas diurnas y nocturnas', () => {
     const dias = [
       {
         ...crearDiaVacio('2026-07-06'),
-        horasDiurna: 8,
-        horasNocturna: 2,
+        horasDiurnas: 8,
+        horasNocturnas: 2,
       },
     ];
     render(<TotalesSemana dias={dias} />);
-    expect(screen.getByText(/Diurna: 8h/)).toBeInTheDocument();
-    expect(screen.getByText(/Nocturna: 2h/)).toBeInTheDocument();
+    expect(screen.getByText(/Diurnas: 8h/)).toBeInTheDocument();
+    expect(screen.getByText(/Nocturnas: 2h/)).toBeInTheDocument();
   });
 });

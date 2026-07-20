@@ -1,16 +1,16 @@
 export interface DiaRegistro {
   fecha: string;
   jornadaBase: 'regular_diurna' | 'regular_nocturna' | 'descanso' | 'asueto';
-  horasDiurna: number;
-  horasNocturna: number;
+  horasDiurnas: number;
+  horasNocturnas: number;
 }
 
 export function crearDiaVacio(fecha: string): DiaRegistro {
   return {
     fecha,
     jornadaBase: 'regular_diurna',
-    horasDiurna: 0,
-    horasNocturna: 0,
+    horasDiurnas: 0,
+    horasNocturnas: 0,
   };
 }
 
@@ -54,9 +54,9 @@ export function generarDiasSemana(lunes: Date): DiaRegistro[] {
 export function totalesSemana(dias: DiaRegistro[]) {
   return dias.reduce(
     (acc, d) => ({
-      horasDiurna: acc.horasDiurna + d.horasDiurna,
-      horasNocturna: acc.horasNocturna + d.horasNocturna,
+      horasDiurnas: acc.horasDiurnas + d.horasDiurnas,
+      horasNocturnas: acc.horasNocturnas + d.horasNocturnas,
     }),
-    { horasDiurna: 0, horasNocturna: 0 },
+    { horasDiurnas: 0, horasNocturnas: 0 },
   );
 }

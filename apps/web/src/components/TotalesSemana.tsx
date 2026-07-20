@@ -14,7 +14,7 @@ export function TotalesSemana({ dias }: TotalesSemanaProps) {
         Totales:{' '}
       </span>
       <span className="text-xs text-text-secondary">
-        Diurna: {t.horasDiurna}h | Nocturna: {t.horasNocturna}h
+        Diurnas: {t.horasDiurnas}h | Nocturnas: {t.horasNocturnas}h
       </span>
     </div>
   );

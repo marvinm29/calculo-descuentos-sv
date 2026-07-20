@@ -31,10 +31,10 @@ describe('FilaDia', () => {
       screen.getByLabelText(/Tipo de jornada para Lun/),
     ).toBeInTheDocument();
     expect(
-      screen.getByLabelText(/Horas diurna para Lun/),
+      screen.getByLabelText(/Horas diurnas para Lun/),
     ).toBeInTheDocument();
     expect(
-      screen.getByLabelText(/Horas nocturna para Lun/),
+      screen.getByLabelText(/Horas nocturnas para Lun/),
     ).toBeInTheDocument();
   });
 
@@ -44,12 +44,12 @@ describe('FilaDia', () => {
 
     render(<FilaDia dia={diaVacio} onChange={onChange} />);
 
-    const input = screen.getByLabelText(/Horas diurna para Lun/);
+    const input = screen.getByLabelText(/Horas diurnas para Lun/);
     await user.clear(input);
     await user.type(input, '8');
 
     const lastCall = onChange.mock.calls.at(-1)?.[0];
     expect(lastCall).toBeDefined();
-    expect(lastCall.horasDiurna).toBe(8);
+    expect(lastCall.horasDiurnas).toBe(8);
   });
 });

@@ -40,14 +40,14 @@ export function ResumenSemanalVisual({
   onSemanaSiguiente,
 }: ResumenSemanalVisualProps) {
   const t = totalesSemana(dias);
-  const totalHoras = t.horasDiurna + t.horasNocturna;
-  const pctNocturna = totalHoras > 0 ? (t.horasNocturna / totalHoras) * 100 : 0;
+  const totalHoras = t.horasDiurnas + t.horasNocturnas;
+  const pctNocturna = totalHoras > 0 ? (t.horasNocturnas / totalHoras) * 100 : 0;
 
   const barData = dias.map((d) => ({
     label: diaLabel(d.fecha),
     date: diaMes(d.fecha),
-    Diurna: d.horasDiurna,
-    Nocturna: d.horasNocturna,
+    Diurna: d.horasDiurnas,
+    Nocturna: d.horasNocturnas,
   }));
 
   const now = new Date();
@@ -128,8 +128,8 @@ export function ResumenSemanalVisual({
       {/* Stat cards */}
       <div className="grid grid-cols-4 gap-2">
         <StatCard label="Total" value={`${totalHoras}h`} />
-        <StatCard label="Diurna" value={`${t.horasDiurna}h`} />
-        <StatCard label="Nocturna" value={`${t.horasNocturna}h`} />
+        <StatCard label="Diurnas" value={`${t.horasDiurnas}h`} />
+        <StatCard label="Nocturnas" value={`${t.horasNocturnas}h`} />
         <StatCard
           label="% Nocturna"
           value={`${pctNocturna.toFixed(0)}%`}

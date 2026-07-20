@@ -42,7 +42,7 @@ describe('RegistroSemanal', () => {
     const user = userEvent.setup();
     renderWithContext(<RegistroSemanal />);
 
-    const inputs = screen.getAllByLabelText(/Horas diurna para/);
+    const inputs = screen.getAllByLabelText(/Horas diurnas para/);
     await user.clear(inputs[0]!);
     await user.type(inputs[0]!, '8');
 
@@ -55,14 +55,14 @@ describe('RegistroSemanal', () => {
     const user = userEvent.setup();
     renderWithContext(<RegistroSemanal />);
 
-    const inputs = screen.getAllByLabelText(/Horas diurna para/);
+    const inputs = screen.getAllByLabelText(/Horas diurnas para/);
     await user.clear(inputs[0]!);
     await user.type(inputs[0]!, '8');
 
     await waitFor(() => {
       const stored = localStorage.getItem('registro-semanal');
       expect(stored).not.toBeNull();
-      expect(stored).toContain('"horasDiurna":8');
+      expect(stored).toContain('"horasDiurnas":8');
     });
   });
 });
