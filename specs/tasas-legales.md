@@ -90,15 +90,15 @@ descuentoAFP = salarioCotizable * 0.0725
 
 ### Tabla Progresiva Mensual (Art. 37 LISR)
 
-*Aprobada mediante Decreto No. 3 publicado en Diario Oficial Tomo 447
-de fecha 30 de abril de 2025.*
+*Aprobada mediante Decreto Legislativo No. 293 publicado en Diario Oficial Tomo 447
+de fecha 30 de abril de 2025, y Decreto Ejecutivo No. 10 de 2025.*
 
 | Tramo | Desde | Hasta | % Sobre Exceso | Cuota Fija |
 |-------|-------|-------|----------------|------------|
-| **I** | $0.01 | $338.67 | Exento | $0.00 |
-| **II** | $338.68 | $761.90 | 10% | $17.67 |
-| **III** | $761.91 | $1,904.76 | 20% | $60.00 |
-| **IV** | $1,904.77 | En adelante | 30% | $288.57 |
+| **I** | $0.01 | $550.00 | Exento | $0.00 |
+| **II** | $550.01 | $895.24 | 10% | $17.67 |
+| **III** | $895.25 | $2,038.10 | 20% | $60.00 |
+| **IV** | $2,038.11 | En adelante | 30% | $288.57 |
 
 ### Formula
 
@@ -106,17 +106,17 @@ de fecha 30 de abril de 2025.*
 baseGravableMensual = salarioBruto - ISSS - AFP
 
 // Identificar tramo y calcular:
-si baseGravableMensual <= 338.67:
-    renta = 0.00
+si baseGravableMensual <= 550.00:
+    renta = 0.00  // Exento — aplica a salario mínimo ($408.80) y superior hasta $550
 
-si 338.68 <= baseGravableMensual <= 761.90:
-    renta = (baseGravableMensual - 338.67) * 0.10 + 17.67
+si 550.01 <= baseGravableMensual <= 895.24:
+    renta = (baseGravableMensual - 550.00) * 0.10 + 17.67
 
-si 761.91 <= baseGravableMensual <= 1904.76:
-    renta = (baseGravableMensual - 761.90) * 0.20 + 60.00
+si 895.25 <= baseGravableMensual <= 2038.10:
+    renta = (baseGravableMensual - 895.24) * 0.20 + 60.00
 
-si baseGravableMensual >= 1904.77:
-    renta = (baseGravableMensual - 1904.76) * 0.30 + 288.57
+si baseGravableMensual >= 2038.11:
+    renta = (baseGravableMensual - 2038.10) * 0.30 + 288.57
 ```
 
 ### Para periodo quincenal
@@ -124,7 +124,9 @@ si baseGravableMensual >= 1904.77:
 La tabla se divide entre 2 (los tramos y la cuota fija se reducen a la mitad).
 
 **Ejemplo mensual**: Salario bruto $800.00 → base gravable = $718.00 → Tramo II
-→ Renta = ($718.00 - $338.67) * 0.10 + $17.67 = $55.60
+→ Renta = ($718.00 - $550.00) * 0.10 + $17.67 = $34.47
+
+**Salario mínimo $408.80**: base gravable ≈ $366.90 → Tramo I → Renta = $0.00
 
 **Fuente**: `https://www.mh.gob.sv` - Formulario F-14 (Declaracion Mensual de Pago a Cuenta)
 **Fuente**: `https://www.diariooficial.gob.sv` - Tomo 447, 30 de abril de 2025
@@ -253,10 +255,10 @@ export const AFP = {
 } as const;
 
 export const RENTA_TRAMOS_MENSUAL = [
-  { tramo: 1, desde: 0.01, hasta: 338.67, porcentajeExceso: 0.00, cuotaFija: 0.00 },
-  { tramo: 2, desde: 338.68, hasta: 761.90, porcentajeExceso: 0.10, cuotaFija: 17.67 },
-  { tramo: 3, desde: 761.91, hasta: 1904.76, porcentajeExceso: 0.20, cuotaFija: 60.00 },
-  { tramo: 4, desde: 1904.77, hasta: Infinity, porcentajeExceso: 0.30, cuotaFija: 288.57 },
+  { tramo: 1, desde: 0.01, hasta: 550.00, porcentajeExceso: 0.00, cuotaFija: 0.00 },
+  { tramo: 2, desde: 550.01, hasta: 895.24, porcentajeExceso: 0.10, cuotaFija: 17.67 },
+  { tramo: 3, desde: 895.25, hasta: 2038.10, porcentajeExceso: 0.20, cuotaFija: 60.00 },
+  { tramo: 4, desde: 2038.11, hasta: Infinity, porcentajeExceso: 0.30, cuotaFija: 288.57 },
 ] as const;
 
 export const HORAS_EXTRA = {

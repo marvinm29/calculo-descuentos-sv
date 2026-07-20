@@ -7,15 +7,7 @@ import type {
   TipoJornada,
 } from '@calc/shared';
 import type { DiaRegistro } from '../components/registroTypes';
-import type { ConfigInicialData } from '../components/ConfigInicial';
-import { useLocalStorage } from './useLocalStorage';
-
-const DEFAULT_CONFIG: ConfigInicialData = {
-  salarioBase: 0,
-  tipoPago: 'mensual',
-  antiguedad: '1_a_3',
-  fechaIngreso: '',
-};
+import { useAppContext } from '../context/AppContext';
 
 function diasToSegmentos(
   dias: DiaRegistro[],
@@ -71,15 +63,7 @@ function diasToSegmentos(
 }
 
 export function useCalculos(): CalculoState {
-  const [config] = useLocalStorage<ConfigInicialData>(
-    'config-inicial',
-    DEFAULT_CONFIG,
-  );
-
-  const [registro] = useLocalStorage<Record<string, DiaRegistro[]>>(
-    'registro-semanal',
-    {},
-  );
+  const { config, registro } = useAppContext();
 
   return useMemo((): CalculoState => {
     if (config.salarioBase <= 0) {

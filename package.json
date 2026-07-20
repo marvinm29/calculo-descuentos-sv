@@ -11,10 +11,12 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "check": "bash scripts/check.sh",
     "lint": "turbo run lint",
     "check-types": "turbo run check-types",
     "test": "turbo run test",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "start": "bash scripts/dev.sh"
   },
   "devDependencies": {
     "prettier": "3.9.5",

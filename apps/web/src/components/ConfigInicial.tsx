@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import type { TipoPago, Antiguedad } from '@calc/shared';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useAppContext } from '../context/AppContext';
 
 export interface ConfigInicialData {
   salarioBase: number;
@@ -9,13 +9,6 @@ export interface ConfigInicialData {
   antiguedad: Antiguedad;
   fechaIngreso: string;
 }
-
-const DEFAULT_CONFIG: ConfigInicialData = {
-  salarioBase: 0,
-  tipoPago: 'mensual',
-  antiguedad: '1_a_3',
-  fechaIngreso: '',
-};
 
 interface ErrorMap {
   salarioBase?: string;
@@ -37,10 +30,7 @@ function validarConfig(config: ConfigInicialData): ErrorMap {
 }
 
 export function ConfigInicial() {
-  const [config, setConfig] = useLocalStorage<ConfigInicialData>(
-    'config-inicial',
-    DEFAULT_CONFIG,
-  );
+  const { config, setConfig } = useAppContext();
   const [draft, setDraft] = useState<ConfigInicialData>(config);
   const [errors, setErrors] = useState<ErrorMap>({});
   const [saved, setSaved] = useState(false);

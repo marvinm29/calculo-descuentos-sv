@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { renderWithContext } from '../test/testUtils';
 import { RegistroSemanal } from './RegistroSemanal';
 
 describe('RegistroSemanal', () => {
   it('renderiza 7 filas de día (Lun a Dom)', () => {
-    render(<RegistroSemanal />);
+    renderWithContext(<RegistroSemanal />);
 
     const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
     for (const dia of dias) {
@@ -14,7 +15,7 @@ describe('RegistroSemanal', () => {
   });
 
   it('muestra el rango de fechas de la semana actual', () => {
-    render(<RegistroSemanal />);
+    renderWithContext(<RegistroSemanal />);
 
     expect(
       screen.getByText(/Registro Semanal/),
@@ -22,7 +23,7 @@ describe('RegistroSemanal', () => {
   });
 
   it('muestra la sección de totales semanales', () => {
-    render(<RegistroSemanal />);
+    renderWithContext(<RegistroSemanal />);
 
     expect(
       screen.getByText(/Totales semanales/),
@@ -31,7 +32,7 @@ describe('RegistroSemanal', () => {
 
   it('actualiza totales al ingresar horas extra', async () => {
     const user = userEvent.setup();
-    render(<RegistroSemanal />);
+    renderWithContext(<RegistroSemanal />);
 
     const inputs = screen.getAllByLabelText(/Horas base para Lun/);
     await user.clear(inputs[0]!);
@@ -44,7 +45,7 @@ describe('RegistroSemanal', () => {
 
   it('persiste datos en localStorage', async () => {
     const user = userEvent.setup();
-    render(<RegistroSemanal />);
+    renderWithContext(<RegistroSemanal />);
 
     const inputs = screen.getAllByLabelText(/Horas base para Lun/);
     await user.clear(inputs[0]!);

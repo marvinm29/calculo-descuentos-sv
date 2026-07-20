@@ -52,17 +52,17 @@ describe('calcularDescuentos', () => {
       expect(r.renta.cuotaFija).toBe(17.67);
     });
 
-    it('Renta: $800 mensual produce $55.60 de descuento', () => {
-      // Ver specs/tasas-legales.md §126-127
+    it('Renta: $800 mensual produce $34.47 de descuento', () => {
+      // Ver specs/tasas-legales.md
       // base gravable = 718.00 → Tramo II
-      // Renta = ($718.00 - $338.67) * 0.10 + $17.67 = $55.60
+      // Renta = ($718.00 - $550.00) * 0.10 + $17.67 = $34.47
       const r = calcularDescuentos(800, 'mensual');
-      expect(r.renta.descuento).toBe(55.6);
+      expect(r.renta.descuento).toBe(34.47);
     });
 
-    it('Renta: tramo I (exento) para salario bajo', () => {
-      // Salario $377: ISSS ≈ $11.31, AFP ≈ $27.33, bg ≈ $338.36 → tramo I
-      const r = calcularDescuentos(377, 'mensual');
+    it('Renta: tramo I (exento) para salario $500', () => {
+      // Salario $500: bg ≈ $448.75 < $550 → tramo I
+      const r = calcularDescuentos(500, 'mensual');
       expect(r.renta.tramo).toBe(1);
       expect(r.renta.descuento).toBe(0);
       expect(r.renta.porcentajeExceso).toBe(0);
@@ -84,8 +84,8 @@ describe('calcularDescuentos', () => {
 
     it('totalDescuentos correcto para $800 mensual', () => {
       const r = calcularDescuentos(800, 'mensual');
-      expect(r.totalDescuentos).toBe(round2(24.0 + 58.0 + 55.6));
-      expect(r.totalDescuentos).toBe(137.6);
+      expect(r.totalDescuentos).toBe(round2(24.0 + 58.0 + 34.47));
+      expect(r.totalDescuentos).toBe(116.47);
     });
   });
 
@@ -142,9 +142,9 @@ describe('calcularDescuentos', () => {
 
     it('salario exacto en limite de tramo de renta', () => {
       // bg = bruto * 0.8975 (ISSS 3% + AFP 7.25%)
-      // Para entrar a tramo II: bg >= 338.68
-      // bruto >= 338.68 / 0.8975 ≈ 377.36
-      const r = calcularDescuentos(377.36, 'mensual');
+      // Para entrar a tramo II: bg >= 550.01
+      // bruto >= 550.01 / 0.8975 ≈ 612.83
+      const r = calcularDescuentos(612.83, 'mensual');
       expect(r.renta.tramo).toBe(2);
       expect(r.renta.descuento).toBeGreaterThan(0);
     });

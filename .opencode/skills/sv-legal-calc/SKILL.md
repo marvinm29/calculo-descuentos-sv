@@ -48,14 +48,14 @@ salarioCotizable = min(salarioBrutoMensual, 6843.48)
 descuento = salarioCotizable * 0.0725
 ```
 
-### Renta (Art. 37 LISR, tabla mensual vigente desde 2025-04-30)
+### Renta (Art. 37 LISR, tabla mensual vigente desde D.L. 293, 2025-04-30)
 ```
 baseGravable = salarioBruto - ISSS - AFP
  aplica tramo I/II/III/IV:
-  I   <= 338.67      → 0
-  II  338.68–761.90  → (bg - 338.67) * 0.10 + 17.67
-  III 761.91–1904.76 → (bg - 761.90) * 0.20 + 60.00
-  IV  >= 1904.77     → (bg - 1904.76) * 0.30 + 288.57
+  I   <= 550.00      → 0
+  II  550.01–895.24  → (bg - 550.00) * 0.10 + 17.67
+  III 895.25–2038.10 → (bg - 895.24) * 0.20 + 60.00
+  IV  >= 2038.11     → (bg - 2038.10) * 0.30 + 288.57
 ```
 **Quincenal**: divide tramos y cuotas fijas entre 2. NUNCA dividas el descuento final entre 2 — divide la tabla.
 
@@ -88,7 +88,7 @@ Salario $800.00 mensual:
 - día libre nocturna = 5.83/h
 - ISSS = 24.00
 - AFP = 58.00
-- base gravable = 718.00 → tramo II → Renta = (718.00 - 338.67) * 0.10 + 17.67 = **55.60**
+- base gravable = 718.00 → tramo II → Renta = (718.00 - 550.00) * 0.10 + 17.67 = **34.47**
 
 Ver spec/api-contract.md para el ejemplo $800 quincenal, 3–9 años → todos los valores target.
 

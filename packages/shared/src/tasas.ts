@@ -16,10 +16,10 @@ export const AFP = {
 } as const;
 
 export const RENTA_TRAMOS_MENSUAL = [
-  { tramo: 1, desde: 0.01, hasta: 338.67, porcentajeExceso: 0.0, cuotaFija: 0.0 },
-  { tramo: 2, desde: 338.68, hasta: 761.9, porcentajeExceso: 0.1, cuotaFija: 17.67 },
-  { tramo: 3, desde: 761.91, hasta: 1904.76, porcentajeExceso: 0.2, cuotaFija: 60.0 },
-  { tramo: 4, desde: 1904.77, hasta: Number.POSITIVE_INFINITY, porcentajeExceso: 0.3, cuotaFija: 288.57 },
+  { tramo: 1, desde: 0.01, hasta: 550.0, porcentajeExceso: 0.0, cuotaFija: 0.0 },
+  { tramo: 2, desde: 550.01, hasta: 895.24, porcentajeExceso: 0.1, cuotaFija: 17.67 },
+  { tramo: 3, desde: 895.25, hasta: 2038.1, porcentajeExceso: 0.2, cuotaFija: 60.0 },
+  { tramo: 4, desde: 2038.11, hasta: Number.POSITIVE_INFINITY, porcentajeExceso: 0.3, cuotaFija: 288.57 },
 ] as const;
 
 export const HORAS_EXTRA = {

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { renderWithContext } from '../test/testUtils';
 import { ConfigInicial } from './ConfigInicial';
 
 describe('ConfigInicial', () => {
@@ -9,7 +10,7 @@ describe('ConfigInicial', () => {
   });
 
   it('renderiza todos los campos del formulario', () => {
-    render(<ConfigInicial />);
+    renderWithContext(<ConfigInicial />);
 
     expect(
       screen.getByLabelText(/salario base/i),
@@ -28,7 +29,7 @@ describe('ConfigInicial', () => {
 
   it('muestra error cuando salarioBase es 0', async () => {
     const user = userEvent.setup();
-    render(<ConfigInicial />);
+    renderWithContext(<ConfigInicial />);
 
     await user.click(
       screen.getByRole('button', { name: /guardar/i }),
@@ -41,7 +42,7 @@ describe('ConfigInicial', () => {
 
   it('muestra error cuando salarioBase es negativo', async () => {
     const user = userEvent.setup();
-    render(<ConfigInicial />);
+    renderWithContext(<ConfigInicial />);
 
     const input = screen.getByLabelText(/salario base/i);
     await user.clear(input);
@@ -57,7 +58,7 @@ describe('ConfigInicial', () => {
 
   it('muestra error para salarioBase > 100000', async () => {
     const user = userEvent.setup();
-    render(<ConfigInicial />);
+    renderWithContext(<ConfigInicial />);
 
     const input = screen.getByLabelText(/salario base/i);
     await user.clear(input);
@@ -73,7 +74,7 @@ describe('ConfigInicial', () => {
 
   it('guarda configuracion valida y muestra mensaje de exito', async () => {
     const user = userEvent.setup();
-    render(<ConfigInicial />);
+    renderWithContext(<ConfigInicial />);
 
     const salarioInput = screen.getByLabelText(/salario base/i);
     await user.clear(salarioInput);
@@ -94,7 +95,7 @@ describe('ConfigInicial', () => {
 
   it('persiste en localStorage tras guardar', async () => {
     const user = userEvent.setup();
-    render(<ConfigInicial />);
+    renderWithContext(<ConfigInicial />);
 
     const salarioInput = screen.getByLabelText(/salario base/i);
     await user.clear(salarioInput);
@@ -119,7 +120,7 @@ describe('ConfigInicial', () => {
     };
     localStorage.setItem('config-inicial', JSON.stringify(saved));
 
-    render(<ConfigInicial />);
+    renderWithContext(<ConfigInicial />);
 
     const salarioInput = screen.getByLabelText(
       /salario base/i,
@@ -139,7 +140,7 @@ describe('ConfigInicial', () => {
 
   it('cambia tipo de pago a quincenal', async () => {
     const user = userEvent.setup();
-    render(<ConfigInicial />);
+    renderWithContext(<ConfigInicial />);
 
     const select = screen.getByLabelText(/tipo de pago/i);
     await user.selectOptions(select, 'quincenal');
@@ -149,7 +150,7 @@ describe('ConfigInicial', () => {
 
   it('cambia antiguedad a 10_o_mas', async () => {
     const user = userEvent.setup();
-    render(<ConfigInicial />);
+    renderWithContext(<ConfigInicial />);
 
     const select = screen.getByLabelText(/antigüedad/i);
     await user.selectOptions(select, '10_o_mas');

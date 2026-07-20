@@ -1,9 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
 import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import type { Request, Response } from 'express';
+
+vi.mock('@clerk/express', () => ({
+  clerkMiddleware: vi.fn(() => (_req: unknown, _res: unknown, next: () => void) => next()),
+  getAuth: vi.fn(() => ({ userId: null })),
+  requireAuth: vi.fn(() => (_req: unknown, _res: unknown, next: () => void) => next()),
+}));
+
 import { app } from '../src/app';
 import { calcularRoutes } from '../src/routes/calcular/calcular.routes';
 import { errorHandler } from '../src/middleware/errorHandler';

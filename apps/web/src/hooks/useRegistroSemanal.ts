@@ -1,15 +1,11 @@
-import { useCallback } from 'react';
-import { useLocalStorage } from './useLocalStorage';
+import { useCallback, useMemo } from 'react';
 import type { DiaRegistro } from '../components/registroTypes';
 import {
   getLunes,
   semanaIdDesdeLunes,
   generarDiasSemana,
 } from '../components/registroTypes';
-
-type SemanasData = Record<string, DiaRegistro[]>;
-
-const STORAGE_KEY = 'registro-semanal';
+import { useAppContext } from '../context/AppContext';
 
 function getSemanaInicial(): { semanaId: string; dias: DiaRegistro[] } {
   const lunes = getLunes(new Date());
@@ -18,9 +14,9 @@ function getSemanaInicial(): { semanaId: string; dias: DiaRegistro[] } {
 }
 
 export function useRegistroSemanal() {
-  const [data, setData] = useLocalStorage<SemanasData>(STORAGE_KEY, {});
+  const { registro: data, setRegistro: setData } = useAppContext();
 
-  const inicial = getSemanaInicial();
+  const inicial = useMemo(getSemanaInicial, []);
   const semanaId = inicial.semanaId;
 
   const dias: DiaRegistro[] =

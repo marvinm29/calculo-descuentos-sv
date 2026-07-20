@@ -45,11 +45,11 @@ describe('calcularDescuentos', () => {
 
 - Cada `feature` de `packages/shared` debe pasar el umbral por función, no promedio.
 - Cero `istanbul ignore` sin justificación en comentario.
-- Casos borde obligatorios para cálculos: salario 0, salario exacto en tope ($1000, $6843.48), tramo límite de renta ($338.67, $761.90, $1904.76), antigüedad límite (1 año, 3 años, 10 años).
+- Casos borde obligatorios para cálculos: salario 0, salario exacto en tope ($1000, $6843.48), tramo límite de renta ($550.00, $895.24, $2038.10), antigüedad límite (1 año, 3 años, 10 años).
 
 ## Fijos clave
 
-- Salario $800 mensual → ISSS 24, AFP 58, Renta 55.60, base gravable 718.00 (tramo II).
+- Salario $800 mensual → ISSS 24, AFP 58, Renta 34.47, base gravable 718.00 (tramo II).
 - Ejemplo $800 quincenal del `specs/api-contract.md` → usar como test de integración del orquestador `calcular()`.
 - Festivos salvadoreños: ver `specs/tasas-legales.md` §Días de Asueto.
 

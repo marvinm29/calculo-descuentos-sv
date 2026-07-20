@@ -254,7 +254,7 @@ describe('calcular', () => {
 
       expect(result.descuentos.isss.descuento).toBe(24.0);
       expect(result.descuentos.afp.descuento).toBe(58.0);
-      expect(result.descuentos.renta.descuento).toBe(55.6);
+      expect(result.descuentos.renta.descuento).toBe(34.47);
     });
   });
 });
