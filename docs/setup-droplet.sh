@@ -93,7 +93,7 @@ cd /opt/calculo-descuentos/apps/api
 pm2 start dist/index.js --name calculo-api -f
 
 echo "=== 15. Guardando configuración de PM2 ==="
-pm2 save
+pm2 save || true
 pm2 startup systemd -u root --hp /root --no-daemon 2>/dev/null || true
 
 echo "=== 16. Configurando Caddy ==="
@@ -113,7 +113,7 @@ api.marvinmelendez.engineer {
 }
 CADDYEOF
 
-systemctl restart caddy
+systemctl start caddy 2>/dev/null || systemctl restart caddy
 
 echo ""
 echo "============================================"
