@@ -52,8 +52,13 @@ echo "=== 7. Creando directorio de la app ==="
 mkdir -p /opt/calculo-descuentos
 cd /opt/calculo-descuentos
 
-echo "=== 8. Clonando repositorio ==="
-git clone https://github.com/marvinm29/calculo-descuentos-sv.git .
+echo "=== 8. Clonando/actualizando repositorio ==="
+if [ -d .git ]; then
+  git fetch origin
+  git reset --hard origin/main
+else
+  git clone https://github.com/marvinm29/calculo-descuentos-sv.git .
+fi
 
 echo "=== 9. Creando archivo .env ==="
 cat > /opt/calculo-descuentos/apps/api/.env << EOF
