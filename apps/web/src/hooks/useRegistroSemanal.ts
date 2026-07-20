@@ -5,6 +5,7 @@ import {
   semanaIdDesdeLunes,
   lunesDesdeSemanaId,
   generarDiasSemana,
+  migrarDia,
 } from '../components/registroTypes';
 import { useAppContext } from '../context/AppContext';
 
@@ -19,7 +20,7 @@ export function useRegistroSemanal() {
   const domingo = new Date(lunes);
   domingo.setDate(domingo.getDate() + 6);
 
-  const dias: DiaRegistro[] = data[semanaId] ?? generarDiasSemana(lunes);
+  const dias: DiaRegistro[] = (data[semanaId] ?? generarDiasSemana(lunes)).map(migrarDia);
 
   const semanaAnterior = useCallback(() => {
     const l = lunesDesdeSemanaId(semanaId);

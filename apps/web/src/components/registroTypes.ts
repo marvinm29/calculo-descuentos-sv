@@ -27,6 +27,18 @@ export function crearDiaVacio(fecha: string): DiaRegistro {
   return { fecha, jornadaBase: 'regular_diurna', bloques: [] };
 }
 
+// Migrate old format (horasDiurnas as number without bloques → bloques:[])
+export function migrarDia(d: unknown): DiaRegistro {
+  const obj = d as { fecha?: unknown; jornadaBase?: unknown; bloques?: unknown };
+  return {
+    fecha: typeof obj?.fecha === 'string' ? obj.fecha : '',
+    jornadaBase: obj?.jornadaBase === 'regular_diurna' || obj?.jornadaBase === 'regular_nocturna' || obj?.jornadaBase === 'descanso' || obj?.jornadaBase === 'asueto'
+      ? obj.jornadaBase
+      : 'regular_diurna',
+    bloques: Array.isArray(obj?.bloques) ? obj.bloques as BloqueHorario[] : [],
+  };
+}
+
 function minutosDelBloque(b: BloqueHorario): number {
   const [hI, mI] = b.inicio.split(':').map(Number);
   const [hF, mF] = b.fin.split(':').map(Number);
