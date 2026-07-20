@@ -38,8 +38,10 @@ pnpm -v
 
 echo "=== 5. Instalando Caddy ==="
 apt-get install -y -qq debian-keyring debian-archive-keyring apt-transport-https
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
+mkdir -p /usr/share/keyrings
+curl -fsSL 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' -o /tmp/caddy-gpg.key
+gpg --batch --no-tty --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg /tmp/caddy-gpg.key 2>/dev/null
+curl -fsSL 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' -o /etc/apt/sources.list.d/caddy-stable.list
 apt-get update -qq
 apt-get install -y -qq caddy
 
@@ -87,7 +89,7 @@ pm2 start dist/index.js --name calculo-api
 
 echo "=== 15. Guardando configuración de PM2 ==="
 pm2 save
-pm2 startup systemd -u root --hp /root
+pm2 startup systemd -u root --hp /root --no-daemon 2>/dev/null || true
 
 echo "=== 16. Configurando Caddy ==="
 cat > /etc/caddy/Caddyfile << 'CADDYEOF'
