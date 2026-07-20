@@ -66,6 +66,16 @@ packages/config/         → ESLint flat config, tsconfig/base.json
 - `vitest-rtl-supertest` — patrones de testing, coverage > 80%.
 - `sprint-workflow` — cadencia de 7 sprints, gate y documentación.
 
+## 🎯 Objetivo actual
+
+**Fix CI lint errors (10 errors) + produccionizar.**
+
+Ver plan detallado en `.opencode/plans/sprint8-deploy-2026-07-19.md`.
+
+**Prioridad**: Fix los 10 `no-unsafe-*` lint errors de ESLint type-aware en `apps/api/` (barrel exports de `@calc/shared`). Luego DNS Clerk, keys de prod, Sentry/Datadog.
+
+**Bloqueante**: CI rojo → no deploy GitHub Pages. Ver `.github/workflows/ci.yml`. El gate local `pnpm lint && pnpm check-types && pnpm test` pasa, pero CI falla con 10 errors que aparecen solo en CI por `tsconfig.json` resolución distinta.
+
 ## Recursos clave
 
 - `specs/architecture.md` — ADRs, diagramas de componentes.
