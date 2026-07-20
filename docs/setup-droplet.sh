@@ -16,6 +16,8 @@ set -e
 # despues de correr el script.
 # ============================================================
 
+export DEBIAN_FRONTEND=noninteractive
+
 echo "=== 1. Actualizando sistema ==="
 apt-get update -qq
 apt-get upgrade -y -qq
