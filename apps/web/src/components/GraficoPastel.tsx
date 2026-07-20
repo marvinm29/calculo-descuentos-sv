@@ -17,9 +17,9 @@ export function GraficoPastel({ neto, descuentos }: GraficoPastelProps) {
   ].filter((d) => d.value > 0);
 
   return (
-    <div className="rounded border border-gray-200 bg-white p-4">
-      <h3 className="text-sm font-semibold text-gray-800">
-        Distribuci&oacute;n del Salario Bruto
+    <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
+      <h3 className="text-sm font-semibold text-text">
+        Distribución del Salario Bruto
       </h3>
       <div className="flex justify-center">
         <PieChart width={280} height={250} role="img">
@@ -28,9 +28,9 @@ export function GraficoPastel({ neto, descuentos }: GraficoPastelProps) {
             y={117}
             textAnchor="middle"
             dominantBaseline="middle"
-            className="text-xs fill-gray-500"
+            className="text-xs fill-text-muted"
           >
-            Distribuci&oacute;n
+            Distribución
           </text>
           <Pie
             data={data}
@@ -53,7 +53,7 @@ export function GraficoPastel({ neto, descuentos }: GraficoPastelProps) {
           />
           <Legend
             formatter={(value) => (
-              <span className="text-xs text-gray-600">{value}</span>
+              <span className="text-xs text-text-secondary">{value}</span>
             )}
           />
         </PieChart>

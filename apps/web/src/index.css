@@ -1,8 +1,55 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --surface: #ffffff;
+  --surface-alt: #f8fafc;
+  --surface-raised: #ffffff;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --success-bg: #f0fdf4;
+  --danger-bg: #fef2f2;
+  --warning-bg: #fff7ed;
+}
+
+.dark {
+  --surface: #1e293b;
+  --surface-alt: #0f172a;
+  --surface-raised: #334155;
+  --border: #475569;
+  --border-light: #334155;
+  --text: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --success-bg: #052e16;
+  --danger-bg: #450a0a;
+  --warning-bg: #431407;
+}
+
 @theme {
-  --color-primary: #1f2937;
-  --color-primary-light: #374151;
+  --color-primary: #1e3a5f;
+  --color-primary-light: #2d5a8e;
+  --color-primary-dark: #142a45;
+  --color-accent: #c9772e;
+  --color-accent-light: #d9914f;
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+  --color-warning: #ea580c;
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-surface-raised: var(--surface-raised);
+  --color-border: var(--border);
+  --color-border-light: var(--border-light);
+  --color-text: var(--text);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-success-bg: var(--success-bg);
+  --color-danger-bg: var(--danger-bg);
+  --color-warning-bg: var(--warning-bg);
 }
 
 @layer base {
@@ -10,9 +57,18 @@
     scroll-behavior: smooth;
   }
 
+  body {
+    background-color: var(--surface-alt);
+    color: var(--text);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;
+    }
+    body {
+      transition: none;
     }
   }
 }

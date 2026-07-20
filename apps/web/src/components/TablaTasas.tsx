@@ -2,7 +2,7 @@ const TASAS = [
   {
     concepto: 'ISSS (Trabajador)',
     valor: '3.00%',
-    detalle: 'Tope mensual $1,000.00 — descuento m&aacute;x $30.00',
+    detalle: 'Tope mensual $1,000.00 — descuento máx $30.00',
     fuente: 'Ley del Seguro Social',
     url: 'https://www.isss.gob.sv',
   },
@@ -42,22 +42,22 @@ const TASAS = [
     url: 'https://www.diariooficial.gob.sv',
   },
   {
-    concepto: 'Aguinaldo 1–3 a&ntilde;os',
-    valor: '15 d&iacute;as',
-    detalle: 'Proporcional si antig&uuml;edad < 1 a&ntilde;o',
+    concepto: 'Aguinaldo 1–3 años',
+    valor: '15 días',
+    detalle: 'Proporcional si antigüedad < 1 año',
     fuente: 'Art. 198 CT',
     url: 'https://www.mtps.gob.sv',
   },
   {
-    concepto: 'Aguinaldo 3–9 a&ntilde;os',
-    valor: '19 d&iacute;as',
+    concepto: 'Aguinaldo 3–9 años',
+    valor: '19 días',
     detalle: '',
     fuente: 'Art. 198 CT',
     url: 'https://www.mtps.gob.sv',
   },
   {
-    concepto: 'Aguinaldo 10+ a&ntilde;os',
-    valor: '21 d&iacute;as',
+    concepto: 'Aguinaldo 10+ años',
+    valor: '21 días',
     detalle: '',
     fuente: 'Art. 198 CT',
     url: 'https://www.mtps.gob.sv',
@@ -65,14 +65,14 @@ const TASAS = [
   {
     concepto: 'Vacaciones (bono)',
     valor: '30%',
-    detalle: '30% del salario de 15 d&iacute;as',
+    detalle: '30% del salario de 15 días',
     fuente: 'Art. 177 CT',
     url: 'https://www.mtps.gob.sv',
   },
   {
     concepto: 'Quincena 25',
     valor: '50%',
-    detalle: 'Salario ≤ $1,500. Obligatorio sector p&uacute;blico.',
+    detalle: 'Salario ≤ $1,500. Obligatorio sector público.',
     fuente: 'Ley Quincena 25',
     url: 'https://www.mtps.gob.sv',
   },
@@ -80,18 +80,18 @@ const TASAS = [
 
 export function TablaTasas() {
   return (
-    <div className="rounded border border-gray-200 bg-white p-4">
-      <h3 className="text-sm font-semibold text-gray-800">
+    <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
+      <h3 className="text-sm font-semibold text-text">
         Tasas de Referencia Vigentes
       </h3>
-      <p className="mt-1 text-xs text-gray-400">
-        &Uacute;ltima actualizaci&oacute;n: Julio 2026. Verificar vigencia en
+      <p className="mt-1 text-xs text-text-muted">
+        Última actualización: Julio 2026. Verificar vigencia en
         fuentes oficiales.
       </p>
       <div className="mt-2 overflow-x-auto">
-        <table className="w-full text-xs text-gray-600">
+        <table className="w-full text-xs text-text-secondary">
           <thead>
-            <tr className="border-b border-gray-200 text-left">
+            <tr className="border-b border-border text-left">
               <th className="py-1 pr-2 font-medium">Concepto</th>
               <th className="py-1 pr-2 font-medium">Valor</th>
               <th className="py-1 pr-2 font-medium">Detalle</th>
@@ -100,7 +100,7 @@ export function TablaTasas() {
           </thead>
           <tbody>
             {TASAS.map((t) => (
-              <tr key={t.concepto} className="border-b border-gray-100">
+              <tr key={t.concepto} className="border-b border-border-light">
                 <td className="py-1 pr-2">{t.concepto}</td>
                 <td className="py-1 pr-2 font-mono font-medium">{t.valor}</td>
                 <td className="py-1 pr-2">{t.detalle}</td>
@@ -109,7 +109,7 @@ export function TablaTasas() {
                     href={t.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-primary hover:text-primary-light underline"
                   >
                     {t.fuente}
                   </a>

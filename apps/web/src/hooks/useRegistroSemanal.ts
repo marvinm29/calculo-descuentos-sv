@@ -38,5 +38,5 @@ export function useRegistroSemanal() {
     setDias(nuevos);
   }
 
-  return { semanaId, dias, updateDia };
+  return { semanaId, dias, updateDia, setDias };
 }

@@ -67,23 +67,20 @@ packages/config/         → ESLint flat config, tsconfig/base.json
 - `vitest-rtl-supertest` — patrones de testing, coverage > 80%.
 - `sprint-workflow` — cadencia de 7 sprints, gate y documentación.
 
-## 🎯 Objetivo actual
+## 🎯 Objetivo actual (completado — esperando el próximo)
 
-**Sprint 9 — UI/UX: Dark/light mode, mejora visual, vista día por día.**
+**Sprint 9 completado** — UI/UX: Dark/light mode, mejora visual, vista día por día.
 
-Ver plan detallado en `.opencode/plans/sprint8-deploy-2026-07-19.md`.
+Ver `specs/sprints.md` §Sprint 9 para detalle.
 
-**Prioridad**: Unificar caracteres especiales (UTF-8 plano, sin HTML entities), implementar dark/light mode con toggle, mejorar diseño visual con frontend-design skill, y agregar vista día por día como alternativa a la semanal.
+## 🚀 Sprint 9 completado (2026-07-20)
 
-## 🚀 Sprint 8 completado (2026-07-20)
-
-- ✅ **CI verde**: Fix a 10 lint errors `no-unsafe-*` en API + web ESLint configs
-- ✅ **check-types en CI**: `turbo.json` ahora tiene `"dependsOn": ["^build"]` para check-types
-- ✅ **DNS Clerk**: 5 CNAME records en name.com, todo verified + SSL emitido
-- ✅ **Clerk keys live**: `pk_live_` + `sk_live_` en `.env` files
-- ✅ **Sentry**: DSNs en web y API `.env` files
-- ✅ **Datadog**: `DD_API_KEY` + `DD_SITE` en API `.env`
-- ✅ **Web deploy**: GitHub Pages CI/CD operativo → `https://marvinmelendez.engineer`
+- ✅ **UTF-8 plano**: ~35 HTML entities reemplazadas por caracteres Unicode directos
+- ✅ **Dark/light mode**: `@custom-variant dark`, CSS custom properties adaptativas, hook `useTheme()` con persistencia
+- ✅ **Toggle en header**: Botón sol/luna con SVG inline, cicla light → dark → system
+- ✅ **Paleta de colores**: `--surface`, `--text`, `--border` adaptativos en todos los componentes
+- ✅ **Vista día por día**: Toggle semanal/diario en `RegistroSemanal` con date picker
+- ✅ **Gate**: `pnpm lint && pnpm check-types && pnpm test` — 157 tests, 0 failures
 
 ## Estado de producción
 

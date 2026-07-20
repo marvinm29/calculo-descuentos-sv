@@ -6,9 +6,9 @@ export interface ResumenBrutoProps {
 
 export function ResumenBruto({ bruto }: ResumenBrutoProps) {
   return (
-    <div className="rounded border border-gray-200 bg-white p-4">
-      <h3 className="text-sm font-semibold text-gray-800">Salario Bruto</h3>
-      <dl className="mt-2 space-y-1 text-xs text-gray-600">
+    <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
+      <h3 className="text-sm font-semibold text-text">Salario Bruto</h3>
+      <dl className="mt-2 space-y-1 text-xs text-text-secondary">
         <div className="flex justify-between">
           <dt>Salario base del periodo</dt>
           <dd className="font-mono">${bruto.salarioBase.toFixed(2)}</dd>
@@ -31,7 +31,7 @@ export function ResumenBruto({ bruto }: ResumenBrutoProps) {
         )}
         {bruto.diaLibreDiurna > 0 && (
           <div className="flex justify-between">
-            <dt>D&iacute;a libre diurna</dt>
+            <dt>Día libre diurna</dt>
             <dd className="font-mono">
               ${bruto.diaLibreDiurna.toFixed(2)}
             </dd>
@@ -39,7 +39,7 @@ export function ResumenBruto({ bruto }: ResumenBrutoProps) {
         )}
         {bruto.diaLibreNocturna > 0 && (
           <div className="flex justify-between">
-            <dt>D&iacute;a libre nocturna</dt>
+            <dt>Día libre nocturna</dt>
             <dd className="font-mono">
               ${bruto.diaLibreNocturna.toFixed(2)}
             </dd>
@@ -51,7 +51,7 @@ export function ResumenBruto({ bruto }: ResumenBrutoProps) {
             <dd className="font-mono">${bruto.asueto.toFixed(2)}</dd>
           </div>
         )}
-        <div className="flex justify-between border-t border-gray-200 pt-1 font-semibold text-gray-800">
+        <div className="flex justify-between border-t border-border pt-1 font-semibold text-text">
           <dt>Total bruto</dt>
           <dd className="font-mono">${bruto.brutoTotal.toFixed(2)}</dd>
         </div>

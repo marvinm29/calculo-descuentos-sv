@@ -144,9 +144,9 @@ export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
   );
 
   return (
-    <div className="rounded border border-gray-200 bg-white p-4">
+    <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-800">
+        <h3 className="text-sm font-semibold text-text">
           Historial de Periodos
         </h3>
         <button
@@ -158,30 +158,30 @@ export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
       </div>
 
       {loading && (
-        <p className="mt-2 text-xs text-gray-400">Cargando historial...</p>
+        <p className="mt-2 text-xs text-text-muted">Cargando historial...</p>
       )}
 
       {!loading && periodos.length === 0 && (
-        <p className="mt-2 text-xs text-gray-400">
+        <p className="mt-2 text-xs text-text-muted">
           No hay periodos guardados.
         </p>
       )}
 
       {periodos.length > 0 && (
-        <ul className="mt-2 divide-y divide-gray-100">
+        <ul className="mt-2 divide-y divide-border">
           {periodos.map((p) => (
             <li
               key={p.id}
               className="flex items-center justify-between py-2"
             >
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-text-secondary">
                 <span className="font-medium">
                   ${p.neto.toFixed(2)}
                 </span>
-                <span className="ml-2 text-gray-400">
+                <span className="ml-2 text-text-muted">
                   Bruto: ${p.brutoTotal.toFixed(2)}
                 </span>
-                <span className="ml-2 text-gray-400">
+                <span className="ml-2 text-text-muted">
                   {new Date(p.fecha).toLocaleDateString('es-SV')}
                 </span>
               </div>
@@ -189,7 +189,7 @@ export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
                 onClick={() => {
                   void eliminar(p.id);
                 }}
-                className="text-xs text-red-500 hover:text-red-700 focus:underline focus:outline-none"
+                className="text-xs text-danger hover:text-danger focus:underline focus:outline-none"
                 aria-label={`Eliminar periodo de ${new Date(p.fecha).toLocaleDateString('es-SV')}`}
               >
                 Eliminar

@@ -11,10 +11,10 @@ export interface ResultadoNetoProps {
 export function ResultadoNeto({ state }: ResultadoNetoProps) {
   if (state.status === 'idle') {
     return (
-      <div className="rounded border border-gray-200 bg-white p-6 text-center print:hidden">
-        <p className="text-sm text-gray-500">
-          Configur&aacute; tu salario y registr&aacute; horas para ver el
-          c&aacute;lculo.
+      <div className="rounded-lg border border-border bg-surface p-6 text-center print:hidden">
+        <p className="text-sm text-text-muted">
+          Configurá tu salario y registrá horas para ver el
+          cálculo.
         </p>
       </div>
     );
@@ -22,16 +22,16 @@ export function ResultadoNeto({ state }: ResultadoNetoProps) {
 
   if (state.status === 'loading') {
     return (
-      <div className="rounded border border-gray-200 bg-white p-6 text-center">
-        <p className="text-sm text-gray-500">Calculando...</p>
+      <div className="rounded-lg border border-border bg-surface p-6 text-center">
+        <p className="text-sm text-text-muted">Calculando...</p>
       </div>
     );
   }
 
   if (state.status === 'error') {
     return (
-      <div className="rounded border border-red-200 bg-red-50 p-6 text-center">
-        <p className="text-sm text-red-600">{state.error}</p>
+      <div className="rounded-lg border border-danger bg-danger-bg p-6 text-center">
+        <p className="text-sm text-danger">{state.error}</p>
       </div>
     );
   }
@@ -40,7 +40,7 @@ export function ResultadoNeto({ state }: ResultadoNetoProps) {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-lg font-semibold text-gray-800">
+      <h2 className="text-lg font-semibold text-text">
         Resultado del Periodo
       </h2>
 

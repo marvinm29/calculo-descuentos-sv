@@ -6,16 +6,16 @@ export interface PrestacionesProps {
 
 export function Prestaciones({ prestaciones }: PrestacionesProps) {
   return (
-    <div className="rounded border border-gray-200 bg-white p-4">
-      <h3 className="text-sm font-semibold text-gray-800">Prestaciones</h3>
-      <dl className="mt-2 space-y-1 text-xs text-gray-600">
+    <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
+      <h3 className="text-sm font-semibold text-text">Prestaciones</h3>
+      <dl className="mt-2 space-y-1 text-xs text-text-secondary">
         {prestaciones.aguinaldo && (
           <div className="flex justify-between">
             <dt>
-              Aguinaldo ({prestaciones.aguinaldo.dias} d&iacute;as
+              Aguinaldo ({prestaciones.aguinaldo.dias} días
               {prestaciones.aguinaldo.proporcional ? ' proporcional' : ''})
             </dt>
-            <dd className="font-mono text-green-600">
+            <dd className="font-mono text-success">
               +${prestaciones.aguinaldo.monto.toFixed(2)}
             </dd>
           </div>
@@ -24,9 +24,9 @@ export function Prestaciones({ prestaciones }: PrestacionesProps) {
           <div className="flex justify-between">
             <dt>
               Vacaciones ({prestaciones.vacaciones.porcentaje}% de 15
-              d&iacute;as)
+              días)
             </dt>
-            <dd className="font-mono text-green-600">
+            <dd className="font-mono text-success">
               +${prestaciones.vacaciones.monto.toFixed(2)}
             </dd>
           </div>
@@ -37,7 +37,7 @@ export function Prestaciones({ prestaciones }: PrestacionesProps) {
               Quincena 25 ({prestaciones.quincena25.porcentaje}% del
               salario mensual)
             </dt>
-            <dd className="font-mono text-green-600">
+            <dd className="font-mono text-success">
               +${prestaciones.quincena25.monto.toFixed(2)}
             </dd>
           </div>

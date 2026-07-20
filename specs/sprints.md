@@ -159,6 +159,8 @@ listo para GitHub Pages; `lint + check-types + test` y coverage > 80% en verde.
 | 5      | completado  | RegistroSemanal: FilaDia, TotalesSemana, persistencia por semanaId |
 | 6      | completado  | ResultadoNeto, GraficoPastel, TablaTasas, useCalculos real |
 | 7      | completado  | HistorialPeriodos, ExportarPDF, CI/CD, ajustes finales |
+| 8      | completado  | Producción: DigitalOcean + Monitoreo + Hardening |
+| 9      | completado  | UI/UX: Dark/light mode, mejora visual, vista día por día |
 
 ---
 
@@ -627,26 +629,49 @@ pnpm build --filter=api → apps/api/dist (Express build)
 
 ---
 
-## Sprint 9 — UI/UX: Dark/light mode, mejora visual, vista día por día 🔜
+## Sprint 9 — UI/UX: Dark/light mode, mejora visual, vista día por día ✅
 
-**Fecha**: 2026-07-20. **En ejecución**.
+**Completado**: 2026-07-20.
 
-### Tareas
+### Archivos creados/modificados
 
-1. **Unificar caracteres**: UTF-8 plano (sin HTML entities) en todo el frontend
-2. **Dark/light mode**: `@custom-variant dark` en Tailwind v4, hook `useTheme()`, toggle en header
-3. **Mejora visual**: Paleta de colores, sombras, animaciones, diseño pulido
-4. **Vista día por día**: Toggle semanal/diario en `RegistroSemanal`
+| Archivo | Cambio |
+|---------|--------|
+| `apps/web/src/index.css` | `@custom-variant dark`, CSS custom properties para tema claro/oscuro, paleta `@theme` con colores adaptativos |
+| `apps/web/src/hooks/useTheme.ts` | Nuevo hook `useTheme()`: cicla light → dark → system, persiste en localStorage, escucha `prefers-color-scheme` |
+| `apps/web/src/App.tsx` | `ThemeToggle` con iconos SVG sol/luna en header, header refactorizado con `ThemeToggle` a la izquierda + auth a la derecha |
+| `apps/web/index.html` | Removidas clases `bg-gray-50 text-gray-900` (van en CSS ahora) |
+| `apps/web/src/components/ConfigInicial.tsx` | `bg-white` → `bg-surface`, `text-gray-*` → `text-text`, `border-gray-*` → `border-border` |
+| `apps/web/src/components/FilaDia.tsx` | Ídem |
+| `apps/web/src/components/TotalesSemana.tsx` | Ídem |
+| `apps/web/src/components/RegistroSemanal.tsx` | + toggle vista semanal/día por día, + date picker para día |
+| `apps/web/src/components/ResultadoNeto.tsx` | Tokens de color adaptativos |
+| `apps/web/src/components/ResumenBruto.tsx` | Ídem |
+| `apps/web/src/components/TablaDescuentos.tsx` | Ídem |
+| `apps/web/src/components/Prestaciones.tsx` | Ídem |
+| `apps/web/src/components/NetoLiquido.tsx` | Ídem |
+| `apps/web/src/components/GraficoPastel.tsx` | Ídem |
+| `apps/web/src/components/TablaTasas.tsx` | Ídem |
+| `apps/web/src/components/HistorialPeriodos.tsx` | Ídem |
+| `apps/web/src/components/ExportarPDF.tsx` | Ídem |
+| `apps/web/src/components/ErrorBoundary.tsx` | Ídem |
+| `apps/web/src/hooks/useRegistroSemanal.ts` | Exporta `setDias` (lo necesitaba vista día) |
+| (todos los .tsx) | HTML entities reemplazadas por UTF-8 plano (á, é, í, ó, ú, ñ, ü, —) |
 
-### Check-list
+### Cambios principales
 
-- [ ] Unificar HTML entities → UTF-8 plano
-- [ ] `index.css`: agregar `@custom-variant dark`, paleta `@theme`
-- [ ] Hook `useTheme()` con localStorage
-- [ ] Toggle button en header
-- [ ] `dark:` variants en todos los componentes
-- [ ] Toggle vista semanal/día por día
-- [ ] `pnpm lint && pnpm check-types && pnpm test` pasa
+1. **UTF-8 plano**: ~35 HTML entities reemplazadas por caracteres Unicode directos en todos los `.tsx` (JSX).
+2. **Dark/light mode**: CSS custom properties en `:root` / `.dark`, `@custom-variant dark` en Tailwind v4. El hook `useTheme()` soporta light, dark, system. Toggle en header con SVG inline (sol/luna).
+3. **Paleta de colores**: `--surface`, `--text`, `--border` y variantes adaptativas. `--color-primary` azul marino. Sombras `shadow-sm` en cards.
+4. **Vista día por día**: Toggle en `RegistroSemanal`. Modo día: date picker + `FilaDia` individual. Persiste en misma estructura `semanaId`.
+
+### Verificación (gate en orden)
+
+```
+pnpm lint          → 3 tasks OK
+pnpm check-types   → 4 tasks OK
+pnpm test          → 157 tests (86 shared + 25 api + 46 web), 0 failures
+```
 
 ---
 

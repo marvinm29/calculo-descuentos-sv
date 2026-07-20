@@ -18,7 +18,7 @@ interface ErrorMap {
 function validarConfig(config: ConfigInicialData): ErrorMap {
   const errors: ErrorMap = {};
   if (config.salarioBase <= 0) {
-    errors.salarioBase = 'El salario base debe ser un n\u00famero positivo';
+    errors.salarioBase = 'El salario base debe ser un número positivo';
   }
   if (config.salarioBase > 100000) {
     errors.salarioBase = 'El salario base debe ser menor a $100,000';
@@ -70,16 +70,16 @@ export function ConfigInicial() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="mx-auto max-w-lg space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
+      className="mx-auto max-w-lg space-y-4 rounded-lg border border-border bg-surface p-6 shadow-sm"
     >
-      <h2 className="text-lg font-semibold text-gray-800">
-        Configuraci&oacute;n Inicial
+      <h2 className="text-lg font-semibold text-text">
+        Configuración Inicial
       </h2>
 
       <div>
         <label
           htmlFor="salarioBase"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-text-secondary"
         >
           Salario base mensual (USD)
         </label>
@@ -92,12 +92,12 @@ export function ConfigInicial() {
           onChange={(e) => {
             handleSalarioChange(e.target.value);
           }}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+          className="mt-1 block w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
           aria-describedby={errors.salarioBase ? 'salarioBase-error' : undefined}
           aria-invalid={!!errors.salarioBase}
         />
         {errors.salarioBase && (
-          <p id="salarioBase-error" className="mt-1 text-xs text-red-600">
+          <p id="salarioBase-error" className="mt-1 text-xs text-danger">
             {errors.salarioBase}
           </p>
         )}
@@ -106,7 +106,7 @@ export function ConfigInicial() {
       <div>
         <label
           htmlFor="tipoPago"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-text-secondary"
         >
           Tipo de pago
         </label>
@@ -120,7 +120,7 @@ export function ConfigInicial() {
             }));
             setSaved(false);
           }}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+          className="mt-1 block w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
         >
           <option value="mensual">Mensual</option>
           <option value="quincenal">Quincenal</option>
@@ -130,9 +130,9 @@ export function ConfigInicial() {
       <div>
         <label
           htmlFor="antiguedad"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-text-secondary"
         >
-          Antig&uuml;edad laboral
+          Antigüedad laboral
         </label>
         <select
           id="antiguedad"
@@ -144,19 +144,19 @@ export function ConfigInicial() {
             }));
             setSaved(false);
           }}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+          className="mt-1 block w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
         >
-          <option value="menos_1">Menos de 1 a&ntilde;o</option>
-          <option value="1_a_3">1 a 3 a&ntilde;os</option>
-          <option value="3_a_9">3 a 9 a&ntilde;os</option>
-          <option value="10_o_mas">10 a&ntilde;os o m&aacute;s</option>
+          <option value="menos_1">Menos de 1 año</option>
+          <option value="1_a_3">1 a 3 años</option>
+          <option value="3_a_9">3 a 9 años</option>
+          <option value="10_o_mas">10 años o más</option>
         </select>
       </div>
 
       <div>
         <label
           htmlFor="fechaIngreso"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-text-secondary"
         >
           Fecha de ingreso a la empresa
         </label>
@@ -167,14 +167,14 @@ export function ConfigInicial() {
           onChange={(e) => {
             handleFechaIngresoChange(e.target.value);
           }}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+          className="mt-1 block w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
           aria-describedby={
             errors.fechaIngreso ? 'fechaIngreso-error' : undefined
           }
           aria-invalid={!!errors.fechaIngreso}
         />
         {errors.fechaIngreso && (
-          <p id="fechaIngreso-error" className="mt-1 text-xs text-red-600">
+          <p id="fechaIngreso-error" className="mt-1 text-xs text-danger">
             {errors.fechaIngreso}
           </p>
         )}
@@ -184,12 +184,12 @@ export function ConfigInicial() {
         type="submit"
         className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-light focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none"
       >
-        Guardar configuraci&oacute;n
+        Guardar configuración
       </button>
 
       {saved && (
-        <p role="status" className="text-center text-sm text-green-600">
-          Configuraci&oacute;n guardada correctamente.
+        <p role="status" className="text-center text-sm text-success">
+          Configuración guardada correctamente.
         </p>
       )}
     </form>
