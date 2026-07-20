@@ -36,14 +36,14 @@ corepack enable
 corepack prepare pnpm@latest --activate
 pnpm -v
 
-echo "=== 5. Instalando Caddy ==="
-apt-get install -y -qq debian-keyring debian-archive-keyring apt-transport-https
-mkdir -p /usr/share/keyrings
-curl -fsSL 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' -o /tmp/caddy-gpg.key
-gpg --batch --no-tty --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg /tmp/caddy-gpg.key 2>/dev/null
-curl -fsSL 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' -o /etc/apt/sources.list.d/caddy-stable.list
-apt-get update -qq
-apt-get install -y -qq caddy
+echo "=== 5. Instalando Caddy (binario directo) ==="
+curl -fsSL 'https://caddyserver.com/api/download?os=linux&arch=amd64' -o /usr/bin/caddy
+chmod +x /usr/bin/caddy
+groupadd --system caddy 2>/dev/null || true
+useradd --system --gid caddy --create-home --home-dir /var/lib/caddy --shell /usr/sbin/nologin --comment "Caddy web server" caddy 2>/dev/null || true
+curl -fsSL 'https://raw.githubusercontent.com/caddyserver/dist/master/init/caddy.service' -o /etc/systemd/system/caddy.service
+systemctl daemon-reload
+systemctl enable caddy
 
 echo "=== 6. Instalando PM2 globalmente ==="
 npm install -g pm2
