@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { calcularRequestSchema, validarNegocio } from '@calc/shared';
+import type { CalcularRequestParsed } from '@calc/shared';
 import { calcularService } from './calcular.service.js';
 
 export function calcularController(
@@ -8,7 +9,7 @@ export function calcularController(
   next: NextFunction,
 ): void {
   try {
-    const parsed = calcularRequestSchema.parse(req.body);
+    const parsed: CalcularRequestParsed = calcularRequestSchema.parse(req.body);
     const negocioErrors = validarNegocio(parsed);
     if (negocioErrors.length > 0) {
       res.status(400).json({
