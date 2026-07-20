@@ -15,11 +15,8 @@ export function createHistoryController(
       return;
     }
 
-    const body = req.body as {
-      request: Record<string, unknown>;
-      response: Record<string, unknown>;
-    };
-    if (!body.request || !body.response) {
+    const { request, response } = req.body as { request: CalcularRequest; response: CalcularResponse };
+    if (!request || !response) {
       res.status(400).json({
         error: 'VALIDATION_ERROR',
         message: 'Se requieren los campos request y response',
@@ -27,7 +24,7 @@ export function createHistoryController(
       return;
     }
 
-    const history = createHistory(userId, body.request as unknown as CalcularRequest, body.response as unknown as CalcularResponse);
+    const history = createHistory(userId, request, response);
     res.status(201).json(history);
   } catch (err) {
     next(err);
