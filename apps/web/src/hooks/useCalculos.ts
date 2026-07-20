@@ -6,6 +6,7 @@ import type {
   SegmentoHorario,
 } from '@calc/shared';
 import type { DiaRegistro } from '../components/registroTypes';
+import { horasDiurnasDeBloques, horasNocturnasDeBloques } from '../components/registroTypes';
 import { useAppContext } from '../context/AppContext';
 
 function diasToSegmentos(
@@ -14,38 +15,40 @@ function diasToSegmentos(
   const segmentos: SegmentoHorario[] = [];
 
   for (const d of dias) {
-    const { horasDiurnas, horasNocturnas, jornadaBase, fecha } = d;
-    if (horasDiurnas <= 0 && horasNocturnas <= 0) continue;
+    const diurnas = horasDiurnasDeBloques(d.bloques);
+    const nocturnas = horasNocturnasDeBloques(d.bloques);
+    const { jornadaBase, fecha } = d;
+    if (diurnas <= 0 && nocturnas <= 0) continue;
 
     if (jornadaBase === 'regular_diurna') {
-      if (horasDiurnas > 0) {
-        const base = Math.min(horasDiurnas, 8);
+      if (diurnas > 0) {
+        const base = Math.min(diurnas, 8);
         segmentos.push({ fecha, tipo: 'regular_diurna', horas: base });
-        const extra = horasDiurnas - base;
+        const extra = diurnas - base;
         if (extra > 0) segmentos.push({ fecha, tipo: 'extra_diurna', horas: extra });
       }
-      if (horasNocturnas > 0) {
-        segmentos.push({ fecha, tipo: 'extra_nocturna', horas: horasNocturnas });
+      if (nocturnas > 0) {
+        segmentos.push({ fecha, tipo: 'extra_nocturna', horas: nocturnas });
       }
     } else if (jornadaBase === 'regular_nocturna') {
-      if (horasNocturnas > 0) {
-        const base = Math.min(horasNocturnas, 8);
+      if (nocturnas > 0) {
+        const base = Math.min(nocturnas, 8);
         segmentos.push({ fecha, tipo: 'regular_nocturna', horas: base });
-        const extra = horasNocturnas - base;
+        const extra = nocturnas - base;
         if (extra > 0) segmentos.push({ fecha, tipo: 'extra_nocturna', horas: extra });
       }
-      if (horasDiurnas > 0) {
-        segmentos.push({ fecha, tipo: 'extra_diurna', horas: horasDiurnas });
+      if (diurnas > 0) {
+        segmentos.push({ fecha, tipo: 'extra_diurna', horas: diurnas });
       }
     } else if (jornadaBase === 'descanso') {
-      if (horasDiurnas > 0) {
-        segmentos.push({ fecha, tipo: 'dia_libre_diurna', horas: horasDiurnas });
+      if (diurnas > 0) {
+        segmentos.push({ fecha, tipo: 'dia_libre_diurna', horas: diurnas });
       }
-      if (horasNocturnas > 0) {
-        segmentos.push({ fecha, tipo: 'dia_libre_nocturna', horas: horasNocturnas });
+      if (nocturnas > 0) {
+        segmentos.push({ fecha, tipo: 'dia_libre_nocturna', horas: nocturnas });
       }
     } else if (jornadaBase === 'asueto') {
-      const total = horasDiurnas + horasNocturnas;
+      const total = diurnas + nocturnas;
       if (total > 0) segmentos.push({ fecha, tipo: 'asueto', horas: total });
     }
   }

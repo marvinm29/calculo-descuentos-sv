@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { DiaRegistro } from './registroTypes';
-import { formatearFecha, totalesSemana } from './registroTypes';
+import { formatearFecha, totalesSemana, horasDiurnasDeBloques, horasNocturnasDeBloques } from './registroTypes';
 
 export interface ResumenSemanalVisualProps {
   dias: DiaRegistro[];
@@ -46,8 +46,8 @@ export function ResumenSemanalVisual({
   const barData = dias.map((d) => ({
     label: diaLabel(d.fecha),
     date: diaMes(d.fecha),
-    Diurna: d.horasDiurnas,
-    Nocturna: d.horasNocturnas,
+    Diurna: horasDiurnasDeBloques(d.bloques),
+    Nocturna: horasNocturnasDeBloques(d.bloques),
   }));
 
   const now = new Date();
@@ -126,10 +126,11 @@ export function ResumenSemanalVisual({
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-4 gap-2">
-        <StatCard label="Total" value={`${totalHoras}h`} />
-        <StatCard label="Diurnas" value={`${t.horasDiurnas}h`} />
-        <StatCard label="Nocturnas" value={`${t.horasNocturnas}h`} />
+      <div className="grid grid-cols-5 gap-2">
+        <StatCard label="Pagadas" value={`${totalHoras.toFixed(1)}h`} />
+        <StatCard label="Diurnas" value={`${t.horasDiurnas.toFixed(1)}h`} />
+        <StatCard label="Nocturnas" value={`${t.horasNocturnas.toFixed(1)}h`} />
+        <StatCard label="Pausas" value={`${t.horasPausa.toFixed(1)}h`} highlight />
         <StatCard
           label="% Nocturna"
           value={`${pctNocturna.toFixed(0)}%`}

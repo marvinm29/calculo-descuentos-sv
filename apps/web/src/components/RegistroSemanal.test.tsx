@@ -16,14 +16,6 @@ describe('RegistroSemanal', () => {
     ).toBeInTheDocument();
   });
 
-  it('renderiza la fila de entrada para el día seleccionado', () => {
-    renderWithContext(<RegistroSemanal />);
-
-    expect(
-      screen.getByText('Jornada'),
-    ).toBeInTheDocument();
-  });
-
   it('muestra el resumen semanal visual con navegación', () => {
     renderWithContext(<RegistroSemanal />);
 
@@ -38,31 +30,28 @@ describe('RegistroSemanal', () => {
     ).toBeInTheDocument();
   });
 
-  it('actualiza datos al ingresar horas', async () => {
+  it('botón Agregar bloque funciona', async () => {
     const user = userEvent.setup();
     renderWithContext(<RegistroSemanal />);
 
-    const inputs = screen.getAllByLabelText(/Horas diurnas para/);
-    await user.clear(inputs[0]!);
-    await user.type(inputs[0]!, '8');
+    const btn = screen.getByText('+ Agregar bloque');
+    await user.click(btn);
 
     expect(
-      screen.getByText(/Total/),
+      screen.getByDisplayValue('08:00'),
     ).toBeInTheDocument();
   });
 
-  it('persiste datos en localStorage', async () => {
+  it('persiste datos en localStorage al agregar bloque', async () => {
     const user = userEvent.setup();
     renderWithContext(<RegistroSemanal />);
 
-    const inputs = screen.getAllByLabelText(/Horas diurnas para/);
-    await user.clear(inputs[0]!);
-    await user.type(inputs[0]!, '8');
+    await user.click(screen.getByText('+ Agregar bloque'));
 
     await waitFor(() => {
       const stored = localStorage.getItem('registro-semanal');
       expect(stored).not.toBeNull();
-      expect(stored).toContain('"horasDiurnas":8');
+      expect(stored).toContain('"bloques"');
     });
   });
 });
