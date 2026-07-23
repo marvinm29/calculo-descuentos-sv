@@ -161,7 +161,8 @@ listo para GitHub Pages; `lint + check-types + test` y coverage > 80% en verde.
 | 7      | completado  | HistorialPeriodos, ExportarPDF, CI/CD, ajustes finales |
 | 8      | completado  | Producción: DigitalOcean + Monitoreo + Hardening |
 | 9      | completado  | UI/UX: Dark/light mode, mejora visual, vista día por día |
-| 10     | completado  | Rediseño: jornada, horas extra, incentivos (mata bugs #1-#6) |
+| 10a    | completado  | Rediseño: jornada, horas extra, incentivos (semana fija + SemanaExtrasCard) |
+| 10b    | completado  | Simplificación: EntradasPeriodo (fecha+horas+tipo), sin time-pickers ni semanas |
 
 ---
 
@@ -692,4 +693,62 @@ pnpm test          → 157 tests (86 shared + 25 api + 46 web), 0 failures
 | RF10 | Hecho | `ExportarPDF.tsx` (`window.print()` + `@media print`) |
 
 ---
+
+## Sprint 10b — Simplificación: EntradasPeriodo (lista plana por fecha)
+
+**Completado**: 2026-07-23.
+
+### Problema resuelto
+
+El modelo anterior (`SemanaExtrasCard` + buckets semanales sin fecha) impedía:
+- Generar un gráfico/vista semanal real
+- Saber qué día se trabajaron las extras (relevante para asuetos/días libres)
+- Persistir fechas concretas
+
+El nuevo modelo es una **lista plana** de `EntradaPeriodo[]` donde cada entrada tiene:
+- `fecha: string` (YYYY-MM-DD)
+- `tipo: 'extra' | 'dia_libre' | 'asueto'`
+- `horasDiurnas: number`
+- `horasNocturnas: number`
+
+### Decisiones de diseño
+
+- **Sin time-pickers (HH:mm)**: inputs number puros para evitar bug #2 (cruce medianoche → 0h).
+- **Sin navegación entre semanas**: no hay `Map<semanaId>` ni prev/next. Es una lista plana que se agrega/elimina.
+- **`horasBaseNocturnas` derivado**: si `modalidad === 'nocturna'`, se cuentan fechas únicas × 7 (JORNADA.NOCTURNA_DIARIA). Nunca se pregunta al usuario.
+- **`asueto`**: suma diurnas + nocturnas en un solo segmento (el factor 2.00 no distingue modalidad).
+
+### Archivos creados
+
+- `apps/web/src/components/EntradasPeriodo.tsx` — componente todo-en-uno: lista de entradas con date picker, inputs numéricos, selector tipo, botones agregar/eliminar.
+
+### Archivos modificados
+
+- `packages/shared/src/types.ts` — nuevos tipos `EntradaPeriodo`, `TipoEntrada`.
+- `apps/web/src/context/AppContext.tsx` — reemplazado `registro-periodo` + `registro-semanal` por `entradas` (EntradaPeriodo[]).
+- `apps/web/src/hooks/useCalculos.ts` — `entradasASegmentos()` convierte EntradaPeriodo[] → SegmentoHorario[], deriva horasBaseNocturnas.
+- `apps/web/src/App.tsx` — slot `EntradasPeriodo` en lugar de `RegistroSemanal`.
+
+### Archivos eliminados
+
+- `FilaDia.tsx`, `FilaDia.test.tsx`, `TotalesSemana.tsx`, `TotalesSemana.test.tsx`
+- `RegistroSemanal.tsx`, `RegistroSemanal.test.tsx`, `ResumenSemanalVisual.tsx`
+- `useRegistroSemanal.ts`, `registroTypes.ts`, `migrarRegistro.ts`, `migrarRegistro.test.ts`
+
+### Archivos creados en este sprint
+
+- `apps/web/src/hooks/useCalculos.test.ts` — 11 tests para `entradasASegmentos` (conversión, skip 0h, nocturnidad)
+- `apps/web/src/components/EntradasPeriodo.test.tsx` — 9 tests (empty, add, render, update fecha/diurnas/nocturnas, select tipo, delete, factor)
+
+### Archivos modificados
+
+- `apps/web/src/hooks/useCalculos.ts` — exportada `entradasASegmentos()` para test directo
+
+### Verificación (gate en orden)
+
+```
+pnpm lint          → 4 tasks OK
+pnpm check-types   → 4 tasks OK
+pnpm test          → 195 tests (96 shared + 26 api + 73 web), 0 failures
+```
 

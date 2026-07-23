@@ -67,29 +67,20 @@ packages/config/         → ESLint flat config, tsconfig/base.json
 - `vitest-rtl-supertest` — patrones de testing, coverage > 80%.
 - `sprint-workflow` — cadencia de 7 sprints, gate y documentación.
 
-## 🎯 Objetivo actual (completado — esperando el próximo)
+## 🎯 Objetivo actual (completado — Sprint 10b)
 
-**Sprint 10 completado** — Rediseño: jornada, horas extra, incentivos (mata bugs #1–#6).
+**Sprint 10b completado** — Simplificación del input de horas extra: lista plana por fecha (EntradasPeriodo), sin time-pickers ni navegación de semanas.
 
-Ver `specs/sprints.md` §Sprint 10 para detalle.
+## 🚀 Sprint 10b completado (2026-07-23)
 
-## 🚀 Sprint 10 completado (2026-07-22)
-
-- ✅ `RECARGO_NOCTURNIDAD: 0.25` como constante separada (ya no es multiplicador 1.25)
-- ✅ `JORNADA` con límites legales (44h/39h semanales, 8h/7h diarias)
-- ✅ Nuevos tipos: `JornadaConfig`, `SemanaRegistro`, `Incentivo`, `ModalidadJornada`
-- ✅ `calcular.ts` orquesta recargo nocturnidad + incentivos gravados/no gravados
-- ✅ Auto-conversión: exceso sobre 44h/39h se paga como extra
-- ✅ Frontend rediseñado: `JornadaSelector`, `SemanaExtrasCard`, `IncentivosForm`, `TotalesPeriodo`
-- ✅ Bug #1 fix: `HistorialPeriodos` guarda request real, no hardcodeado
-- ✅ Bug #6 fix: `useCalculos` consume modelo nuevo directo (sin semana arbitraria)
-- ✅ Migración best-effort de localStorage viejo (`migrarRegistro.ts`)
-- ✅ Fix distribucion exceso: cada semana recibe su exceso completo (no secuencial)
-- ✅ Fix `minutosDelBloque`: maneja cruce de medianoche (19:00→02:00 = 7h)
-- ✅ Migracion rescata `horasBaseNocturnas` de bloques `base` en jornada nocturna
-- ✅ 7 tests de `autoConvertirExceso` (48h, 42h, 44h, multi-semana)
-- ✅ 8 tests unitarios de `minutosDelBloque` (cruce medianoche, normal, bordes)
-- ✅ Gate: `pnpm lint && pnpm check-types && pnpm test` — 204 tests, 0 failures
+- ✅ Tipos `EntradaPeriodo`, `TipoEntrada` en shared/types.ts
+- ✅ Componente `EntradasPeriodo.tsx`: date picker + número de horas diurnas/nocturnas + selector tipo (extra/dia_libre/asueto)
+- ✅ `AppContext.tsx`: reemplazado `registro-periodo` + `registro-semanal` por `entradas` (`EntradaPeriodo[]`)
+- ✅ `useCalculos.ts`: convierte `EntradaPeriodo[]` → segmentos, deriva `horasBaseNocturnas` de JornadaConfig.modalidad
+- ✅ Archivos obsoletos eliminados: `FilaDia`, `TotalesSemana`, `RegistroSemanal`, `ResumenSemanalVisual`, `useRegistroSemanal`, `registroTypes`, `migrarRegistro`
+- ✅ `useCalculos.test.ts` — 11 tests para `entradasASegmentos` (conversión, skip 0h, nocturnidad)
+- ✅ `EntradasPeriodo.test.tsx` — 9 tests (empty, add, render, update fecha/diurnas/nocturnas, select tipo, delete, factor)
+- ✅ Gate: `pnpm lint && pnpm check-types && pnpm test` — 195 tests, 0 failures
 
 ## Estado de producción
 

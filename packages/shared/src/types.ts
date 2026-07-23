@@ -29,6 +29,16 @@ export interface Incentivo {
   aplicaDescuentos: boolean;
 }
 
+export type TipoEntrada = 'extra' | 'dia_libre' | 'asueto';
+
+export interface EntradaPeriodo {
+  id: string;
+  fecha: string; // YYYY-MM-DD
+  tipo: TipoEntrada;
+  horasDiurnas: number;
+  horasNocturnas: number;
+}
+
 export type TipoJornada =
   | 'regular_diurna'
   | 'regular_nocturna'

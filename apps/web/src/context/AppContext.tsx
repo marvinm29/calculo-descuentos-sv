@@ -1,10 +1,7 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import type { JornadaConfig, Incentivo } from '@calc/shared';
+import type { JornadaConfig, Incentivo, EntradaPeriodo } from '@calc/shared';
 import type { ConfigInicialData } from '../components/ConfigInicial';
-import type { DiaRegistro } from '../components/registroTypes';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-
-type SemanasData = Record<string, DiaRegistro[]>;
 
 const DEFAULT_JORNADA: JornadaConfig = {
   tipo: 'tiempo_completo',
@@ -17,8 +14,8 @@ interface AppContextValue {
   setConfig: (value: ConfigInicialData | ((prev: ConfigInicialData) => ConfigInicialData)) => void;
   jornada: JornadaConfig;
   setJornada: (value: JornadaConfig | ((prev: JornadaConfig) => JornadaConfig)) => void;
-  registro: SemanasData;
-  setRegistro: (value: SemanasData | ((prev: SemanasData) => SemanasData)) => void;
+  entradas: EntradaPeriodo[];
+  setEntradas: (value: EntradaPeriodo[] | ((prev: EntradaPeriodo[]) => EntradaPeriodo[])) => void;
   incentivos: Incentivo[];
   setIncentivos: (value: Incentivo[] | ((prev: Incentivo[]) => Incentivo[])) => void;
 }
@@ -41,9 +38,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     'jornada-config',
     DEFAULT_JORNADA,
   );
-  const [registro, setRegistro] = useLocalStorage<SemanasData>(
-    'registro-semanal',
-    {},
+  const [entradas, setEntradas] = useLocalStorage<EntradaPeriodo[]>(
+    'entradas-periodo',
+    [],
   );
   const [incentivos, setIncentivos] = useLocalStorage<Incentivo[]>(
     'incentivos',
@@ -57,8 +54,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setConfig,
         jornada,
         setJornada,
-        registro,
-        setRegistro,
+        entradas,
+        setEntradas,
         incentivos,
         setIncentivos,
       }}

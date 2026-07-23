@@ -33,9 +33,9 @@ describe('App', () => {
     expect(screen.getByText('Jornada Laboral')).toBeInTheDocument();
   });
 
-  it('renderiza registro de horas', () => {
+  it('renderiza entradas del periodo', () => {
     render(<App />);
-    expect(screen.getByText('Registro de Horas')).toBeInTheDocument();
+    expect(screen.getByText('Horas del Periodo')).toBeInTheDocument();
   });
 
   it('renderiza seccion de incentivos', () => {

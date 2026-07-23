@@ -2,7 +2,7 @@ import { Show, SignInButton, UserButton } from '@clerk/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ConfigInicial } from './components/ConfigInicial';
 import { JornadaSelector } from './components/JornadaSelector';
-import { RegistroSemanal } from './components/RegistroSemanal';
+import { EntradasPeriodo } from './components/EntradasPeriodo';
 import { IncentivosForm } from './components/IncentivosForm';
 import { ResultadoNeto } from './components/ResultadoNeto';
 import { GraficoPastel } from './components/GraficoPastel';
@@ -40,7 +40,7 @@ function ThemeToggle() {
 }
 
 function AppContent() {
-  const { jornada, setJornada, incentivos, setIncentivos } = useAppContext();
+  const { jornada, setJornada, entradas, setEntradas, incentivos, setIncentivos } = useAppContext();
   const calculosState = useCalculos();
 
   return (
@@ -87,7 +87,7 @@ function AppContent() {
           </div>
           <div className="print:hidden animate-fade-in-up space-y-3" style={{ animationDelay: '0.1s' }}>
             <JornadaSelector value={jornada} onChange={setJornada} />
-            <RegistroSemanal />
+            <EntradasPeriodo entradas={entradas} onChange={setEntradas} />
             <IncentivosForm incentivos={incentivos} onChange={setIncentivos} />
           </div>
 
