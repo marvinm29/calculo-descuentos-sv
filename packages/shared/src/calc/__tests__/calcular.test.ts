@@ -221,6 +221,152 @@ describe('calcular', () => {
     });
   });
 
+  describe('recargo nocturnidad (Sprint 10)', () => {
+    it('39h base nocturnas salario $800 → recargo ≈ $32.50', () => {
+      const horaDiurna = 800 / 30 / 8;
+      const esperado = round2(39 * horaDiurna * 0.25);
+      const result = calcular({
+        salarioBase: 800,
+        tipoPago: 'mensual',
+        fechaInicio: '2026-07-01',
+        fechaFin: '2026-07-31',
+        antiguedad: '1_a_3',
+        fechaIngreso: '2025-01-15',
+        segmentos: [],
+        horasBaseNocturnas: 39,
+      });
+      expect(result.bruto.recargoNocturnidad).toBe(esperado);
+    });
+
+    it('0 horas base nocturnas → recargo 0', () => {
+      const result = calcular({
+        salarioBase: 800,
+        tipoPago: 'mensual',
+        fechaInicio: '2026-07-01',
+        fechaFin: '2026-07-31',
+        antiguedad: '1_a_3',
+        fechaIngreso: '2025-01-15',
+        segmentos: [],
+        horasBaseNocturnas: 0,
+      });
+      expect(result.bruto.recargoNocturnidad).toBe(0);
+    });
+
+    it('sin campo horasBaseNocturnas → recargo 0 (backward compat)', () => {
+      const result = calcular({
+        salarioBase: 800,
+        tipoPago: 'mensual',
+        fechaInicio: '2026-07-01',
+        fechaFin: '2026-07-31',
+        antiguedad: '1_a_3',
+        fechaIngreso: '2025-01-15',
+        segmentos: [],
+      });
+      expect(result.bruto.recargoNocturnidad).toBe(0);
+    });
+  });
+
+  describe('incentivos (Sprint 10)', () => {
+    it('incentivo gravado → descuentos aumentan, neto < brutoTotal', () => {
+      const result = calcular({
+        salarioBase: 800,
+        tipoPago: 'mensual',
+        fechaInicio: '2026-07-01',
+        fechaFin: '2026-07-31',
+        antiguedad: '1_a_3',
+        fechaIngreso: '2025-01-15',
+        segmentos: [],
+        incentivos: [
+          { id: '1', concepto: 'Bono', monto: 200, aplicaDescuentos: true },
+        ],
+      });
+      expect(result.bruto.incentivos).toBe(200);
+      expect(result.bruto.incentivosGravados).toBe(200);
+      expect(result.bruto.brutoTotal).toBe(1000);
+      expect(result.descuentos.totalDescuentos).toBeGreaterThan(0);
+    });
+
+    it('incentivo mixto: gravado + no gravado', () => {
+      const result = calcular({
+        salarioBase: 800,
+        tipoPago: 'mensual',
+        fechaInicio: '2026-07-01',
+        fechaFin: '2026-07-31',
+        antiguedad: '1_a_3',
+        fechaIngreso: '2025-01-15',
+        segmentos: [],
+        incentivos: [
+          { id: '1', concepto: 'Bono', monto: 100, aplicaDescuentos: true },
+          { id: '2', concepto: 'Regalo', monto: 50, aplicaDescuentos: false },
+        ],
+      });
+      expect(result.bruto.incentivos).toBe(150);
+      expect(result.bruto.incentivosGravados).toBe(100);
+      expect(result.bruto.brutoTotal).toBe(950);
+    });
+
+    it('sin incentivos → campos en 0', () => {
+      const result = calcular({
+        salarioBase: 800,
+        tipoPago: 'mensual',
+        fechaInicio: '2026-07-01',
+        fechaFin: '2026-07-31',
+        antiguedad: '1_a_3',
+        fechaIngreso: '2025-01-15',
+        segmentos: [],
+      });
+      expect(result.bruto.incentivos).toBe(0);
+      expect(result.bruto.incentivosGravados).toBe(0);
+    });
+  });
+
+  describe('1h extra sola (Sprint 10 — sin mínimo)', () => {
+    it('1h extra diurna sola se calcula correctamente', () => {
+      const horaDiurna = 800 / 30 / 8;
+      const result = calcular({
+        salarioBase: 800,
+        tipoPago: 'mensual',
+        fechaInicio: '2026-07-01',
+        fechaFin: '2026-07-31',
+        antiguedad: '1_a_3',
+        fechaIngreso: '2025-01-15',
+        segmentos: [
+          { fecha: '2026-07-01', tipo: 'extra_diurna', horas: 1 },
+        ],
+      });
+      expect(result.bruto.horasExtraDiurna).toBe(
+        round2(horaDiurna * 2.0 * 1),
+      );
+      expect(result.bruto.brutoTotal).toBe(
+        round2(800 + horaDiurna * 2.0 * 1),
+      );
+    });
+  });
+
+  describe('agregación multi-semana (Sprint 10)', () => {
+    it('Sem1 2h extra D + Sem2 3h extra N → totales correctos', () => {
+      const horaDiurna = 800 / 30 / 8;
+      const result = calcular({
+        salarioBase: 800,
+        tipoPago: 'mensual',
+        fechaInicio: '2026-07-01',
+        fechaFin: '2026-07-31',
+        antiguedad: '1_a_3',
+        fechaIngreso: '2025-01-15',
+        segmentos: [
+          { fecha: '2026-07-01', tipo: 'extra_diurna', horas: 2 },
+          { fecha: '2026-07-08', tipo: 'extra_nocturna', horas: 3 },
+        ],
+      });
+      expect(result.bruto.horasExtraDiurna).toBe(
+        round2(horaDiurna * 2.0 * 2),
+      );
+      expect(result.bruto.horasExtraNocturna).toBe(
+        round2(horaDiurna * 2.25 * 3),
+      );
+    });
+  });
+
   describe('sin segmentos de horas', () => {
     it('salario $800 mensual sin extras produce solo salario base', () => {
       const result = calcular({

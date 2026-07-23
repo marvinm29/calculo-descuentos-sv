@@ -239,6 +239,15 @@ bonoVacacional = montoVacaciones * 0.30
 
 ## Resumen de Formato en Codigo
 
+## Incentivos (Bonos, Comisiones)
+
+Los bonos y comisiones habituales forman parte del salario y están sujetos a
+cotización de ISSS, AFP e ISR (Art. 3 LISR). Por defecto, se marcan como
+"sujeto a descuentos de ley". Si se desmarcan, se suman al bruto total sin
+cotizar.
+
+---
+
 ```typescript
 // packages/shared/src/tasas.ts
 
@@ -267,7 +276,17 @@ export const HORAS_EXTRA = {
   DIA_LIBRE_DIURNA: 1.50,
   DIA_LIBRE_NOCTURNA: 1.75,
   ASUETO: 2.00,
-  NOCTURNIDAD: 1.25,
+} as const;
+
+// Recargo puro de nocturnidad (Art. 168 CT). El multiplicador de pago es 1 + RECARGO_NOCTURNIDAD.
+export const RECARGO_NOCTURNIDAD = 0.25 as const;
+
+// Límites legales de jornada (Art. 161 CT).
+export const JORNADA = {
+  DIURNA_SEMANAL: 44,
+  NOCTURNA_SEMANAL: 39,
+  DIURNA_DIARIA: 8,
+  NOCTURNA_DIARIA: 7,
 } as const;
 
 export const AGUINALDO_DIAS = {

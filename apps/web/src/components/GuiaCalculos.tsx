@@ -8,6 +8,18 @@ const SECTIONS = [
     desc: 'Se divide el salario mensual entre 30 días para obtener el salario diario, luego entre 8 horas para obtener el salario por hora (Art. 168 CT).',
   },
   {
+    id: 'recargo-nocturnidad',
+    title: 'Recargo de Nocturnidad (Art. 168 CT)',
+    formula: 'recargo = horasBaseNocturnas × salarioHora × 25%',
+    example: { salario: 250, hora: 1.04, recargo: 0.26, total: 1.30 },
+    desc: 'El recargo nocturno es un adicional del 25% sobre el salario por hora diurna. Se aplica a las horas base trabajadas en jornada nocturna. Es un recargo aditivo, no reemplaza el salario base. Ejemplo MTPS: $1.04 + $0.26 = $1.30.',
+  },
+  {
+    id: 'incentivos',
+    title: 'Incentivos (Bonos, Comisiones)',
+    desc: 'Los bonos y comisiones habituales forman parte del salario y están sujetos a cotización de ISSS/AFP e ISR (LISR Art. 3). Por defecto, los incentivos se marcan como sujetos a descuentos de ley. Si se marca "No aplica descuentos", se suman al bruto total sin cotizar.',
+  },
+  {
     id: 'horas-extra',
     title: 'Horas Extra',
     desc: 'Las horas extras se pagan con factores adicionales sobre el salario por hora, según el Art. 168-173 del Código de Trabajo.',
@@ -82,7 +94,7 @@ function FlowDiagram() {
       <div className="flex items-start gap-0 min-w-[600px]">
         <FlowNode label="Salario Base" color="bg-primary" top />
         <FlowArrow />
-        <FlowNodeGroup label="Horas" items={['Diurnas', 'Nocturnas']} color="bg-accent" />
+        <FlowNodeGroup label="Extras + Recargo" items={['HE Diurna', 'HE Nocturna', 'Recargo 25%', 'Incentivos']} color="bg-accent" />
         <FlowArrow />
         <FlowNode label="Salario Bruto" color="bg-primary" top />
         <FlowArrow />

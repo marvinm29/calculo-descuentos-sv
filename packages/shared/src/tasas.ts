@@ -28,7 +28,15 @@ export const HORAS_EXTRA = {
   DIA_LIBRE_DIURNA: 1.5,
   DIA_LIBRE_NOCTURNA: 1.75,
   ASUETO: 2.0,
-  NOCTURNIDAD: 1.25,
+} as const;
+
+export const RECARGO_NOCTURNIDAD = 0.25 as const;
+
+export const JORNADA = {
+  DIURNA_SEMANAL: 44,
+  NOCTURNA_SEMANAL: 39,
+  DIURNA_DIARIA: 8,
+  NOCTURNA_DIARIA: 7,
 } as const;
 
 export const AGUINALDO_DIAS = {

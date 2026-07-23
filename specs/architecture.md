@@ -149,19 +149,22 @@ justifiquen multiples endpoints REST. Mantiene el backend simple.
 App.tsx
 ├── ConfigInicial.tsx
 │   └── Input: salario base, tipo pago, antigüedad
-├── RegistroSemanal.tsx
-│   ├── SelectorSemana.tsx         ← Navegación entre semanas
-│   ├── FilaDia.tsx (x7)           ← Una fila por día (Lun-Dom)
-│   │   └── SelectorTipoHora.tsx   ← Dropdown de tipo de jornada
-│   └── TotalesSemana.tsx          ← Suma semanal en tiempo real
+├── JornadaSelector.tsx
+│   └── Modalidad (diurna/nocturna), tipo (completo/personalizado), horas semanales
+├── SemanaExtrasCard.tsx (×N)
+│   └── Buckets semanales: horas base nocturnas + 5 tipos de extra (sin fechas)
+├── IncentivosForm.tsx
+│   └── Lista: concepto + monto + checkbox "aplica descuentos"
+├── TotalesPeriodo.tsx
+│   └── Resumen simple de horas totales (sin navegación ni gráficos)
 ├── ResultadoNeto.tsx
-│   ├── ResumenBruto.tsx           ← Desglose del salario bruto
+│   ├── ResumenBruto.tsx           ← Desglose + recargo nocturnidad + incentivos
 │   ├── TablaDescuentos.tsx        ← ISSS, AFP, Renta detallados
 │   ├── Prestaciones.tsx           ← Aguinaldo, vacaciones, Q25
 │   └── NetoLiquido.tsx            ← Total neto destacado
 ├── GraficoPastel.tsx              ← Distribución salarial
 ├── TablaTasas.tsx                 ← Tasas vigentes + links .gob.sv
-├── HistorialPeriodos.tsx          ← Lista de períodos guardados
+├── HistorialPeriodos.tsx          ← Lista de períodos guardados (bug #1 fixed)
 └── ExportarPDF.tsx                ← Botón exportar/imprimir
 ```
 
@@ -187,24 +190,38 @@ index.ts
 ## Estrategia de Estado en Frontend
 
 ```
-┌─────────────────────────────────────────────────┐
-│                  App State                        │
-│  ┌─────────────┐  ┌──────────────────────────┐  │
-│  │ ConfigInicial│  │    Registro Semanal       │  │
-│  │ (localStorage)│  │    (localStorage)         │  │
-│  │              │  │   Map<semanaId, Dia[]>    │  │
-│  └──────┬───────┘  └───────────┬──────────────┘  │
-│         │                      │                  │
-│         └──────────┬───────────┘                  │
-│                    ▼                              │
-│         ┌──────────────────┐                     │
-│         │   useCalculos()   │ ← Hook derivado     │
-│         │  (memorizado)     │                     │
-│         └──────────────────┘                     │
-└─────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                     App State (AppContext)                │
+│  ┌─────────────┐ ┌──────────────┐ ┌────────────────┐   │
+│  │ ConfigInicial│ │ JornadaConfig│ │  SemanaRegistro │   │
+│  │ (localStorage)│ │(localStorage)│ │  [](localStorage)│   │
+│  │ config-inicial│ │jornada-config│ │registro-periodo│   │
+│  └──────┬───────┘ └──────┬───────┘ └───────┬────────┘   │
+│  ┌──────┴───────┐                        ┌──┴────────┐  │
+│  │  Incentivos[] │                        │ Incentivos │  │
+│  │ (localStorage)│                        │ (local)    │  │
+│  └──────┬───────┘                        └────────────┘  │
+│         │                                                 │
+│         └──────────────┬──────────────────┘               │
+│                        ▼                                  │
+│             ┌──────────────────────┐                     │
+│             │    useCalculos()     │ ← Hook derivado      │
+│             │ (jornada + semanas + │   memorizado         │
+│             │  incentivos → CalcularRequest → Response)  │
+│             └──────────────────────┘                     │
+│                        │                                  │
+│                        ▼                                  │
+│             ┌──────────────────────┐                     │
+│             │   HistorialPeriodos  │ ← Guarda request      │
+│             │   (request real,     │   + response real    │
+│             │    bug #1 fixed)     │                     │
+│             └──────────────────────┘                     │
+└─────────────────────────────────────────────────────────┘
 ```
 
 - **Config**: Un solo objeto, persiste en localStorage
-- **Registro semanal**: Map de semanas, cada semana es un array de 7 dias
-- **Calculos**: Derivados de config + registro, memorizados con useMemo
-- **Historial**: Array de periodos calculados guardados
+- **Jornada**: `JornadaConfig` (modalidad, horas semanales, tipo)
+- **Registro**: `SemanaRegistro[]` — buckets semanales sin fechas ni navegación
+- **Incentivos**: `Incentivo[]` — cada ítem con concepto, monto, aplicaDescuentos
+- **Cálculos**: Derivados de config + jornada + registro + incentivos, memorizados con useMemo
+- **Historial**: Guarda el `CalcularRequest` real (no hardcodeado — fix bug #1)

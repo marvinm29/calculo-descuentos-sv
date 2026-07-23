@@ -1,35 +1,43 @@
 import { describe, it, expect } from 'vitest';
 import {
   calcularSalarioHora,
+  calcularRecargoNocturnidad,
   calcularPagoSegmentos,
   round2,
 } from '../horasExtra';
-import { HORAS_EXTRA } from '../../tasas';
+import { HORAS_EXTRA, RECARGO_NOCTURNIDAD } from '../../tasas';
 import type { SegmentoHorario } from '../../types';
 
 describe('calcularSalarioHora', () => {
   it('calcula salario diario y por hora para un salario mensual de $800', () => {
-    const { salarioDiario, salarioHoraDiurna, salarioHoraNocturna } =
-      calcularSalarioHora(800);
+    const { salarioDiario, salarioHoraDiurna } = calcularSalarioHora(800);
 
     expect(salarioDiario).toBeCloseTo(26.67, 2);
     expect(salarioHoraDiurna).toBeCloseTo(3.33, 2);
-    expect(salarioHoraNocturna).toBeCloseTo(4.17, 2);
-  });
-
-  it('la jornada nocturna incluye 25% de nocturnidad sobre la diurna', () => {
-    const HORA_DIURNA = 1000 / 30 / 8;
-    const HORA_NOCTURNA = HORA_DIURNA * HORAS_EXTRA.NOCTURNIDAD;
-    const { salarioHoraDiurna, salarioHoraNocturna } =
-      calcularSalarioHora(1000);
-    expect(salarioHoraDiurna).toBeCloseTo(HORA_DIURNA, 4);
-    expect(salarioHoraNocturna).toBeCloseTo(HORA_NOCTURNA, 4);
-    expect(salarioHoraNocturna / salarioHoraDiurna).toBeCloseTo(1.25, 4);
   });
 
   it('salario 0 da salarioHora 0', () => {
     const { salarioHoraDiurna } = calcularSalarioHora(0);
     expect(salarioHoraDiurna).toBe(0);
+  });
+});
+
+describe('calcularRecargoNocturnidad', () => {
+  it('calcula recargo = horasBaseNocturnas × salarioHora × 0.25', () => {
+    const result = calcularRecargoNocturnidad(800, 39);
+    const horaDiurna = 800 / 30 / 8;
+    expect(result).toBeCloseTo(39 * horaDiurna * RECARGO_NOCTURNIDAD, 2);
+  });
+
+  it('trazable al ejemplo MTPS $1.04 → $1.30', () => {
+    // $250 salario → hora diurna = 250/30/8 ≈ 1.0417
+    // recargo = 1.0417 × 0.25 ≈ 0.26
+    const result = calcularRecargoNocturnidad(250, 1);
+    expect(result).toBeCloseTo(0.26, 2);
+  });
+
+  it('0 horas base nocturnas → 0 recargo', () => {
+    expect(calcularRecargoNocturnidad(800, 0)).toBe(0);
   });
 });
 

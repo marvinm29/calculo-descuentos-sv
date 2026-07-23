@@ -19,22 +19,25 @@ El usuario debe poder configurar:
 - [ ] La antiguedad seleccionada determina los dias de aguinaldo
 - [ ] Los datos de configuracion persisten en localStorage
 
-### RF02 - Registro Semanal de Horas
+### RF02 - Jornada Laboral y Horas Extra
 
-El usuario debe poder registrar por cada dia de la semana (Lun-Dom):
-- Tipo de jornada base: regular diurna, regular nocturna, descanso, asueto
-- Horas trabajadas en la jornada base
-- Horas extra diurnas (exceso sobre jornada regular)
-- Horas extra nocturnas (exceso sobre jornada regular)
-- Horas trabajadas en dia libre (diurnas/nocturnas)
-- Horas trabajadas en dia de asueto festivo
+El usuario debe poder configurar:
+- Tipo de jornada: tiempo completo (44h/sem diurna / 39h/sem nocturna) o personalizado
+- Modalidad: diurna o nocturna
+- Horas base nocturnas (recargo 25% Art. 168 CT) por semana
+- Horas extra por semana: diurna (2.00x), nocturna (2.25x), día libre diurna (1.50x),
+  día libre nocturna (1.75x), asueto (2.00x)
+- Incentivos (bonos, comisiones) con monto y checkbox "aplica descuentos de ley"
+- Múltiples semanas (buckets sin fechas ni navegación)
 
 **Criterios de aceptacion:**
-- [ ] Interfaz de calendario semanal con navegacion entre semanas
-- [ ] Por cada dia se puede seleccionar el tipo y las horas
-- [ ] Se muestran los totales semanales en tiempo real
-- [ ] Los datos se guardan automaticamente en localStorage
-- [ ] Se puede navegar a semanas anteriores y ver su registro
+- [ ] Selector de modalidad (diurna/nocturna) y tipo (completo/personalizado)
+- [ ] Si personalizado, input de horas semanales con validación
+- [ ] Recargo de nocturnidad visible como línea separada en el resumen
+- [ ] Auto-conversión: exceso sobre 44h (diurna) o 39h (nocturna) se paga como extra
+- [ ] Las extras no tienen mínimo — 1 hora se calcula y paga
+- [ ] Incentivos: default checkbox "sujeto a descuentos" (true)
+- [ ] Datos persisten en localStorage (keys `jornada-config`, `registro-periodo`, `incentivos`)
 
 ### RF03 - Calculo de Pago de Horas Extra
 

@@ -57,6 +57,25 @@ const validRequest = {
 
 describe('POST /api/calcular', () => {
   describe('happy path — 200', () => {
+    it('retorna 200 sin campos opcionales (backward compat)', async () => {
+      const reqSinOpcionales = {
+        salarioBase: 800,
+        tipoPago: 'mensual' as const,
+        fechaInicio: '2026-07-01',
+        fechaFin: '2026-07-31',
+        antiguedad: '1_a_3' as const,
+        fechaIngreso: '2025-01-15',
+        segmentos: [],
+      };
+      const res = await request(app)
+        .post('/api/calcular')
+        .send(reqSinOpcionales)
+        .expect(200);
+      expect(res.body.bruto.recargoNocturnidad).toBe(0);
+      expect(res.body.bruto.incentivos).toBe(0);
+      expect(res.body.bruto.incentivosGravados).toBe(0);
+    });
+
     it('retorna 200 con estructura CalcularResponse completa', async () => {
       const res = await request(app)
         .post('/api/calcular')

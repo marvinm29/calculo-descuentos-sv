@@ -4,6 +4,7 @@ import {
   AFP,
   RENTA_TRAMOS_MENSUAL,
   HORAS_EXTRA,
+  RECARGO_NOCTURNIDAD,
   AGUINALDO_DIAS,
   VACACIONES,
   QUINCENA_25,
@@ -39,7 +40,7 @@ describe('packages/shared smoke', () => {
       expect(HORAS_EXTRA.DIA_LIBRE_DIURNA).toBe(1.5);
       expect(HORAS_EXTRA.DIA_LIBRE_NOCTURNA).toBe(1.75);
       expect(HORAS_EXTRA.ASUETO).toBe(2.0);
-      expect(HORAS_EXTRA.NOCTURNIDAD).toBe(1.25);
+      expect(RECARGO_NOCTURNIDAD).toBe(0.25);
     });
 
     it('aguinaldo: 15/15/19/21 dias por antiguedad', () => {

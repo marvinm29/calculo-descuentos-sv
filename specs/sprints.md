@@ -161,6 +161,7 @@ listo para GitHub Pages; `lint + check-types + test` y coverage > 80% en verde.
 | 7      | completado  | HistorialPeriodos, ExportarPDF, CI/CD, ajustes finales |
 | 8      | completado  | Producción: DigitalOcean + Monitoreo + Hardening |
 | 9      | completado  | UI/UX: Dark/light mode, mejora visual, vista día por día |
+| 10     | completado  | Rediseño: jornada, horas extra, incentivos (mata bugs #1-#6) |
 
 ---
 

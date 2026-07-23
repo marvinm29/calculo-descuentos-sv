@@ -69,18 +69,22 @@ packages/config/         → ESLint flat config, tsconfig/base.json
 
 ## 🎯 Objetivo actual (completado — esperando el próximo)
 
-**Sprint 9 completado** — UI/UX: Dark/light mode, mejora visual, vista día por día.
+**Sprint 10 completado** — Rediseño: jornada, horas extra, incentivos (mata bugs #1–#6).
 
-Ver `specs/sprints.md` §Sprint 9 para detalle.
+Ver `specs/sprints.md` §Sprint 10 para detalle.
 
-## 🚀 Sprint 9 completado (2026-07-20)
+## 🚀 Sprint 10 completado (2026-07-22)
 
-- ✅ **UTF-8 plano**: ~35 HTML entities reemplazadas por caracteres Unicode directos
-- ✅ **Dark/light mode**: `@custom-variant dark`, CSS custom properties adaptativas, hook `useTheme()` con persistencia
-- ✅ **Toggle en header**: Botón sol/luna con SVG inline, cicla light → dark → system
-- ✅ **Paleta de colores**: `--surface`, `--text`, `--border` adaptativos en todos los componentes
-- ✅ **Vista día por día**: Toggle semanal/diario en `RegistroSemanal` con date picker
-- ✅ **Gate**: `pnpm lint && pnpm check-types && pnpm test` — 157 tests, 0 failures
+- ✅ `RECARGO_NOCTURNIDAD: 0.25` como constante separada (ya no es multiplicador 1.25)
+- ✅ `JORNADA` con límites legales (44h/39h semanales, 8h/7h diarias)
+- ✅ Nuevos tipos: `JornadaConfig`, `SemanaRegistro`, `Incentivo`, `ModalidadJornada`
+- ✅ `calcular.ts` orquesta recargo nocturnidad + incentivos gravados/no gravados
+- ✅ Auto-conversión: exceso sobre 44h/39h se paga como extra
+- ✅ Frontend rediseñado: `JornadaSelector`, `SemanaExtrasCard`, `IncentivosForm`, `TotalesPeriodo`
+- ✅ Bug #1 fix: `HistorialPeriodos` guarda request real, no hardcodeado
+- ✅ Bug #6 fix: `useCalculos` consume modelo nuevo directo (sin semana arbitraria)
+- ✅ Migración best-effort de localStorage viejo (`migrarRegistro.ts`)
+- ✅ Gate: `pnpm lint && pnpm check-types && pnpm test` — 146 tests, 0 failures
 
 ## Estado de producción
 
@@ -94,7 +98,9 @@ Ver `specs/sprints.md` §Sprint 9 para detalle.
 - **Dark mode**: Tailwind v4 class-based. Usar `@custom-variant dark (&:where(.dark, .dark *))` en CSS. El hook `useTheme()` persiste preferencia en localStorage. Toggle button en header con icono sol/luna.
 - **Colores frontend**: Definir paleta en `@theme` dentro de `index.css` usando `--color-*` custom properties. Aplicar `dark:` variants en todos los componentes.
 - **Caracteres españoles**: Usar UTF-8 plano (á, é, í, ó, ú, ñ, ü) directamente en JSX. React escapa automáticamente. No usar HTML entities (`&oacute;`, `&ntilde;`, etc.).
-- **Vista día por día**: Toggle `Vista semanal / Vista día` en el componente `RegistroSemanal`. En modo día: selector de fecha + inputs para un día. Misma estructura de datos `DiaRegistro[]`.
+- **Jornada**: `JornadaSelector` (modalidad diurna/nocturna, tiempo completo/personalizado). Horas extras como buckets semanales sin fechas (`SemanaExtrasCard`). Exceso legal → auto-conversión a extra.
+- **Incentivos**: `IncentivosForm` con checkbox "Aplica descuentos de ley" default true. Los no gravados se suman al bruto total sin cotizar.
+- **Historico viejo**: localStorage key `registro-semanal` (formato `DiaRegistro[]` con bloques horarios) fue reemplazada por `jornada-config` + `registro-periodo` + `incentivos`. Migración best-effort en `migrarRegistro.ts` — datos corruptos → defaults, no inventar.
 
 ## Recursos clave
 

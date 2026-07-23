@@ -2,16 +2,15 @@ import { useState, useCallback } from 'react';
 
 export function useLocalStorage<T>(
   key: string,
-  initialValue: T,
+  initialValue: T | (() => T),
 ): [T, (value: T | ((prev: T) => T)) => void] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
       const item = window.localStorage.getItem(key);
-      return item !== null
-        ? (JSON.parse(item) as T)
-        : initialValue;
+      if (item !== null) return JSON.parse(item) as T;
+      return initialValue instanceof Function ? initialValue() : initialValue;
     } catch {
-      return initialValue;
+      return initialValue instanceof Function ? initialValue() : initialValue;
     }
   });
 

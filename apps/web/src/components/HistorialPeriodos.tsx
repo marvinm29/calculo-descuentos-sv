@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/react';
-import type { CalculoState, CalcularRequest, CalcularResponse } from '@calc/shared';
+import type { CalculoState, CalcularResponse } from '@calc/shared';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { getApiUrl } from '../lib/api';
 
@@ -93,15 +93,6 @@ export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
     if (isSignedIn) {
       try {
         const token = await getToken();
-        const request: CalcularRequest = {
-          salarioBase: 800,
-          tipoPago: 'mensual',
-          fechaInicio: new Date().toISOString().slice(0, 10),
-          fechaFin: new Date().toISOString().slice(0, 10),
-          antiguedad: '1_a_3',
-          fechaIngreso: new Date().toISOString().slice(0, 10),
-          segmentos: [],
-        };
 
         const res = await fetch(`${getApiUrl()}/api/history`, {
           method: 'POST',
@@ -109,7 +100,7 @@ export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ request, response: calculoState.data }),
+          body: JSON.stringify({ request: calculoState.request, response: calculoState.data }),
         });
         if (res.ok) {
           const created = (await res.json()) as HistoryRow;

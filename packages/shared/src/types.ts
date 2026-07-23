@@ -5,6 +5,30 @@ export type TipoPago = 'mensual' | 'quincenal';
 
 export type Antiguedad = 'menos_1' | '1_a_3' | '3_a_9' | '10_o_mas';
 
+export type ModalidadJornada = 'diurna' | 'nocturna';
+
+export interface JornadaConfig {
+  tipo: 'tiempo_completo' | 'personalizado';
+  horasSemanales: number;
+  modalidad: ModalidadJornada;
+}
+
+export interface SemanaRegistro {
+  horasBaseNocturnas: number;
+  extraDiurna: number;
+  extraNocturna: number;
+  diaLibreDiurna: number;
+  diaLibreNocturna: number;
+  asueto: number;
+}
+
+export interface Incentivo {
+  id: string;
+  concepto: string;
+  monto: number;
+  aplicaDescuentos: boolean;
+}
+
 export type TipoJornada =
   | 'regular_diurna'
   | 'regular_nocturna'
@@ -28,6 +52,8 @@ export interface CalcularRequest {
   antiguedad: Antiguedad;
   fechaIngreso: string; // ISO 8601
   segmentos: SegmentoHorario[];
+  horasBaseNocturnas?: number;
+  incentivos?: Incentivo[];
 }
 
 export interface BrutoResponse {
@@ -37,6 +63,9 @@ export interface BrutoResponse {
   diaLibreDiurna: number;
   diaLibreNocturna: number;
   asueto: number;
+  recargoNocturnidad: number;
+  incentivos: number;
+  incentivosGravados: number;
   brutoTotal: number;
 }
 
@@ -104,5 +133,5 @@ export interface CalcularResponse {
 export type CalculoState =
   | { status: 'idle' }
   | { status: 'loading' }
-  | { status: 'success'; data: CalcularResponse }
+  | { status: 'success'; data: CalcularResponse; request: CalcularRequest }
   | { status: 'error'; error: string };

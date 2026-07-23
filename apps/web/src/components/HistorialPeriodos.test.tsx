@@ -2,10 +2,21 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HistorialPeriodos } from './HistorialPeriodos';
-import type { CalculoState } from '@calc/shared';
+import type { CalculoState, CalcularRequest } from '@calc/shared';
+
+const dummyRequest: CalcularRequest = {
+  salarioBase: 800,
+  tipoPago: 'mensual',
+  fechaInicio: '2026-07-01',
+  fechaFin: '2026-07-31',
+  antiguedad: '1_a_3',
+  fechaIngreso: '2025-01-15',
+  segmentos: [],
+};
 
 const successState: CalculoState = {
   status: 'success',
+  request: dummyRequest,
   data: {
     bruto: {
       salarioBase: 800,
@@ -14,6 +25,9 @@ const successState: CalculoState = {
       diaLibreDiurna: 0,
       diaLibreNocturna: 0,
       asueto: 0,
+      recargoNocturnidad: 0,
+      incentivos: 0,
+      incentivosGravados: 0,
       brutoTotal: 800,
     },
     descuentos: {

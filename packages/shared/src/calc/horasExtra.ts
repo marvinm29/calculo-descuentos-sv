@@ -1,5 +1,5 @@
 import type { SegmentoHorario, TipoJornada } from '../types';
-import { HORAS_EXTRA } from '../tasas.js';
+import { HORAS_EXTRA, RECARGO_NOCTURNIDAD } from '../tasas.js';
 
 const DIAS_LABORALES = 30;
 const HORAS_DIURNAS_AL_DIA = 8;
@@ -7,15 +7,20 @@ const HORAS_DIURNAS_AL_DIA = 8;
 interface SalarioHora {
   salarioDiario: number;
   salarioHoraDiurna: number;
-  salarioHoraNocturna: number;
 }
 
 export function calcularSalarioHora(salarioMensual: number): SalarioHora {
   const salarioDiario = salarioMensual / DIAS_LABORALES;
   const salarioHoraDiurna = salarioDiario / HORAS_DIURNAS_AL_DIA;
-  const salarioHoraNocturna = salarioHoraDiurna * HORAS_EXTRA.NOCTURNIDAD;
+  return { salarioDiario, salarioHoraDiurna };
+}
 
-  return { salarioDiario, salarioHoraDiurna, salarioHoraNocturna };
+export function calcularRecargoNocturnidad(
+  salarioMensual: number,
+  horasBaseNocturnas: number,
+): number {
+  const { salarioHoraDiurna } = calcularSalarioHora(salarioMensual);
+  return round2(horasBaseNocturnas * salarioHoraDiurna * RECARGO_NOCTURNIDAD);
 }
 
 const FACTOR_POR_TIPO: Record<TipoJornada, number> = {

@@ -26,6 +26,13 @@ export const segmentoHorarioSchema = z.object({
   horas: z.number().min(0).max(24, 'Las horas por día deben estar entre 0 y 24'),
 });
 
+export const incentivoSchema = z.object({
+  id: z.string().min(1),
+  concepto: z.string().min(1),
+  monto: z.number().min(0),
+  aplicaDescuentos: z.boolean().default(true),
+});
+
 export const calcularRequestSchema = z
   .object({
     salarioBase: z
@@ -38,6 +45,8 @@ export const calcularRequestSchema = z
     antiguedad: antiguedadSchema,
     fechaIngreso: isoDate,
     segmentos: z.array(segmentoHorarioSchema),
+    horasBaseNocturnas: z.number().min(0).optional(),
+    incentivos: z.array(incentivoSchema).optional(),
   })
   .refine((d) => d.fechaInicio <= d.fechaFin, {
     message: 'Fecha de inicio debe ser anterior a la fecha de fin',
