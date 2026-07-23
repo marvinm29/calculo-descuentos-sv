@@ -2,14 +2,15 @@ import type { SemanaRegistro } from '@calc/shared';
 
 const STORAGE_KEY_OLD = 'registro-semanal';
 
-function minutosDelBloque(bloque: { inicio: string; fin: string }): number {
+export function minutosDelBloque(bloque: { inicio: string; fin: string }): number {
   const [hI, mI] = bloque.inicio.split(':').map(Number);
   const [hF, mF] = bloque.fin.split(':').map(Number);
   if (hI == null || mI == null || hF == null || mF == null) return 0;
   const inicio = hI * 60 + mI;
   const fin = hF * 60 + mF;
-  if (fin <= inicio) return 0;
-  return fin - inicio;
+  if (fin > inicio) return fin - inicio;
+  if (fin < inicio) return 1440 - inicio + fin;
+  return 0;
 }
 
 function horasDelBloque(bloque: { inicio: string; fin: string }): number {

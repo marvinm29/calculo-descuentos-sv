@@ -84,7 +84,12 @@ Ver `specs/sprints.md` §Sprint 10 para detalle.
 - ✅ Bug #1 fix: `HistorialPeriodos` guarda request real, no hardcodeado
 - ✅ Bug #6 fix: `useCalculos` consume modelo nuevo directo (sin semana arbitraria)
 - ✅ Migración best-effort de localStorage viejo (`migrarRegistro.ts`)
-- ✅ Gate: `pnpm lint && pnpm check-types && pnpm test` — 146 tests, 0 failures
+- ✅ Fix distribucion exceso: cada semana recibe su exceso completo (no secuencial)
+- ✅ Fix `minutosDelBloque`: maneja cruce de medianoche (19:00→02:00 = 7h)
+- ✅ Migracion rescata `horasBaseNocturnas` de bloques `base` en jornada nocturna
+- ✅ 7 tests de `autoConvertirExceso` (48h, 42h, 44h, multi-semana)
+- ✅ 8 tests unitarios de `minutosDelBloque` (cruce medianoche, normal, bordes)
+- ✅ Gate: `pnpm lint && pnpm check-types && pnpm test` — 204 tests, 0 failures
 
 ## Estado de producción
 

@@ -41,8 +41,8 @@ describe('migrarRegistroViejo', () => {
     expect(localStorage.getItem(VIEJO_KEY)).toBeNull();
   });
 
-  it('bloques extra raros maneja correctamente cruce de medianoche', () => {
-    // Cruce de medianoche (bug #2 del audit): fin <= inicio → 0h
+  it('bloques con cruce de medianoche se computan correctamente', () => {
+    // 22:00→02:00 son 4h (cruce de medianoche)
     const viejo = {
       'sem1': [
         {
@@ -57,8 +57,7 @@ describe('migrarRegistroViejo', () => {
     localStorage.setItem(VIEJO_KEY, JSON.stringify(viejo));
     const result = migrarRegistroViejo();
     expect(result).toHaveLength(1);
-    // Cruce de medianoche: fin (2:00) <= inicio (22:00) → 0h
-    expect(result[0]!.extraNocturna).toBe(0);
+    expect(result[0]!.extraNocturna).toBeCloseTo(4, 2);
   });
 
   it('valor vacio → []', () => {
