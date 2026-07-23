@@ -32,18 +32,23 @@ interface DiaRegistroViejo {
 function semanaRegistroDesdeDias(dias: DiaRegistroViejo[]): SemanaRegistro {
   let extraDiurna = 0;
   let extraNocturna = 0;
+  let horasBaseNocturnas = 0;
 
   for (const d of dias) {
     if (!Array.isArray(d.bloques)) continue;
+    const esJornadaNocturna = d.jornadaBase === 'regular_nocturna';
     for (const b of d.bloques) {
       const h = horasDelBloque(b);
       if (b.tipo === 'extra_diurna') extraDiurna += h;
       if (b.tipo === 'extra_nocturna') extraNocturna += h;
+      if (b.tipo === 'base' && esJornadaNocturna) {
+        horasBaseNocturnas += h;
+      }
     }
   }
 
   return {
-    horasBaseNocturnas: 0,
+    horasBaseNocturnas: Math.round(horasBaseNocturnas * 100) / 100,
     extraDiurna: Math.round(extraDiurna * 100) / 100,
     extraNocturna: Math.round(extraNocturna * 100) / 100,
     diaLibreDiurna: 0,

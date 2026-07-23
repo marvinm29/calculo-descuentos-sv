@@ -9,7 +9,7 @@ import type {
 } from '@calc/shared';
 import { useAppContext } from '../context/AppContext';
 
-function autoConvertirExceso(
+export function autoConvertirExceso(
   jornada: JornadaConfig,
   semanas: SemanaRegistro[],
 ): SemanaRegistro[] {
@@ -21,16 +21,14 @@ function autoConvertirExceso(
   const horasConfiguradas =
     jornada.tipo === 'tiempo_completo' ? maxSemanal : jornada.horasSemanales;
 
-  if (horasConfiguradas <= maxSemanal || semanas.length === 0) return semanas;
+  const excesoSemanal = Math.max(0, horasConfiguradas - maxSemanal);
+  if (excesoSemanal === 0 || semanas.length === 0) return semanas;
 
-  const excesoSemanal = horasConfiguradas - maxSemanal;
-  return semanas.map((s, i) => {
-    if (i >= Math.floor(excesoSemanal)) return s;
-    const exceso = Math.min(excesoSemanal, excesoSemanal);
+  return semanas.map((s) => {
     if (jornada.modalidad === 'nocturna') {
-      return { ...s, extraNocturna: s.extraNocturna + exceso };
+      return { ...s, extraNocturna: s.extraNocturna + excesoSemanal };
     }
-    return { ...s, extraDiurna: s.extraDiurna + exceso };
+    return { ...s, extraDiurna: s.extraDiurna + excesoSemanal };
   });
 }
 
