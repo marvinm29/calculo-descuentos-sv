@@ -1,8 +1,10 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import type { JornadaConfig, SemanaRegistro, Incentivo } from '@calc/shared';
+import type { JornadaConfig, Incentivo } from '@calc/shared';
 import type { ConfigInicialData } from '../components/ConfigInicial';
+import type { DiaRegistro } from '../components/registroTypes';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { migrarRegistroViejo } from '../lib/migrarRegistro';
+
+type SemanasData = Record<string, DiaRegistro[]>;
 
 const DEFAULT_JORNADA: JornadaConfig = {
   tipo: 'tiempo_completo',
@@ -10,30 +12,13 @@ const DEFAULT_JORNADA: JornadaConfig = {
   modalidad: 'diurna',
 };
 
-function migrarSiEsNecesario(): SemanaRegistro[] {
-  try {
-    const raw = localStorage.getItem('registro-periodo');
-    if (raw) {
-      const parsed: unknown = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed as SemanaRegistro[];
-    }
-    const migrados = migrarRegistroViejo();
-    if (migrados.length > 0) {
-      localStorage.setItem('registro-periodo', JSON.stringify(migrados));
-    }
-    return migrados;
-  } catch {
-    return [];
-  }
-}
-
 interface AppContextValue {
   config: ConfigInicialData;
   setConfig: (value: ConfigInicialData | ((prev: ConfigInicialData) => ConfigInicialData)) => void;
   jornada: JornadaConfig;
   setJornada: (value: JornadaConfig | ((prev: JornadaConfig) => JornadaConfig)) => void;
-  registroPeriodo: SemanaRegistro[];
-  setRegistroPeriodo: (value: SemanaRegistro[] | ((prev: SemanaRegistro[]) => SemanaRegistro[])) => void;
+  registro: SemanasData;
+  setRegistro: (value: SemanasData | ((prev: SemanasData) => SemanasData)) => void;
   incentivos: Incentivo[];
   setIncentivos: (value: Incentivo[] | ((prev: Incentivo[]) => Incentivo[])) => void;
 }
@@ -56,9 +41,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     'jornada-config',
     DEFAULT_JORNADA,
   );
-  const [registroPeriodo, setRegistroPeriodo] = useLocalStorage<SemanaRegistro[]>(
-    'registro-periodo',
-    migrarSiEsNecesario,
+  const [registro, setRegistro] = useLocalStorage<SemanasData>(
+    'registro-semanal',
+    {},
   );
   const [incentivos, setIncentivos] = useLocalStorage<Incentivo[]>(
     'incentivos',
@@ -72,8 +57,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setConfig,
         jornada,
         setJornada,
-        registroPeriodo,
-        setRegistroPeriodo,
+        registro,
+        setRegistro,
         incentivos,
         setIncentivos,
       }}

@@ -2,9 +2,8 @@ import { Show, SignInButton, UserButton } from '@clerk/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ConfigInicial } from './components/ConfigInicial';
 import { JornadaSelector } from './components/JornadaSelector';
-import { SemanaExtrasCard } from './components/SemanaExtrasCard';
+import { RegistroSemanal } from './components/RegistroSemanal';
 import { IncentivosForm } from './components/IncentivosForm';
-import { TotalesPeriodo } from './components/TotalesPeriodo';
 import { ResultadoNeto } from './components/ResultadoNeto';
 import { GraficoPastel } from './components/GraficoPastel';
 import { TablaTasas } from './components/TablaTasas';
@@ -14,7 +13,6 @@ import { GuiaCalculos } from './components/GuiaCalculos';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { useCalculos } from './hooks/useCalculos';
 import { useTheme } from './hooks/useTheme';
-import type { SemanaRegistro } from '@calc/shared';
 
 function ThemeToggle() {
   const { toggle, resolved } = useTheme();
@@ -42,20 +40,8 @@ function ThemeToggle() {
 }
 
 function AppContent() {
-  const { jornada, setJornada, registroPeriodo, setRegistroPeriodo, incentivos, setIncentivos } = useAppContext();
+  const { jornada, setJornada, incentivos, setIncentivos } = useAppContext();
   const calculosState = useCalculos();
-
-  function agregarSemana() {
-    const nueva: SemanaRegistro = {
-      horasBaseNocturnas: 0,
-      extraDiurna: 0,
-      extraNocturna: 0,
-      diaLibreDiurna: 0,
-      diaLibreNocturna: 0,
-      asueto: 0,
-    };
-    setRegistroPeriodo((prev) => [...prev, nueva]);
-  }
 
   return (
     <ErrorBoundary>
@@ -101,44 +87,7 @@ function AppContent() {
           </div>
           <div className="print:hidden animate-fade-in-up space-y-3" style={{ animationDelay: '0.1s' }}>
             <JornadaSelector value={jornada} onChange={setJornada} />
-
-            {registroPeriodo.map((sem, i) => (
-              <SemanaExtrasCard
-                key={`sem-${i}`}
-                index={i}
-                value={sem}
-                onChange={(v) => {
-                  setRegistroPeriodo((prev) => {
-                    const n = [...prev];
-                    n[i] = v;
-                    return n;
-                  });
-                }}
-                onRemove={
-                  registroPeriodo.length > 1
-                    ? () => {
-                        setRegistroPeriodo((prev) =>
-                          prev.filter((_, j) => j !== i),
-                        );
-                      }
-                    : undefined
-                }
-                canRemove={registroPeriodo.length > 1}
-              />
-            ))}
-
-            <button
-              type="button"
-              onClick={agregarSemana}
-              className="btn-accent w-full rounded-xl py-2 text-sm"
-            >
-              Agregar semana
-            </button>
-
-            {registroPeriodo.length > 0 && (
-              <TotalesPeriodo jornada={jornada} semanas={registroPeriodo} />
-            )}
-
+            <RegistroSemanal />
             <IncentivosForm incentivos={incentivos} onChange={setIncentivos} />
           </div>
 

@@ -1,72 +1,83 @@
 import { useMemo } from 'react';
-import { calcular, JORNADA } from '@calc/shared';
+import { calcular } from '@calc/shared';
 import type {
   CalculoState,
   CalcularRequest,
   SegmentoHorario,
-  JornadaConfig,
-  SemanaRegistro,
 } from '@calc/shared';
+import type { DiaRegistro } from '../components/registroTypes';
+import {
+  horasDiurnasDeBloques,
+  horasNocturnasDeBloques,
+  totalHorasBloques,
+} from '../components/registroTypes';
 import { useAppContext } from '../context/AppContext';
 
-export function autoConvertirExceso(
-  jornada: JornadaConfig,
-  semanas: SemanaRegistro[],
-): SemanaRegistro[] {
-  const maxSemanal =
-    jornada.modalidad === 'nocturna'
-      ? JORNADA.NOCTURNA_SEMANAL
-      : JORNADA.DIURNA_SEMANAL;
+function semanaASegmentos(
+  dias: DiaRegistro[],
+  fechaStr: string,
+): { segmentos: SegmentoHorario[]; horasBaseNocturnas: number } {
+  const segmentos: SegmentoHorario[] = [];
+  let horasBaseNocturnas = 0;
 
-  const horasConfiguradas =
-    jornada.tipo === 'tiempo_completo' ? maxSemanal : jornada.horasSemanales;
+  for (const d of dias) {
+    const diurnas = horasDiurnasDeBloques(d.bloques);
+    const nocturnas = horasNocturnasDeBloques(d.bloques);
+    if (diurnas <= 0 && nocturnas <= 0) continue;
 
-  const excesoSemanal = Math.max(0, horasConfiguradas - maxSemanal);
-  if (excesoSemanal === 0 || semanas.length === 0) return semanas;
-
-  return semanas.map((s) => {
-    if (jornada.modalidad === 'nocturna') {
-      return { ...s, extraNocturna: s.extraNocturna + excesoSemanal };
+    if (d.jornadaBase === 'regular_nocturna') {
+      horasBaseNocturnas += diurnas;
+      if (nocturnas > 0) {
+        segmentos.push({ fecha: fechaStr, tipo: 'extra_nocturna', horas: nocturnas });
+      }
+    } else if (d.jornadaBase === 'regular_diurna') {
+      if (nocturnas > 0) {
+        segmentos.push({ fecha: fechaStr, tipo: 'extra_nocturna', horas: nocturnas });
+      }
+    } else if (d.jornadaBase === 'descanso') {
+      if (diurnas > 0) {
+        segmentos.push({ fecha: fechaStr, tipo: 'dia_libre_diurna', horas: diurnas });
+      }
+      if (nocturnas > 0) {
+        segmentos.push({ fecha: fechaStr, tipo: 'dia_libre_nocturna', horas: nocturnas });
+      }
+    } else if (d.jornadaBase === 'asueto') {
+      const total = totalHorasBloques(d.bloques);
+      if (total > 0) segmentos.push({ fecha: fechaStr, tipo: 'asueto', horas: total });
     }
-    return { ...s, extraDiurna: s.extraDiurna + excesoSemanal };
-  });
+  }
+
+  return { segmentos, horasBaseNocturnas };
 }
 
-function semanasASegmentos(
-  semanas: SemanaRegistro[],
+function semanasADatos(
+  registro: Record<string, DiaRegistro[]>,
   fechaInicio: string,
-): SegmentoHorario[] {
-  const segmentos: SegmentoHorario[] = [];
+): { segmentos: SegmentoHorario[]; horasBaseNocturnasTotal: number } {
+  const todosSegmentos: SegmentoHorario[] = [];
+  let horasBaseNocturnasTotal = 0;
   const baseDate = new Date(fechaInicio);
+  let i = 0;
 
-  for (let i = 0; i < semanas.length; i++) {
-    const s = semanas[i]!;
+  for (const semanaId of Object.keys(registro)) {
+    const dias = registro[semanaId];
+    if (!dias || dias.length === 0) continue;
+
     const fecha = new Date(baseDate);
     fecha.setDate(fecha.getDate() + i * 7);
     const fechaStr = fecha.toISOString().slice(0, 10);
 
-    if (s.extraDiurna > 0) {
-      segmentos.push({ fecha: fechaStr, tipo: 'extra_diurna', horas: s.extraDiurna });
-    }
-    if (s.extraNocturna > 0) {
-      segmentos.push({ fecha: fechaStr, tipo: 'extra_nocturna', horas: s.extraNocturna });
-    }
-    if (s.diaLibreDiurna > 0) {
-      segmentos.push({ fecha: fechaStr, tipo: 'dia_libre_diurna', horas: s.diaLibreDiurna });
-    }
-    if (s.diaLibreNocturna > 0) {
-      segmentos.push({ fecha: fechaStr, tipo: 'dia_libre_nocturna', horas: s.diaLibreNocturna });
-    }
-    if (s.asueto > 0) {
-      segmentos.push({ fecha: fechaStr, tipo: 'asueto', horas: s.asueto });
-    }
+    const { segmentos, horasBaseNocturnas } = semanaASegmentos(dias, fechaStr);
+    todosSegmentos.push(...segmentos);
+    horasBaseNocturnasTotal += horasBaseNocturnas;
+    i++;
   }
 
-  return segmentos;
+  return { segmentos: todosSegmentos, horasBaseNocturnasTotal };
 }
 
 export function useCalculos(): CalculoState {
-  const { config, jornada, registroPeriodo, incentivos } = useAppContext();
+  const { config, jornada, registro, incentivos } = useAppContext();
 
   return useMemo((): CalculoState => {
     if (config.salarioBase <= 0) {
@@ -75,13 +86,7 @@ export function useCalculos(): CalculoState {
 
     const hoy = new Date().toISOString().slice(0, 10);
 
-    const semanasConvertidas = autoConvertirExceso(jornada, registroPeriodo);
-    const segmentos = semanasASegmentos(semanasConvertidas, hoy);
-
-    const horasBaseNocturnasTotal = registroPeriodo.reduce(
-      (sum, s) => sum + s.horasBaseNocturnas,
-      0,
-    );
+    const { segmentos, horasBaseNocturnasTotal } = semanasADatos(registro, hoy);
 
     const request: CalcularRequest = {
       salarioBase: config.salarioBase,
@@ -104,5 +109,5 @@ export function useCalculos(): CalculoState {
         error: err instanceof Error ? err.message : 'Error de cálculo',
       };
     }
-  }, [config, jornada, registroPeriodo, incentivos]);
+  }, [config, jornada, registro, incentivos]);
 }

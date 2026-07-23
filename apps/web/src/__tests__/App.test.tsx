@@ -33,9 +33,9 @@ describe('App', () => {
     expect(screen.getByText('Jornada Laboral')).toBeInTheDocument();
   });
 
-  it('renderiza boton de agregar semana', () => {
+  it('renderiza registro de horas', () => {
     render(<App />);
-    expect(screen.getByText('Agregar semana')).toBeInTheDocument();
+    expect(screen.getByText('Registro de Horas')).toBeInTheDocument();
   });
 
   it('renderiza seccion de incentivos', () => {
