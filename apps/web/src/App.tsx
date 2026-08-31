@@ -9,6 +9,8 @@ import { TablaTasas } from './components/TablaTasas';
 import { HistorialPeriodos } from './components/HistorialPeriodos';
 import { ExportarPDF } from './components/ExportarPDF';
 import { GuiaCalculos } from './components/GuiaCalculos';
+import { Torogoz } from './components/Torogoz';
+import { MonumentoSalvador } from './components/MonumentoSalvador';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { useCalculos } from './hooks/useCalculos';
 import { useTheme } from './hooks/useTheme';
@@ -20,7 +22,7 @@ function ThemeToggle() {
     <button
       onClick={toggle}
       type="button"
-      className="tool-card p-2 text-text-secondary transition-colors hover:text-text"
+      className="glass-card p-2 text-text-secondary transition-colors hover:text-text"
       aria-label={
         resolved === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'
       }
@@ -51,7 +53,7 @@ function SectionHeading({
     <div className="flex items-baseline gap-3">
       <span className="amount text-xs font-semibold text-accent">{n}</span>
       <div>
-        <h2 className="text-base font-semibold text-text">{title}</h2>
+        <h2 className="display text-base font-semibold text-text">{title}</h2>
         {description ? (
           <p className="text-[13px] text-text-muted">{description}</p>
         ) : null}
@@ -67,32 +69,22 @@ function AppContent() {
   return (
     <ErrorBoundary>
       <div className="relative z-10 mx-auto min-h-screen max-w-6xl px-4 pb-12 pt-4 print:px-2 print:py-2">
-        <header className="tool-header sticky top-0 z-20 -mx-4 mb-8 border-b px-4 py-3 print:static print:mb-4 print:border-0 print:bg-none">
+        <header className="glass-nav sticky top-0 z-20 -mx-4 mb-8 px-4 py-3 print:static print:mb-4 print:border-0 print:bg-none">
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-2.5">
-              <svg
-                className="size-5 shrink-0 text-primary"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2h6a1 1 0 011 1v10a1 1 0 01-1 1H7a1 1 0 01-1-1V5a1 1 0 011-1zm.75 2.5a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-4.5zm0 3a.75.75 0 000 1.5h1.5a.75.75 0 000-1.5h-1.5z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <p className="truncate text-lg font-semibold tracking-tight text-text">
+              <Torogoz className="size-6 shrink-0" />
+              <h1 className="display truncate text-lg font-semibold tracking-tight text-text">
                 Descuentos de Ley SV
-              </p>
-              <span className="hidden rounded border border-border px-1.5 py-0.5 font-mono text-[10px] text-text-muted sm:inline">
-                SV
+              </h1>
+              <span className="hidden rounded-full border border-gold/40 px-2 py-0.5 font-mono text-[10px] text-gold sm:inline">
+                15·IX
               </span>
             </div>
             <ThemeToggle />
           </div>
         </header>
+
+        <hr className="gold-rule mb-8 print:hidden" />
 
         <main className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] print:block">
           <div className="space-y-5 print:hidden">
@@ -150,6 +142,17 @@ function AppContent() {
             <GuiaCalculos />
           </div>
         </details>
+
+        <hr className="gold-rule mt-10 print:hidden" />
+        <footer className="flex flex-col items-center gap-2 pt-6 text-center print:hidden">
+          <MonumentoSalvador className="size-12 opacity-60" />
+          <p className="text-[11px] text-text-muted">
+            Calculadora de descuentos de ley · El Salvador
+          </p>
+          <p className="text-[10px] text-text-muted">
+            Mes de la Independencia · 15 de septiembre
+          </p>
+        </footer>
       </div>
     </ErrorBoundary>
   );

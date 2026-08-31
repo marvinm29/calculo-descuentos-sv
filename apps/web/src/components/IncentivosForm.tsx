@@ -28,7 +28,7 @@ export function IncentivosForm({ incentivos, onChange }: IncentivosFormProps) {
   }
 
   return (
-    <div className="tool-card p-4">
+    <div className="glass-card p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-bold text-text">
           Incentivos (bonos, comisiones, etc.)

@@ -40,7 +40,7 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
   }
 
   return (
-    <div className="tool-card p-4">
+    <div className="glass-card p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-bold text-text">Horas del Periodo</h3>
         <button

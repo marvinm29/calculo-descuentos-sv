@@ -39,7 +39,7 @@ export function ResultadoNeto({ state }: ResultadoNetoProps) {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-lg font-bold text-text">
+      <h2 className="display text-lg font-bold text-text">
         Resultado del Periodo
       </h2>
 

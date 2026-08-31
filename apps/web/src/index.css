@@ -3,62 +3,71 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ══════════════════════════════════════════════════════════════
-   Design System "Linear Instrument" (openspec/specs/diseno-visual.md)
-   Dark-first, tool-like. Una familia sans + mono. Sin glass/blur.
-   Tokens por tema. No inventar valores — ver apps/web/DESIGN.md.
-   Dark-first vía default del hook useTheme (no por CSS class default).
+   Design System "Liquid Glass SV" (Independencia)
+   openspec/specs/diseno-liquid-glass-sv.md · apps/web/DESIGN.md
+   Glass con criterio + identidad SV. Supercede "Linear Instrument".
    ══════════════════════════════════════════════════════════════ */
 
 /* ── Light (:root — la clase .dark togglea a dark) ── */
 :root {
-  --bg: #f5f6f7;
+  --bg: #f7f5f1;
+  --bg-grain: #efebe3;
   --surface: #ffffff;
-  --surface-raised: #f8f9fa;
-  --surface-2: #ebedef;
-  --border: #d5d9de;
-  --border-soft: #e2e6ea;
-  --text: #1a1d21;
-  --text-secondary: #5b6472;
-  --text-muted: #7c8694;
-  --accent: #1d4ed8;
-  --accent-hover: #1e40af;
-  --accent-soft: rgba(29, 78, 216, 0.1);
-  --success: #15803d;
-  --danger: #b91c1c;
-  --warning: #b45309;
-  --success-bg: rgba(21, 128, 61, 0.08);
-  --danger-bg: rgba(185, 28, 28, 0.08);
-  --warning-bg: rgba(180, 83, 9, 0.08);
-  --selection: rgba(29, 78, 216, 0.18);
+  --glass: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.85);
+  --surface-raised: #faf8f4;
+  --surface-2: #ede9e1;
+  --border: #d8d2c7;
+  --border-soft: #e4dfd5;
+  --text: #141310;
+  --text-secondary: #5c574e;
+  --text-muted: #8a857c;
+  --accent: #003b6f;
+  --accent-hover: #002a52;
+  --accent-soft: rgba(0, 59, 111, 0.1);
+  --gold: #c8a951;
+  --success: #1b7a3d;
+  --danger: #b3261e;
+  --warning: #b5651d;
+  --success-bg: rgba(27, 122, 61, 0.08);
+  --danger-bg: rgba(179, 38, 30, 0.08);
+  --warning-bg: rgba(181, 101, 29, 0.08);
+  --selection: rgba(0, 59, 111, 0.18);
+  --grain-opacity: 0.04;
 }
 
 /* ── Dark ── */
 .dark {
-  --bg: #0c0d0f;
-  --surface: #141517;
-  --surface-raised: #1a1b1e;
-  --surface-2: #1e2023;
-  --border: #26282d;
-  --border-soft: #2e3137;
+  --bg: #0b192c;
+  --bg-grain: #0a1622;
+  --surface: #13253c;
+  --glass: rgba(20, 40, 66, 0.55);
+  --glass-border: rgba(122, 178, 224, 0.25);
+  --surface-raised: #172b45;
+  --surface-2: #1c3149;
+  --border: #2a4060;
+  --border-soft: #233a55;
   --text: #f2f4f6;
   --text-secondary: #c3c9d2;
   --text-muted: #8a919c;
-  --accent: #60a5fa;
-  --accent-hover: #7fb4fa;
-  --accent-soft: rgba(96, 165, 250, 0.14);
+  --accent: #7ab2e0;
+  --accent-hover: #9bc4ec;
+  --accent-soft: rgba(122, 178, 224, 0.14);
+  --gold: #d9b860;
   --success: #4ade80;
   --danger: #f87171;
   --warning: #fbbf24;
   --success-bg: rgba(74, 222, 128, 0.09);
   --danger-bg: rgba(248, 113, 113, 0.09);
   --warning-bg: rgba(251, 191, 36, 0.09);
-  --selection: rgba(96, 165, 250, 0.28);
+  --selection: rgba(122, 178, 224, 0.28);
+  --grain-opacity: 0.05;
 }
 
 /* ── Tailwind v4 tokens ── */
 @theme {
   --font-body: 'Onest', sans-serif;
-  --font-display: 'Onest', sans-serif;
+  --font-display: 'Fraunces', 'Onest', serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   --color-primary: var(--accent);
@@ -78,7 +87,11 @@
   --color-success-bg: var(--success-bg);
   --color-danger-bg: var(--danger-bg);
   --color-warning-bg: var(--warning-bg);
-  --color-sv-blue: #60a5fa;
+  --color-gold: var(--gold);
+  --color-glass: var(--glass);
+  --color-glass-border: var(--glass-border);
+  --color-sv-blue: #003b6f;
+  --color-sv-blue-dark: #7ab2e0;
 }
 
 /* ── Layer base ── */
@@ -96,6 +109,19 @@
     line-height: 1.6;
   }
 
+  /* El grain como pseudo-elemento con opacidad controlada por tema */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 120px 120px;
+    opacity: var(--grain-opacity);
+  }
+
   h1,
   h2,
   h3,
@@ -104,6 +130,10 @@
     font-weight: 600;
     line-height: 1.2;
     letter-spacing: -0.02em;
+  }
+
+  .font-display {
+    font-family: var(--font-display);
   }
 
   ::selection {
@@ -124,11 +154,88 @@
   }
 }
 
-/* ── Cards tool-like (sólidas, sin glass) ── */
+/* ══════════════════════════════════════════════════════════════
+   Liquid glass — con criterio (nav, panel neto, modales, cards
+   de resultado cuando hay textura detrás). NO en inputs ni
+   contenido denso (WCAG AA).
+   ══════════════════════════════════════════════════════════════ */
+
+.glass-nav {
+  background: var(--glass);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: background 0.2s ease;
+}
+
+.glass-panel {
+  background: var(--glass);
+  backdrop-filter: blur(16px) saturate(1.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 32px rgba(0, 0, 0, 0.06);
+  transition: background 0.2s ease, transform 0.15s ease-out, box-shadow 0.2s ease;
+}
+
+.glass-card {
+  background: var(--glass);
+  backdrop-filter: blur(10px) saturate(1.3);
+  -webkit-backdrop-filter: blur(10px) saturate(1.3);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: background 0.2s ease, border-color 0.15s ease, transform 0.1s ease-out,
+    box-shadow 0.2s ease;
+}
+
+.glass-card:hover {
+  filter: brightness(1.06);
+  border-color: var(--gold);
+}
+
+.glass-dialog {
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 16px 48px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Fallback: sin backdrop-filter → sólido ── */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-nav,
+  .glass-panel,
+  .glass-card,
+  .glass-dialog {
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* ── Reduced transparency → sólido (accesibilidad) ── */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-nav,
+  .glass-panel,
+  .glass-card,
+  .glass-dialog {
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Cards sólidas (contenido denso, tablas — accesibles sin glass)
+   ══════════════════════════════════════════════════════════════ */
+
 .tool-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 12px;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease-out;
 }
 
@@ -137,11 +244,11 @@
   border-color: var(--border);
 }
 
-/* ── Inputs tool-like ── */
+/* ── Inputs sólidos (accesibles, sin glass) ── */
 .tool-input {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 12px;
   color: var(--text);
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease-out;
 }
@@ -166,13 +273,13 @@
   transform: none;
 }
 
-/* ── Botón primario plano (sin gradiente ni shimmer) ── */
+/* ── Botón primario plano (azul bandera SV) ── */
 .btn-accent {
   background: var(--accent);
-  color: #0c0d0f;
+  color: #ffffff;
   font-weight: 600;
   border: 1px solid var(--accent);
-  border-radius: 6px;
+  border-radius: 12px;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease-out,
     opacity 0.15s ease;
 }
@@ -204,21 +311,73 @@
   letter-spacing: -0.01em;
 }
 
-/* Micro-interacción con propósito: el neto "pop" al recalcular.
-   Se dispara con key={neto} desde React. Respetada por prefers-reduced-motion. */
+/* ── Display serif (Fraunces) — solo título de marca + H1 resultado ── */
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* ── Separador dorado (detalle de identidad, no bandera) ── */
+.gold-rule {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--gold) 30%,
+    var(--gold) 70%,
+    transparent
+  );
+  opacity: 0.4;
+  border: 0;
+}
+
+/* ── Micro-interacción: el neto "pop" al recalcular ── */
 @keyframes num-pop {
   from {
     opacity: 0.4;
-    transform: translateY(4px);
+    transform: translateY(4px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 .num-pop {
-  animation: num-pop 0.25s ease-out;
+  animation: num-pop 0.3s ease-out;
+}
+
+/* ── Torogoz: vuelo sutil (pausable por reduced-motion) ── */
+@keyframes torogoz-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(-1deg);
+  }
+}
+
+.torogoz-float {
+  animation: torogoz-float 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* ── Monumento: trazo dibujándose (una vez al entrar viewport) ── */
+@keyframes monumento-stroke {
+  from {
+    stroke-dashoffset: 800;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.monumento-trazo {
+  stroke-dasharray: 800;
+  stroke-dashoffset: 0;
+  animation: monumento-stroke 2.5s ease-out 1 forwards;
 }
 
 /* Controles nativos con el acento de marca */
@@ -248,25 +407,11 @@ input[type='range'] {
   color: var(--danger);
 }
 
-/* ── Header tool (sólido, sin glass) ── */
-.tool-header {
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-}
-
-/* ── Panel del neto (instrumento) ── */
-.tool-net {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 1px 0 0 var(--border-soft);
-}
-
-/* ── Diálogo tool (sólido) ── */
+/* ── Diálogo sólido (fallback si no hay glass) ── */
 .tool-dialog {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 16px;
 }
 
 /* ── Focus ring accesible ── */
@@ -303,6 +448,7 @@ input[type='range'] {
 @media print {
   :root {
     --bg: #ffffff;
+    --bg-grain: #ffffff;
     --surface: #ffffff;
     --surface-2: #f2f2f2;
     --border: #cccccc;
@@ -313,23 +459,38 @@ input[type='range'] {
     --danger: #000000;
     --warning: #000000;
     --accent: #000000;
+    --gold: #666666;
+    --grain-opacity: 0;
   }
 
   body {
     background: #ffffff !important;
   }
 
+  body::before {
+    display: none;
+  }
+
+  .glass-nav,
+  .glass-panel,
+  .glass-card,
+  .glass-dialog,
   .tool-card,
-  .tool-net,
-  .tool-header,
   .tool-dialog {
     background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     box-shadow: none !important;
     border-color: #cccccc !important;
   }
 
-  .tool-header {
+  .glass-nav {
     position: static !important;
+  }
+
+  .torogoz-float,
+  .monumento-trazo {
+    animation: none !important;
   }
 
   .amount {
