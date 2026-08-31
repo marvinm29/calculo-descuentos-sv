@@ -48,7 +48,7 @@ export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
   );
 
   return (
-    <div className="tool-card p-4">
+    <div className="glass-card p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-text">
           Historial de Periodos

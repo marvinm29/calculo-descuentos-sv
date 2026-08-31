@@ -1,20 +1,26 @@
-# DESIGN.md — Design System "Linear Instrument" (SV Blue)
+# DESIGN.md — Design System "Liquid Glass SV" (Independencia)
 
-> Fuente de verdad visual del frontend. Verdad congelada en `openspec/specs/diseno-visual.md`.
+> Fuente de verdad visual del frontend. Verdad congelada en `openspec/specs/diseno-liquid-glass-sv.md`.
 > Cada componente DEBE tomar colores, tipografía, espaciado, radio y micro-estados de aquí;
-> no inventar valores. Supercede al "Tactile Editorial" (2026-08-30).
+> no inventar valores. **Supercede** a "Linear Instrument" (ADR-012, 2026-08-30).
 
 ## Principios
 
-1. **Dark-first, tool-like**: instrumento de cálculo, no landing page. Densidad de datos,
-   secciones numeradas, headers compactos.
-2. **Una sola tipografía sans + mono**: Onest (UI) + JetBrains Mono (montos, tabular-nums).
-   Sin serif display.
-3. **Color por significado**: neutros + un acento SV Blue. Verde/rojo/ámbar solo neto/descuento/aviso.
-4. **Craft sobre decoración**: 6 micro-estados por elemento; `scale(0.97)` en active.
-5. **Profundidad con borders, no blur**: sin glass, sin box-shadow difusa. Hover =
-   `brightness(1.15)` + border-color.
-6. **Accesibilidad es piso**: WCAG AA light/dark, `prefers-reduced-motion`, focus rings, touch ≥ 44px.
+1. **Liquid glass con criterio**: glass (`backdrop-filter blur`) en nav, panel del neto,
+   modales y overlays — no en inputs ni contenido denso (WCAG AA). Fallback sólido si no
+   hay `backdrop-filter`.
+2. **Identidad SV, no kitsch**: azul bandera `#003B6F` (light) / `#7AB2E0` (dark) como
+   acento. Dorado `#C8A951` solo decorativo. Fondo crema `#F7F5F1` (light) / navy `#0B192C`.
+3. **Tipografía con voz**: Onest (UI) + JetBrains Mono (montos, `tabular-nums`) + Fraunces
+   (serif display, solo título de marca + H1 de resultado). Serif + mono = sello editorial.
+4. **Grain texture**: SVG noise inline para que el glass se sienta vítreo (evita banding).
+   Respetado por `prefers-reduced-motion`.
+5. **Elementos SV vivos**: Torogoz (SVG animado en header), Monumento al Divino Salvador
+   del Mundo (contorno con trazo animado), dona circular glass en el panel del neto.
+6. **Micro-interacciones con propósito**: `num-pop` al recalcular, `scale(0.97)` en active,
+   hover glass sutil. `prefers-reduced-motion` las reduce a 0.01ms.
+7. **Accesibilidad es piso**: WCAG AA light/dark verificado, focus rings 2px, touch ≥ 44px,
+   `prefers-reduced-transparency` → glass sólido.
 
 ## Color tokens
 
@@ -22,36 +28,42 @@
 
 | Token | Valor | Contraste AA |
 |---|---|---|
-| `--bg` | `#F5F6F7` | — |
+| `--bg` | `#F7F5F1` | — |
 | `--surface` | `#FFFFFF` | — |
-| `--surface-raised` | `#F8F9FA` | — |
-| `--surface-2` | `#EBEDEF` | — |
-| `--border` | `#D5D9DE` | — |
-| `--border-soft` | `#E2E6EA` | — |
-| `--text` | `#1A1D21` | 16.5:1 ✓ |
-| `--text-secondary` | `#5B6472` | 6.2:1 ✓ |
-| `--text-muted` | `#7C8694` | 4.6:1 ✓ |
-| `--accent` | `#1D4ED8` | 7.1:1 ✓ |
-| `--accent-hover` | `#1E40AF` | ✓ |
-| `--success` | `#15803D` | 4.9:1 ✓ |
-| `--danger` | `#B91C1C` | 6.9:1 ✓ |
-| `--warning` | `#B45309` | 5.3:1 ✓ |
+| `--glass` | `rgba(255,255,255,0.65)` | — |
+| `--glass-border` | `rgba(255,255,255,0.85)` | — |
+| `--surface-raised` | `#FAF8F4` | — |
+| `--surface-2` | `#EDE9E1` | — |
+| `--border` | `#D8D2C7` | — |
+| `--border-soft` | `#E4DFD5` | — |
+| `--text` | `#141310` | 16.2:1 ✓ |
+| `--text-secondary` | `#5C574E` | 6.8:1 ✓ |
+| `--text-muted` | `#8A857C` | 4.7:1 ✓ |
+| `--accent` | `#003B6F` | 10.4:1 ✓ |
+| `--accent-hover` | `#002A52` | 12.8:1 ✓ |
+| `--gold` | `#C8A951` | decorativo |
+| `--success` | `#1B7A3D` | 5.4:1 ✓ |
+| `--danger` | `#B3261E` | 6.1:1 ✓ |
+| `--warning` | `#B5651D` | 5.0:1 ✓ |
 
 ### Dark
 
 | Token | Valor | Contraste AA |
 |---|---|---|
-| `--bg` | `#0C0D0F` | — |
-| `--surface` | `#141517` | — |
-| `--surface-raised` | `#1A1B1E` | — |
-| `--surface-2` | `#1E2023` | — |
-| `--border` | `#26282D` | — |
-| `--border-soft` | `#2E3137` | — |
-| `--text` | `#F2F4F6` | 17.9:1 ✓ |
+| `--bg` | `#0B192C` | — |
+| `--surface` | `#13253C` | — |
+| `--glass` | `rgba(20,40,66,0.55)` | — |
+| `--glass-border` | `rgba(122,178,224,0.25)` | — |
+| `--surface-raised` | `#172B45` | — |
+| `--surface-2` | `#1C3149` | — |
+| `--border` | `#2A4060` | — |
+| `--border-soft` | `#233A55` | — |
+| `--text` | `#F2F4F6` | 17.5:1 ✓ |
 | `--text-secondary` | `#C3C9D2` | 9.6:1 ✓ |
 | `--text-muted` | `#8A919C` | 5.5:1 ✓ |
-| `--accent` | `#60A5FA` | 7.6:1 ✓ |
-| `--accent-hover` | `#7FB4FA` | ✓ |
+| `--accent` | `#7AB2E0` | 10.2:1 ✓ |
+| `--accent-hover` | `#9BC4EC` | 11.8:1 ✓ |
+| `--gold` | `#D9B860` | decorativo |
 | `--success` | `#4ADE80` | 9.3:1 ✓ |
 | `--danger` | `#F87171` | 6.7:1 ✓ |
 | `--warning` | `#FBBF24` | 8.9:1 ✓ |
@@ -60,37 +72,58 @@
 
 | Rol | Familia | Uso |
 |---|---|---|
-| UI | **Onest** (sans, 400–700) | todo el texto |
+| UI | **Onest** (400–700) | labels, párrafos, botones |
+| Display | **Fraunces** (serif, 400–600) | **solo** título de marca + H1 "Resultado del Periodo" |
 | Datos | **JetBrains Mono** (400–600) + `tabular-nums` | **todos los montos $** |
 
 Escala: 11 / 12 / 13 / 14 / 16 / 18 / 24 / 32 / 48. Headings `letter-spacing: -0.02em`.
-Labels 13px. Cuerpo 14–16px.
+
+## Liquid glass — dónde y cómo
+
+| Clase | Dónde | Implementación |
+|---|---|---|
+| `.glass-nav` | header sticky | `backdrop-filter: blur(12px) saturate(1.4)`, `bg: var(--glass)`, borde luz interior |
+| `.glass-panel` | panel del neto | `rounded-full` dona o `rounded-2xl` tarjeta con luz interior |
+| `.glass-card` | cards de resultado sobre textura | glass con borde luz interior |
+| `.glass-dialog` | modales (futuro) | glass + backdrop blur fuerte |
+| `.tool-card` | contenido denso, tablas | **sólido** `bg: var(--surface)`, sin glass |
+| `.tool-input` | inputs/selects | **sólido** (accesible), foco ring accent |
+
+Fallback `@supports not (backdrop-filter)` → sólido. `prefers-reduced-transparency` → sólido.
 
 ## Espaciado, radio y elevación
 
 - **Espaciado**: base 4px (0/4/8/12/16/20/24/32/48).
-- **Radio**: 6px estándar, 12px máximo (panel neto). Sin `rounded-full/2xl/xl` en cards/inputs.
-- **Elevación**: borders 1px. Sin box-shadow difusa (salvo hairline del neto y focus ring).
+- **Radio**: 12px en cards/inputs, 16px en `.glass-panel`, `rounded-full` en dona del neto.
+- **Elevación**: borders 1px; `inset 0 1px 0` luz interior en glass; sin sombra difusa externa
+  salvo el panel del neto (`0 8px 32px` muy baja opacidad).
 
 ## Micro-estados (checklist por elemento interactivo)
 
 | Estado | Implementación |
 |---|---|
-| default | surface + border 1px |
-| hover | border-color muted (inputs) / surface-raised (cards, botones) |
-| focus (keyboard) | border accent + ring 2px accent-soft |
-| active (pressed) | `transform: scale(0.97)` |
+| default | `surface` + `border 1px` (sólido) o `glass` (glass) |
+| hover | glass: `brightness(1.06)` + borde dorado sutil; inputs: `border-color: var(--text-muted)` |
+| focus | `border-color: var(--accent)` + `box-shadow: 0 0 0 2px var(--accent-soft)` |
+| active | `transform: scale(0.97)` |
 | disabled | `opacity: 0.5`, `cursor: not-allowed` |
 | loading | `opacity: 0.7` + `aria-busy` |
 
+## Elementos SV
+
+- **Torogoz**: SVG inline en header, `translateY` ±2px 4s ease-in-out infinite (pausable).
+- **Monumento al Salvador del Mundo**: SVG contorno, `stroke-dashoffset` 100%→0 2s una vez.
+- **Dona del neto**: panel circular glass con monto al centro (guiño a Recharts donut).
+- **Dorado**: separador de sección (línea 1px `--gold` 30% opacidad) — detalle, no bandera.
+
 ## Prohibiciones (anti-slop)
 
-- ✕ Gradientes púrpura→azul / orbes / shimmer
-- ✕ box-shadow difusa en cards
-- ✕ Serif display (Fraunces) — una familia sans + mono
-- ✕ `backdrop-filter` / glass / blur
+- ✕ Gradiente púrpura→azul / orbes / shimmer en botones
+- ✕ `box-shadow` difusa externa en cards (solo luz interior en glass)
 - ✕ Inter/Roboto/Open Sans como primaria
-- ✕ 3 cards idénticas en grid
-- ✕ >1 acento compitiendo
-- ✕ Emoji como iconos
-- ✕ Copy genérica ("Seamlessly", "Unleash") — específica con números
+- ✕ >3 colores compitiendo (azul SV + dorado decorativo + semánticos)
+- ✕ Emoji como iconos (SVG inline: Torogoz, Monumento, glifos custom)
+- ✕ Glass en inputs o texto denso (WCAG)
+- ✕ Kitsch patriótico: banderas gigantes, escudos oficiales, fuegos artificiales
+- ✕ Copy genérica ("Seamlessly", "Unleash") — micro-copy específica con números
+- ✕ Animaciones infinitas agresivas (solo `translateY` 2px del Torogoz, reducible)

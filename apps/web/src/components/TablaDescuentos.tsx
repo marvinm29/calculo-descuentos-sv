@@ -6,7 +6,7 @@ export interface TablaDescuentosProps {
 
 export function TablaDescuentos({ descuentos }: TablaDescuentosProps) {
   return (
-    <div className="tool-card p-4">
+    <div className="glass-card p-4">
       <h3 className="text-sm font-bold text-text">Descuentos de Ley</h3>
       <dl className="mt-2 space-y-1 text-xs text-text-secondary">
         <div className="flex justify-between">

@@ -70,7 +70,7 @@ export function ConfigInicial() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="tool-card mx-auto max-w-lg space-y-5 rounded-md p-6"
+      className="glass-card mx-auto max-w-lg space-y-5 p-6"
     >
       <h2 className="text-lg font-bold text-text">
         Configuración Inicial

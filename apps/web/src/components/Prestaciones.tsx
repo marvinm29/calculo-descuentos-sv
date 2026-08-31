@@ -11,7 +11,7 @@ export function Prestaciones({ prestaciones }: PrestacionesProps) {
   if (!hasAny) return null;
 
   return (
-    <div className="tool-card p-4">
+    <div className="glass-card p-4">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-bold text-text">Prestaciones</h3>
         <span className="text-xs text-text-muted font-medium">

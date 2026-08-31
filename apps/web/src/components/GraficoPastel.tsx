@@ -1,7 +1,7 @@
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import type { DescuentosResponse } from '@calc/shared';
 
-const COLORS = ['#10b981', '#ef4444', '#f59e0b', '#6366f1'];
+const COLORS = ['#1b7a3d', '#b3261e', '#b5651d', '#003b6f'];
 
 export interface GraficoPastelProps {
   neto: number;
@@ -17,7 +17,7 @@ export function GraficoPastel({ neto, descuentos }: GraficoPastelProps) {
   ].filter((d) => d.value > 0);
 
   return (
-    <div className="tool-card p-4">
+    <div className="glass-card p-4">
       <h3 className="text-sm font-bold text-text">
         Distribución del Salario Bruto
       </h3>

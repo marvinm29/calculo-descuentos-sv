@@ -175,6 +175,7 @@ listo para GitHub Pages; `lint + check-types + test` y coverage > 80% en verde.
 | 13     | completado  | Rediseño Sprint 3: layout 2 columnas + header sticky glass + tokens/.amount |
 | 14     | completado  | Rediseño Sprint 4: motion (num-pop) + a11y (accent-color, print, touch) |
 | 15     | **en-progreso** | Rediseño Sprint 5: seguridad + cierre (ver abajo) |
+| 16     | completado  | Rediseño "Liquid Glass SV Independencia" (supercede Linear Instrument, ver abajo) |
 
 ---
 
@@ -1031,3 +1032,69 @@ pnpm lint / check-types → 4 tasks OK
 pnpm test → 188 tests (96+16+76) OK
 pnpm build → web dist OK
 ```
+
+---
+
+## Sprint 16 — Rediseño "Liquid Glass SV Independencia" ✅
+
+**Completado**: 2026-08-31. Supercede "Linear Instrument" (ADR-012) por decisión del usuario
+(*"no me gustó el diseño del último commit"*). Nueva dirección: liquid glass + identidad
+patriótica salvadoreña (septiembre, mes de independencia).
+
+### Documentación (Fase 0 — SDD)
+
+- `openspec/specs/diseno-liquid-glass-sv.md` — **nueva verdad congelada** del design system
+  (tokens light/dark con contraste AA, reglas de glass, grain, elementos SV, prohibiciones).
+- `.agents/adr/013-diseno-liquid-glass-sv.md` — ADR de decisión (supercede ADR-012).
+- `apps/web/DESIGN.md` — reescrito al nuevo sistema.
+
+### Tokens + CSS (Fase 1)
+
+- `apps/web/src/index.css` — **reescrito**: paleta crema `#F7F5F1` (light) / navy `#0B192C`
+  (dark, "noche cívica"); acento azul bandera `#003B6F`/`#7AB2E0`; dorado `#C8A951` decorativo.
+  Clases glass: `.glass-nav`, `.glass-panel`, `.glass-card`, `.glass-dialog`
+  (`backdrop-filter blur + saturate`, luz interior `inset`, sin sombra externa).
+  Fallback `@supports not (backdrop-filter)` y `prefers-reduced-transparency` → sólido.
+  Grain texture SVG noise en `body::before`. Fraunces como `--font-display`.
+  Animaciones: `torogoz-float`, `monumento-stroke`, `num-pop` (conservada). Print sólido.
+
+### Elementos SV (Fase 2)
+
+- `components/Torogoz.tsx` — pájaro nacional SVG (azul bandera + cola dorada, raya
+  superciliar turquesa), animación `torogoz-float` (±2px, 4s, pausable).
+- `components/MonumentoSalvador.tsx` — contorno line-art del Monumento al Divino Salvador
+  del Mundo (globo + figura + pedestal), trazo animado `monumento-stroke` (una vez).
+- `components/Torogoz.test.tsx` + `MonumentoSalvador.test.tsx` — 3 tests c/u
+  (render + className + aria-hidden).
+
+### Componentes (Fase 3)
+
+- `App.tsx` — header `glass-nav` con Torogoz + título Fraunces (`.display`) + badge
+  dorado "15·IX"; separador `gold-rule`; footer con MonumentoSalvador; secciones
+  numeradas conservadas.
+- `NetoLiquido.tsx` — panel `glass-panel` con emblema circular "dona" (borde dorado,
+  check verde) + monto `.amount num-pop`.
+- Cards → `glass-card`: ResumenBruto, TablaDescuentos, Prestaciones, GraficoPastel,
+  ConfigInicial, JornadaSelector, EntradasPeriodo, IncentivosForm, HistorialPeriodos,
+  ThemeToggle. Contenido denso sigue `tool-card` sólido (TablaTasas, Guía, inputs).
+- `GraficoPastel.tsx` — colores del donut alineados a tokens (`#1b7a3d`, `#b3261e`,
+  `#b5651d`, `#003b6f` — elimina el púrpura anti-slop).
+- `index.html` — + Fraunces (opsz,wght 9..144).
+
+### Verificación (gate en orden)
+
+```
+pnpm lint        → 4 tasks OK
+pnpm check-types → 4 tasks OK
+pnpm test        → 194 tests (96 shared + 16 api + 82 web), 0 failures
+pnpm turbo run build --filter=@calc/web → dist OK (CSS 28.83 kB)
+```
+
+### Notas
+
+- Cálculos (`packages/shared`), API y tests de lógica: **cero cambios** (solo CSS + clases + SVGs).
+- Tests de web: 76 → 82 (+6 de Torogoz/Monumento).
+- Fix de test: `getByText('Descuentos de Ley SV')` exige text node único (sin `&nbsp;` ni
+  span partido) — título vuelve a string plano, badge SV aparte.
+- Pendiente: revisión visual del usuario (screenshots no generables en este entorno —
+  chrome-devtools MCP no encuentra Chrome; chromium en `/usr/bin/chromium`).

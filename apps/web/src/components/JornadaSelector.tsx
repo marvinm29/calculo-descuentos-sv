@@ -7,7 +7,7 @@ export interface JornadaSelectorProps {
 
 export function JornadaSelector({ value, onChange }: JornadaSelectorProps) {
   return (
-    <div className="tool-card p-4">
+    <div className="glass-card p-4">
       <h3 className="text-sm font-bold text-text mb-3">Jornada Laboral</h3>
 
       <fieldset>
