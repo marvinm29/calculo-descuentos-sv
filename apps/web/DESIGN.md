@@ -46,27 +46,39 @@
 | `--danger` | `#B3261E` | 6.1:1 ✓ |
 | `--warning` | `#B5651D` | 5.0:1 ✓ |
 
-### Dark
+### Dark (OLED — true black)
 
 | Token | Valor | Contraste AA |
 |---|---|---|
-| `--bg` | `#0B192C` | — |
-| `--surface` | `#13253C` | — |
-| `--glass` | `rgba(20,40,66,0.55)` | — |
-| `--glass-border` | `rgba(122,178,224,0.25)` | — |
-| `--surface-raised` | `#172B45` | — |
-| `--surface-2` | `#1C3149` | — |
-| `--border` | `#2A4060` | — |
-| `--border-soft` | `#233A55` | — |
-| `--text` | `#F2F4F6` | 17.5:1 ✓ |
-| `--text-secondary` | `#C3C9D2` | 9.6:1 ✓ |
-| `--text-muted` | `#8A919C` | 5.5:1 ✓ |
-| `--accent` | `#7AB2E0` | 10.2:1 ✓ |
-| `--accent-hover` | `#9BC4EC` | 11.8:1 ✓ |
+| `--bg` | `#000000` | — |
+| `--surface` | `#0D0F13` | — |
+| `--glass` | `rgba(16,18,24,0.55)` | — |
+| `--glass-border` | `rgba(255,255,255,0.14)` | — |
+| `--surface-raised` | `#14161B` | — |
+| `--surface-2` | `#191C22` | — |
+| `--border` | `#262A33` | — |
+| `--border-soft` | `#1E2129` | — |
+| `--text` | `#F2F4F6` | >20:1 ✓ |
+| `--text-secondary` | `#C3C9D2` | >12:1 ✓ |
+| `--text-muted` | `#8A919C` | >6:1 ✓ |
+| `--accent` | `#7AB2E0` | >10:1 ✓ |
+| `--accent-hover` | `#9BC4EC` | ✓ |
 | `--gold` | `#D9B860` | decorativo |
-| `--success` | `#4ADE80` | 9.3:1 ✓ |
-| `--danger` | `#F87171` | 6.7:1 ✓ |
-| `--warning` | `#FBBF24` | 8.9:1 ✓ |
+| `--success` | `#4ADE80` | >9:1 ✓ |
+| `--danger` | `#F87171` | >6:1 ✓ |
+| `--warning` | `#FBBF24` | >8:1 ✓ |
+
+### Vars de material glass
+
+| Var | Light | Dark |
+|---|---|---|
+| `--rim-top` | `rgba(255,255,255,0.6)` | `rgba(255,255,255,0.4)` |
+| `--rim-bottom` | `rgba(255,255,255,0.3)` | `rgba(255,255,255,0.18)` |
+| `--rim-side` | `rgba(255,255,255,0.18)` | `rgba(255,255,255,0.1)` |
+| `--sheen-opacity` | `0.5` | `0.35` |
+
+**Aurora backdrop**: gradientes radiales estáticos en `body` (azul bandera, dorado,
+turquesa). Requisito del glass — sin color detrás, el blur no muestra nada.
 
 ## Tipografía
 
@@ -80,16 +92,23 @@ Escala: 11 / 12 / 13 / 14 / 16 / 18 / 24 / 32 / 48. Headings `letter-spacing: -0
 
 ## Liquid glass — dónde y cómo
 
-| Clase | Dónde | Implementación |
-|---|---|---|
-| `.glass-nav` | header sticky | `backdrop-filter: blur(12px) saturate(1.4)`, `bg: var(--glass)`, borde luz interior |
-| `.glass-panel` | panel del neto | `rounded-full` dona o `rounded-2xl` tarjeta con luz interior |
-| `.glass-card` | cards de resultado sobre textura | glass con borde luz interior |
-| `.glass-dialog` | modales (futuro) | glass + backdrop blur fuerte |
-| `.tool-card` | contenido denso, tablas | **sólido** `bg: var(--surface)`, sin glass |
-| `.tool-input` | inputs/selects | **sólido** (accesible), foco ring accent |
+Receta Apple (fuentes: webtricks.dev, html-in-canvas.dev): `backdrop-filter: blur(14–20px)
+saturate(170–180%) brightness(1.04+)` + **rim refractivo en 4 bordes** (inset shadows vía
+`--rim-top/--rim-bottom/--rim-side`) + **sheen diagonal 135°** en `::after` con
+`mix-blend-mode: screen` + **aurora de color detrás**. El elemento glass lleva
+`position: relative; isolation: isolate`.
 
-Fallback `@supports not (backdrop-filter)` → sólido. `prefers-reduced-transparency` → sólido.
+| Clase | Dónde | Blur |
+|---|---|---|
+| `.glass-nav` | header sticky | 16px saturate(180%) |
+| `.glass-panel` | panel del neto | 20px saturate(180%) |
+| `.glass-card` | cards sobre aurora | 14px saturate(170%) |
+| `.glass-dialog` | modales (futuro) | 24px saturate(180%) |
+| `.tool-card` | contenido denso, tablas | **sólido** `bg: var(--surface)` |
+| `.tool-input` | inputs/selects | **sólido** (accesible) |
+
+Fallback `@supports not (backdrop-filter)` → sólido + sin sheen.
+`prefers-reduced-transparency` → sólido + sin sheen + sin aurora.
 
 ## Espaciado, radio y elevación
 

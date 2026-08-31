@@ -1098,3 +1098,23 @@ pnpm turbo run build --filter=@calc/web → dist OK (CSS 28.83 kB)
   span partido) — título vuelve a string plano, badge SV aparte.
 - Pendiente: revisión visual del usuario (screenshots no generables en este entorno —
   chrome-devtools MCP no encuentra Chrome; chromium en `/usr/bin/chromium`).
+
+### Iteración v3 — material glass Apple + dark OLED (misma sesión)
+
+Feedback del usuario: *"quisiera que fuera más liquid glass, le falta algo; el modo oscuro
+debe ser oscuro (OLED en Pixel 8 Pro)"*. Research aplicado: webtricks.dev (frost/rim/sheen),
+html-in-canvas.dev (5 ingredientes del material Apple), bird.marketing (OLED true black).
+
+- **Dark OLED**: `--bg: #000000` (píxeles apagados en AMOLED) con surfaces `#0D0F13+`.
+- **Aurora backdrop**: gradientes radiales estáticos en `body` (azul bandera, dorado,
+  turquesa Torogoz) — requisito del glass: sin color detrás, el blur no muestrea nada.
+- **Rim refractivo en 4 bordes**: `--rim-top/--rim-bottom/--rim-side` por tema.
+- **Sheen diagonal 135°**: `::after` con `mix-blend-mode: screen`, `isolation: isolate`,
+  `pointer-events: none`; `--sheen-opacity` por tema.
+- **Saturación alta**: `saturate(170–180%) brightness(1.04+)` — lo que distingue liquid
+  glass de glassmorphism plano.
+- **Fallbacks**: `@supports not` y `prefers-reduced-transparency` → sólido + sin sheen +
+  sin aurora. Print → sin glass ni aurora.
+- Spec (`diseno-liquid-glass-sv.md`) y `DESIGN.md` actualizados en el mismo cambio.
+- Refraction SVG (`feDisplacementMap`, Chromium-only): pospuesto — verificar rendimiento
+  en móviles low-end antes.
