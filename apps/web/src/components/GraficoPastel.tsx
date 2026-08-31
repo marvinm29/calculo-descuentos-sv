@@ -17,7 +17,7 @@ export function GraficoPastel({ neto, descuentos }: GraficoPastelProps) {
   ].filter((d) => d.value > 0);
 
   return (
-    <div className="glass-card rounded-xl p-4">
+    <div className="tool-card p-4">
       <h3 className="text-sm font-bold text-text">
         Distribución del Salario Bruto
       </h3>

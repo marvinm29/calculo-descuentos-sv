@@ -1,7 +1,9 @@
 # Arquitectura - Calculadora de Descuentos SV
 
-> Basado en SWEBOK Chapter 2: Software Design
-> Architecture Decision Records (ADR) documentan las decisiones clave.
+> **Nota (2026-08-30)**: los ADRs viven en `.agents/adr/` (formato de la skill `domain-modeling`).
+> Este archivo describe la arquitectura **actual** (post Sprint 10b + rediseño 2026-08-30);
+> specs desactualizadas: `redisenio-jornada-incentivos.md` (modelo 10a, superado), `api-contract.md`
+> (números corregidos). La **verdad actual congelada** está en `openspec/specs/`.
 
 ## Diagrama de Arquitectura
 
@@ -10,218 +12,91 @@
 │                    Cliente (Navegador)                     │
 │  ┌────────────────────────────────────────────────────┐  │
 │  │              React 19 SPA (Vite 8)                  │  │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐   │  │
-│  │  │ Registro │ │ Cálculos │ │   Resultados     │   │  │
-│  │  │ Semanal  │ │ Locales  │ │   + Gráficos     │   │  │
-│  │  └──────────┘ └──────────┘ └──────────────────┘   │  │
-│  │         │              │              │            │  │
-│  │         ▼              ▼              ▼            │  │
-│  │  ┌─────────────────────────────────────────────┐   │  │
-│  │  │        localStorage (persistencia)           │   │  │
-│  │  └─────────────────────────────────────────────┘   │  │
-│  └────────────────────────────────────────────────────┘  │
-│                           │                               │
-│                    POST /api/calcular                     │
-│               (solo validación server-side)               │
-└───────────────────────────┬──────────────────────────────┘
-                            │ HTTPS
-┌───────────────────────────┴──────────────────────────────┐
-│                    Render.com (Node.js 22)                 │
-│  ┌────────────────────────────────────────────────────┐  │
-│  │              Express 5 API                          │  │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐   │  │
-│  │  │ Routes   │→│ Services │→│   Constants      │   │  │
-│  │  │ (thin)   │ │ (logic)  │ │ (tasas legales)  │   │  │
-│  │  └──────────┘ └──────────┘ └──────────────────┘   │  │
-│  └────────────────────────────────────────────────────┘  │
+│  │  ┌────────────┐ ┌────────────┐ ┌───────────────┐   │  │
+│  │  │ ConfigInicial│ │ Captura      │ │ Resultados   │   │  │
+│  │  │ Jornada/     │ │ Entradas     │ │ + Gráficos   │   │  │
+│  │  │ Entradas/    │ │ (período)    │ │ + PDF        │   │  │
+│  │  │ Incentivos   │ │              │ │ + Historial  │   │  │
+│  │  └──────────────┘ └──────────────┘ └───────────────┘   │  │
+│  │         │              │               │               │  │
+│  │         ▼              ▼               ▼               │  │
+│  │  ┌────────────────────────────────────────────────┐   │  │
+│  │  │  @calc/shared → useCalculos → calcular()       │   │  │
+│  │  │  (offline-first, ADR-001/006)                  │   │  │
+│  │  └────────────────────────────────────────────────┘   │  │
+│  │  ┌────────────────────────────────────────────────┐   │  │
+│  │  │        localStorage (persistencia, ADR-003)     │   │  │
+│  │  └────────────────────────────────────────────────┘   │  │
+│  └──────────────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────────────┘
 ```
 
+- **El frontend NO llama al API en runtime.** Calcula en cliente (modo offline puro).
+- El API existe como **validador de referencia** (ADR-005/006).
+
 ## Decisiones de Arquitectura (ADR)
 
-### ADR-001: Lógica de cálculo duplicada en frontend y backend
+Los ADRs actuales viven en [`.agents/adr/`](../.agents/adr/):
 
-**Estado**: Aceptado
-**Fecha**: 2026-07-13
-
-**Contexto**: La aplicacion necesita calcular descuentos de ley salvadorenos.
-El backend existe para validacion y como source of truth.
-
-**Decisión**: La logica de calculo existe tanto en el frontend
-(`apps/web/src/utils/`) como en el backend (`apps/api/src/services/`).
-Las constantes compartidas viven en `packages/shared/src/`.
-
-**Razón**: Permite modo offline en el frontend. El backend sirve como
-validador de referencia. Los usuarios pueden usar la calculadora sin conexion.
-
-**Consecuencias**:
-- Las tasas y formulas deben mantenerse sincronizadas entre frontend y backend.
-- Las constantes en `packages/shared` son la unica fuente de verdad para tasas.
-- Cualquier cambio en tasas requiere actualizar `packages/shared/src/tasas.ts`.
-
-### ADR-002: Monorepo con Turborepo + pnpm workspaces
-
-**Estado**: Aceptado
-**Fecha**: 2026-07-13
-
-**Contexto**: El proyecto tiene 2 aplicaciones (web, api) y 2 paquetes
-compartidos (shared, config). Necesitamos tooling para gestionarlos.
-
-**Decisión**: Usar Turborepo con pnpm workspaces.
-
-**Alternativas consideradas**:
-- **Nx**: Demasiado complejo para 4 paquetes. Sobrecarga de configuracion.
-- **npm workspaces solo**: Sin caching ni paralelismo de tareas.
-- **Yarn workspaces**: Similar a pnpm pero pnpm es mas rapido y estricto.
-
-**Razón**: Turborepo ofrece caching local y paralelismo con minima configuracion.
-pnpm es el package manager mas rapido y estricto (previene phantom dependencies).
-
-### ADR-003: Sin base de datos
-
-**Estado**: Aceptado
-**Fecha**: 2026-07-13
-
-**Contexto**: La aplicacion es una calculadora de descuentos que no requiere
-cuentas de usuario ni datos compartidos.
-
-**Decisión**: No usar base de datos. Persistencia solo en localStorage del cliente.
-
-**Razón**: El usuario final especifico "solo calculadora al vuelo". Los datos
-pertenecen al usuario. Simplifica el deploy (sin servicio de BD que mantener).
-
-**Consecuencias**:
-- No hay cuentas de usuario ni datos compartidos entre dispositivos.
-- El backend es stateless y solo realiza calculos/validaciones.
-- Si en el futuro se requieren cuentas, se puede agregar SQLite/Postgres.
-
-### ADR-004: TailwindCSS v4 para estilos
-
-**Estado**: Aceptado
-**Fecha**: 2026-07-13
-
-**Contexto**: Necesitamos un sistema de estilos para la interfaz React.
-
-**Decisión**: TailwindCSS v4 con CSS-first configuration.
-
-**Alternativas consideradas**:
-- **CSS Modules**: Mas boilerplate, requiere naming convention manual.
-- **styled-components**: Runtime CSS-in-JS, overhead innecesario.
-- **Vanilla CSS**: Dificil de mantener en proyectos que crecen.
-
-**Razón**: Utility-first, rapido de desarrollar, excelente DX. Tailwind v4
-usa configuracion via CSS en lugar de JS, mas simple. Bueno para AI-driven
-development por clases predecibles y documentadas.
-
-### ADR-005: API única POST /api/calcular
-
-**Estado**: Aceptado
-**Fecha**: 2026-07-13
-
-**Contexto**: El backend necesita exponer la funcionalidad de calculo.
-
-**Decisión**: Una sola ruta POST que recibe los datos del periodo y
-devuelve todos los calculos en una respuesta.
-
-**Razón**: La calculadora es una operacion de "transformacion de datos"
-pura (input -> calculo -> output). No hay recursos persistentes que
-justifiquen multiples endpoints REST. Mantiene el backend simple.
-
-**Consecuencias**:
-- Simple de implementar y testear.
-- No es RESTful puro, pero adecuado para el caso de uso.
-- Si se agregan funcionalidades (guardar, compartir), se pueden agregar rutas.
-
-## Patrones de Diseño Aplicados
-
-| Patron | Descripcion | Donde se aplica |
-|--------|-------------|-----------------|
-| **Feature-based** | Agrupar por funcionalidad, no por tipo de archivo | Frontend y backend |
-| **Custom Hooks** | Encapsular logica de estado y efectos | React: `useRegistroSemanal`, `useCalculoDescuentos` |
-| **Service Layer** | Separar logica de negocio del transporte HTTP | Backend: `services/horas.ts`, `services/descuentos.ts` |
-| **Error Boundary** | Capturar errores de renderizado sin romper la UI | React: `<ErrorBoundary>` |
-| **Middleware Chain** | Procesar requests en cadena | Express: CORS, Zod validation, rate limiting, error handler |
-| **Repository** | (Futuro) Abstraer acceso a datos | Si se agrega BD en el futuro |
+| ADR | Decisión |
+|-----|----------|
+| 001 | Lógica de cálculo única en `@calc/shared` (no duplicada) |
+| 003 | Persistencia solo localStorage; sin BD |
+| 006 | Offline-first: frontend calcula, API solo valida |
+| 010 | Captura de horas día por día (`EntradaPeriodo[]`), 10b gana a 10a |
+| 011 | Sin autenticación (Clerk eliminado) — utilidad pública |
+| 002 | Monorepo pnpm + Turborepo (ver `specs/architecture.md` histórico) |
+| 004 | TailwindCSS v4 CSS-first |
+| 005 | API única `POST /api/calcular` |
 
 ## Diagrama de Componentes Frontend
 
 ```
 App.tsx
-├── ConfigInicial.tsx
-│   └── Input: salario base, tipo pago, antigüedad
-├── JornadaSelector.tsx
-│   └── Modalidad (diurna/nocturna), tipo (completo/personalizado), horas semanales
-├── SemanaExtrasCard.tsx (×N)
-│   └── Buckets semanales: horas base nocturnas + 5 tipos de extra (sin fechas)
-├── IncentivosForm.tsx
-│   └── Lista: concepto + monto + checkbox "aplica descuentos"
-├── TotalesPeriodo.tsx
-│   └── Resumen simple de horas totales (sin navegación ni gráficos)
+├── ConfigInicial.tsx           ← salario base, tipoPago, antigüedad, fechaIngreso
+├── JornadaSelector.tsx         ← modalidad diurna/nocturna (+ tipo/horas residuales, a simplificar)
+├── EntradasPeriodo.tsx         ← lista plana: fecha + tipo + horas diurnas/nocturnas (10b)
+├── IncentivosForm.tsx          ← concepto + monto + checkbox "aplica descuentos"
 ├── ResultadoNeto.tsx
-│   ├── ResumenBruto.tsx           ← Desglose + recargo nocturnidad + incentivos
-│   ├── TablaDescuentos.tsx        ← ISSS, AFP, Renta detallados
-│   ├── Prestaciones.tsx           ← Aguinaldo, vacaciones, Q25
-│   └── NetoLiquido.tsx            ← Total neto destacado
-├── GraficoPastel.tsx              ← Distribución salarial
-├── TablaTasas.tsx                 ← Tasas vigentes + links .gob.sv
-├── HistorialPeriodos.tsx          ← Lista de períodos guardados (bug #1 fixed)
-└── ExportarPDF.tsx                ← Botón exportar/imprimir
+│   ├── ResumenBruto.tsx        ← desglose + recargo nocturnidad + incentivos
+│   ├── TablaDescuentos.tsx     ← ISSS, AFP, Renta detallados
+│   ├── Prestaciones.tsx        ← aguinaldo, vacaciones, Q25 (informativas)
+│   └── NetoLiquido.tsx         ← total neto destacado
+├── GraficoPastel.tsx           ← distribución salarial (Recharts)
+├── TablaTasas.tsx              ← tasas vigentes + links .gob.sv
+├── HistorialPeriodos.tsx       ← periodos guardados (localStorage)
+└── ExportarPDF.tsx             ← window.print()
 ```
+
+Hooks: `useCalculos` (deriva `CalcularRequest` → `calcular()`), `useLocalStorage<T>`,
+`useTheme` (light/dark/system). Estado global vía `AppContext`.
 
 ## Diagrama de Componentes Backend
 
 ```
-index.ts
-├── app.ts                         ← Configuración Express
-│   ├── CORS middleware
-│   ├── JSON body parser
-│   ├── Rate limiter
-│   └── Routes
-│       └── /api/
-│           └── calcular.ts        ← POST /api/calcular
-│               ├── Zod validation
-│               ├── horas.service.ts
-│               ├── descuentos.service.ts
-│               └── prestaciones.service.ts
-└── middleware/
-    └── errorHandler.ts            ← Manejo centralizado de errores
+index.ts → app.ts
+├── CORS + JSON parser + rate limit (100/min)
+├── POST /api/calcular          ← único endpoint (ADR-005)
+│   ├── Zod validation + validarNegocio
+│   └── service → calcular() de @calc/shared
+└── middleware/errorHandler.ts
 ```
+
+- Sin BD, sin auth, sin historial server (post-rediseño).
+- Deploy: DigitalOcean `api.marvinmelendez.engineer` (PM2 + Caddy).
 
 ## Estrategia de Estado en Frontend
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                     App State (AppContext)                │
-│  ┌─────────────┐ ┌──────────────┐ ┌────────────────┐   │
-│  │ ConfigInicial│ │ JornadaConfig│ │  SemanaRegistro │   │
-│  │ (localStorage)│ │(localStorage)│ │  [](localStorage)│   │
-│  │ config-inicial│ │jornada-config│ │registro-periodo│   │
-│  └──────┬───────┘ └──────┬───────┘ └───────┬────────┘   │
-│  ┌──────┴───────┐                        ┌──┴────────┐  │
-│  │  Incentivos[] │                        │ Incentivos │  │
-│  │ (localStorage)│                        │ (local)    │  │
-│  └──────┬───────┘                        └────────────┘  │
-│         │                                                 │
-│         └──────────────┬──────────────────┘               │
-│                        ▼                                  │
-│             ┌──────────────────────┐                     │
-│             │    useCalculos()     │ ← Hook derivado      │
-│             │ (jornada + semanas + │   memorizado         │
-│             │  incentivos → CalcularRequest → Response)  │
-│             └──────────────────────┘                     │
-│                        │                                  │
-│                        ▼                                  │
-│             ┌──────────────────────┐                     │
-│             │   HistorialPeriodos  │ ← Guarda request      │
-│             │   (request real,     │   + response real    │
-│             │    bug #1 fixed)     │                     │
-│             └──────────────────────┘                     │
-└─────────────────────────────────────────────────────────┘
-```
+- **Config**: un solo objeto, persiste en localStorage (`config-inicial`).
+- **Jornada**: `JornadaConfig` — solo `modalidad` alimenta el motor.
+- **Entradas**: `EntradaPeriodo[]` — lista plana por fecha, sin semanas.
+- **Incentivos**: `Incentivo[]` — cada ítem con `aplicaDescuentos`.
+- **Cálculos**: derivados de config + jornada + entradas + incentivos, memorizados con `useMemo`.
+- **Historial**: guarda el `CalcularRequest` real + response en localStorage.
 
-- **Config**: Un solo objeto, persiste en localStorage
-- **Jornada**: `JornadaConfig` (modalidad, horas semanales, tipo)
-- **Registro**: `SemanaRegistro[]` — buckets semanales sin fechas ni navegación
-- **Incentivos**: `Incentivo[]` — cada ítem con concepto, monto, aplicaDescuentos
-- **Cálculos**: Derivados de config + jornada + registro + incentivos, memorizados con useMemo
-- **Historial**: Guarda el `CalcularRequest` real (no hardcodeado — fix bug #1)
+## Estado de producción
+
+| Servicio | URL | Estado |
+|----------|-----|--------|
+| Web (GitHub Pages) | `https://marvinmelendez.engineer` | Live |
+| API (DigitalOcean) | `https://api.marvinmelendez.engineer` | Live |

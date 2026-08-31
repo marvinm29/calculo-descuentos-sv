@@ -1,5 +1,11 @@
 # Plan de Implementación por Sprints
 
+> **Nota (2026-08-30)**: la **verdad actual congelada** del sistema vive en `openspec/specs/`
+> (deltas ADDED/MODIFIED/REMOVED, fuente de aquí en adelante) y los ADRs en `.agents/adr/`.
+> Los ADRs 001–005 que estaban dentro de `architecture.md` se movieron a `.agents/adr/`.
+> Este archivo sigue siendo el **diario de ejecución** por sprints.
+> Rediseño en curso: `specs/plan-rediseno-frontend.md` (Sprint 0 completado, Sprint 1 siguiente).
+
 > Documenta el orden de construcción del monorepo desde cero (solo `specs/`
 > y configs existen al inicio). Cada sprint deja el proyecto verificable con
 > `pnpm lint && pnpm check-types && pnpm test` y debe documentarse al terminar;
@@ -163,6 +169,12 @@ listo para GitHub Pages; `lint + check-types + test` y coverage > 80% en verde.
 | 9      | completado  | UI/UX: Dark/light mode, mejora visual, vista día por día |
 | 10a    | completado  | Rediseño: jornada, horas extra, incentivos (semana fija + SemanaExtrasCard) |
 | 10b    | completado  | Simplificación: EntradasPeriodo (fecha+horas+tipo), sin time-pickers ni semanas |
+| 11a    | completado  | Rediseño frontend Sprint 0: OpenSpec freeze + ADRs + docs + fix entorno Node 26 (ver abajo) |
+| 11b    | completado  | Rediseño frontend Sprint 1: jornada = solo modalidad + eliminar Clerk/SQLite + cálculo a la carta (ver abajo) |
+| 12     | completado  | Rediseño Sprint 2: DESIGN.md + index.css (tactile editorial + glass solo nav/neto) |
+| 13     | completado  | Rediseño Sprint 3: layout 2 columnas + header sticky glass + tokens/.amount |
+| 14     | completado  | Rediseño Sprint 4: motion (num-pop) + a11y (accent-color, print, touch) |
+| 15     | **en-progreso** | Rediseño Sprint 5: seguridad + cierre (ver abajo) |
 
 ---
 
@@ -752,3 +764,270 @@ pnpm check-types   → 4 tasks OK
 pnpm test          → 195 tests (96 shared + 26 api + 73 web), 0 failures
 ```
 
+---
+
+## Sprint 11a — Rediseño frontend: Freeze (OpenSpec + ADRs + docs) ✅
+
+**Completado**: 2026-08-30. Es el "Sprint 0" de `specs/plan-rediseno-frontend.md`.
+
+### Problema resuelto
+
+El corpus de specs divergió del código: `architecture.md` describía `SemanaExtrasCard` (eliminado),
+ADR-001 decía "lógica duplicada" (hoy única en shared), ADR-003 "sin BD" (se había metido SQLite),
+`api-contract.md` tenía números que no coinciden con la fórmula, `CONTEXT.md` estaba vacío.
+
+### Archivos creados
+
+- `openspec/specs/dominio-calculo.md` — tasas/fórmulas/prestaciones informativas/topes.
+- `openspec/specs/captura-horas.md` — `EntradaPeriodo[]`, derivación nocturnidad, fechas=hoy.
+- `openspec/specs/contrato-calcular.md` — request/response reales (campos opcionales incluidos).
+- `openspec/specs/persistencia.md` — localStorage keys + decisión de eliminar Clerk/SQLite.
+- `CONTEXT.md` — vocabulario real (salarioBase, brutoGravable, salarioLiquido, entrada, recargoNocturnidad...).
+- `.agents/adr/001-logica-unica-en-shared.md` (reemplaza "duplicada").
+- `.agents/adr/003-persistencia-localstorage.md` (reafirmado tras eliminar Clerk).
+- `.agents/adr/006-offline-first.md`, `010-captura-dia-por-dia.md`, `011-sin-autenticacion.md`.
+
+### Archivos modificados (docs only)
+
+- `specs/architecture.md` — diagrama de componentes reales (EntradasPeriodo, no SemanaExtrasCard);
+  ADRs movidos a `.agents/adr/`; deploy DigitalOcean (no Render).
+- `specs/api-contract.md` — Base URL produccion DO; campos `horasBaseNocturnas`/`incentivos` en
+  request; `recargoNocturnidad`/`incentivos`/`incentivosGravados` en response; fixture numérico
+  **alineado a la fórmula** (verificado contra el motor: $13.33, $17.50, quincena25=$400, neto $398.97).
+- `specs/redisenio-jornada-incentivos.md` — estado: 10a ejecutado y **superado por 10b**.
+- `specs/sprints.md` — puntero a `openspec/specs` como source of truth.
+
+### Fix de entorno (no-runtime)
+
+- `apps/web/package.json` `test`: `NODE_OPTIONS=--no-experimental-webstorage vitest run`.
+  Motivo: Node 26 en la máquina local rompe `localStorage` de jsdom (el global experimental lo pisa).
+  Harmless en Node 22 del CI (flag desconocido se ignora silenciosamente). Sin cambios de runtime.
+
+### Verificación (gate en orden)
+
+```
+pnpm lint          → 4 tasks OK
+pnpm check-types   → 4 tasks OK
+pnpm test          → 195 tests (96 shared + 26 api + 73 web), 0 failures
+```
+
+### Known issues / siguientes pasos
+
+- **Sprint 11b** (rediseño Sprint 1): simplificar `JornadaConfig` a solo `modalidad`,
+  quitar promesa de exceso, cálculo a la carta, **eliminar Clerk + SQLite + `clerk-react/`**
+  (ver `specs/plan-rediseno-frontend.md`). Esperando confirmación del usuario.
+
+---
+
+## Sprint 11b — Rediseño frontend: Dominio (jornada simplificada + sin Clerk) ✅
+
+**Completado**: 2026-08-30. Es el "Sprint 1" de `specs/plan-rediseno-frontend.md`.
+
+### Problema resuelto
+
+1. `JornadaConfig` prometía una auto-conversión de exceso que el motor nunca ejecutó (bug A1 del plan).
+   Se simplifica a solo `modalidad` y se retira la promesa.
+2. Clerk se usaba en el historial autenticado, pero la herramienta es una utilidad pública sin login.
+3. El tipo muerto `SemanaRegistro` seguía exportado en `@calc/shared`.
+
+### Cambios
+
+**`packages/shared/src/types.ts`**: `JornadaConfig` → `{ modalidad }`; `SemanaRegistro` eliminado.
+
+**`apps/web`**:
+- `context/AppContext.tsx` — `DEFAULT_JORNADA = { modalidad: 'diurna' }` (el valor viejo en
+  localStorage conserva `modalidad`, compatible).
+- `components/JornadaSelector.tsx` — solo radio diurna/nocturna; sin select de tipo, sin input de
+  horas, sin aviso de exceso. `JornadaSelector.test.tsx` reescrito (5 tests, incluye "no promete
+  pago automático de exceso").
+- `components/HistorialPeriodos.tsx` — persistencia local pura (sin `useAuth`, sin fetch a `/api/history`).
+- `main.tsx` — sin `ClerkProvider`. `App.tsx` — sin botones de login. `lib/api.ts` eliminado.
+- `hooks/useCalculos.test.ts` — fixtures de jornada a solo `{ modalidad }`.
+- `__tests__/App.test.tsx` — 2 tests de **cálculo a la carta** (salario sin entradas → resultado;
+  salario 0 → sin resultado).
+- `package.json` — `@clerk/react` eliminado.
+
+**`apps/api`**:
+- `src/app.ts` — sin `clerkMiddleware` ni `historyRoutes`. Solo `POST /api/calcular`.
+- Eliminados: `src/db.ts`, `src/routes/history/` (3 archivos), `test/history.test.ts`,
+  `apps/api/data/calculos.db*`.
+- `vitest.config.ts` — sin `CLERK_SECRET_KEY` ni exclude de `db.ts`.
+- `test/calcular.test.ts` — sin mock de `@clerk/express`. `ecosystem.config.cjs` — sin `DATABASE_PATH`.
+- `package.json` — `@clerk/express`, `better-sqlite3`, `@types/better-sqlite3` eliminados.
+
+**`clerk-react/`**: carpeta completa eliminada.
+
+**Docs**: `requirements.md` (RF02 reescrito, RF09/RNF06/matriz al día), `openspec/specs/captura-horas.md`
+y `persistencia.md` (Clerk eliminado, jornada = modalidad), `CONTEXT.md` (jornada + reglas), `.env.example`
+(web y api sin Clerk).
+
+### Verificación (gate en orden)
+
+```
+pnpm lint          → 4 tasks OK
+pnpm check-types   → 4 tasks OK
+pnpm test          → 188 tests (96 shared + 16 api + 76 web), 0 failures
+```
+
+(API pasó de 26 → 16 tests: se eliminaron los 10 de history. Web de 73 → 76: +2 cálculo a la carta,
++1 JornadaSelector.)
+
+### Known issues / siguientes pasos
+
+- **Sprint 12** (rediseño Sprint 2): design system — `DESIGN.md` + reescribir `index.css`
+  (matar orbes/gradiente/shimmer/glass-total; base tactile editorial + glass en nav/modal/resultado).
+  Ver `specs/plan-rediseno-frontend.md`.
+
+
+---
+
+## Sprint 12 — Rediseño frontend: Design System ✅
+
+**Completado**: 2026-08-30.
+
+### Archivos creados
+
+- `apps/web/DESIGN.md` — design system "Tactile Editorial + Liquid Glass": color tokens con
+  contraste AA verificado (light/dark), tipografía (Fraunces/Onest/JetBrains Mono), escala,
+  espaciado/radio, reglas de liquid glass (solo nav/dialog/panel neto), prohibiciones anti-AI.
+
+### Archivos modificados
+
+- `apps/web/index.html` — fuentes: + Fraunces (display serif) + JetBrains Mono (montos);
+  se quita Plus Jakarta Sans.
+- `apps/web/src/index.css` — **reescrito**: paleta `#F7F5F1`/`#141310` cálida + acento SV Blue
+  (`#003B6f`/`#7AB2E0`); `--font-display: Fraunces`, `--font-mono`; `.glass-card` = borde 1px,
+  radio 2px, **sin sombra difusa**; `.glass-input` borde táctil; `.btn-accent` plano (sin
+  gradiente ni shimmer); `.amount` (mono + tabular-nums); `.glass-nav`/`.glass-panel`/`.glass-dialog`
+  (liquid glass en 3 lugares); `prefers-reduced-transparency` → sólido; `@media print` → blanco.
+- `apps/web/src/App.tsx` — fondo: `bg-grain` (CSS noise) + `bg-map`; se eliminan `bg-orbs`.
+
+### Verificación (gate)
+
+```
+pnpm lint / check-types → 4 tasks OK
+pnpm test → 188 tests (96+16+76) OK
+```
+
+---
+
+## Sprint 13 — Rediseño frontend: Layout + Componentes ✅
+
+**Completado**: 2026-08-30.
+
+### Decisión clave
+
+**NO** se reintroducen los paquetes del WIP (Radix/TanStack/framer-motion/lucide). El usuario
+descartó el WIP; los componentes actuales usan elementos nativos accesibles y se restilizan
+con los tokens de DESIGN.md (deps mínimas, regla AGENTS.md).
+
+### Cambios
+
+- `App.tsx` — **layout 2 columnas**: izquierda = inputs (ConfigInicial, JornadaSelector,
+  EntradasPeriodo, IncentivosForm), derecha = resumen sticky (`lg:sticky lg:top-24`);
+  `header glass-nav sticky top-0` con marca + ThemeToggle; secciones de gráfico/historial abajo.
+- Radio sweep: `rounded-xl/2xl` de cards/inputs/botones → 2px (el `.glass-card` sin radio define).
+- Montos: `font-mono` → `.amount` (tabular-nums) en ResumenBruto, TablaDescuentos, Prestaciones,
+  HistorialPeriodos, TablaTasas.
+- `NetoLiquido.tsx` — panel `glass-panel` (líquido), monto `.amount` en `text-success`, **sin
+  gradiente** (antes `bg-gradient-to-r from-primary to-accent` + `animate-glow-pulse`, un tell de IA).
+- `App.test.tsx` — título actualizado a "Descuentos de Ley SV".
+
+### Verificación (gate)
+
+```
+pnpm lint / check-types → 4 tasks OK
+pnpm test → 188 tests OK
+pnpm turbo run build --filter=@calc/web → OK
+```
+
+---
+
+## Sprint 14 — Rediseño frontend: Motion + Accesibilidad ✅
+
+**Completado**: 2026-08-30.
+
+### Cambios
+
+- `index.css` — `accent-color: var(--accent)` en checkbox/radio/range (controles nativos con
+  la marca); animación `num-pop` (el neto hace "pop" al recalcular vía `key={neto}`);
+  `@media print` → fondo blanco, glass sólido, sin blur (RF10 legible);
+  touch targets: `.btn-accent` ≥ 44px en móvil.
+- `NetoLiquido.tsx` — `key={neto}` dispara `num-pop` (micro-interacción con propósito).
+- `prefers-reduced-motion` ya respetado (base CSS).
+
+### Verificación (gate)
+
+```
+pnpm lint / check-types / test → 4 tasks OK, 188 tests
+```
+
+---
+
+## Sprint 15 — Rediseño frontend: Seguridad + Cierre (parcial)
+
+**En progreso** (2026-08-30).
+
+### Hecho
+
+- `apps/api/src/app.ts` — CORS restringido: `origin: CORS_ORIGIN` (env, default `http://localhost:5173`,
+  producción `https://marvinmelendez.engineer`).
+- `.github/dependabot.yml` — npm weekly + GH Actions monthly; ignora TS ≥6 / ESLint ≥11 (compat repo).
+- `.github/workflows/ci.yml` — job `security`: `pnpm audit --prod --audit-level high`.
+- Auditoría anti-AI sobre código: sin orbes/gradientes/shimmer/Inter/emoji; sin `box-shadow`
+  difusa (solo focus ring + hairline glass-panel); montos en `.amount`.
+- Screenshots (light) en `/tmp/rediseno-*.png` — revisión visual pendiente (el agente no ve imágenes).
+
+### Pendiente
+
+- Documentar cierre en `openspec/` + `specs/plan-rediseno-frontend.md`.
+- Revisión visual por el usuario (screenshots) + posible ajuste de paleta.
+
+---
+
+## Rediseño "Linear Instrument" — Sprints 1–5 (2026-08-30)
+
+> Plan fuente: `specs/plan-linear-instrument.md`. Supercede la estética "Tactile Editorial"
+> (S12–15) descartada por *"se ve muy básico"*. Branch: `feat/rediseno-tactile-editorial`.
+
+### Sprint 1 — Freeze visual ✅
+
+- ADDED `openspec/specs/diseno-visual.md` — spec del design system (tokens light/dark con
+  contraste AA calculado, escala tipográfica, micro-estados, prohibiciones anti-slop).
+- ADDED `.agents/adr/012-diseno-linear-instrument.md` — dark-first tool-like, una familia sans
+  + mono, sin glass, acento SV Blue.
+- `DESIGN.md` reescrito (Linear Instrument); `index.html` — **eliminada Fraunces** (serif display).
+
+### Sprint 2 — Tokens + base ✅
+
+- `index.css` reescrito: `:root` light + `.dark` (dark-first vía default de `useTheme`),
+  elimina `.glass-*`/`bg-grain`/`bg-map`/Fraunces; radius 6px; `.amount` mono; `scale(0.97)`.
+- `useTheme.ts` — default `'dark'` (dark-first); tests siguen verdes (toggle genérico).
+
+### Sprint 3 — Layout instrumento ✅
+
+- `App.tsx`: secciones numeradas 01–05 (Configuración, Jornada, Horas, Incentivos, Tasas),
+  header `tool-header` sólido (sin glass), badge `SV`, grid 2 col con sticky resumen.
+
+### Sprint 4 — Micro-estados + panel neto ✅
+
+- Clases renombradas `glass-* → tool-*` (35 usos en 16 archivos) con sed + radios unificados
+  a `rounded-md` (6px); sin `shadow-sm` en componentes; `NetoLiquido` = panel-instrumento con
+  número `text-5xl`.
+
+### Sprint 5 — Cierre ✅
+
+- Screenshots: `/tmp/linear-dark.png`, `/tmp/linear-light.png`, `/tmp/linear-mobile.png`
+  (light vía inyección temporal de `theme-preference` en index.html, luego revertida).
+- Auditoría anti-slop DOM: 0 gradient, 0 shadow, 0 emoji, 0 glass real, 16 montos `.amount`,
+  secciones 01–05. Cards repetidas = filas de datos (densidad legítima, no feature-grid).
+- Bug detectado y corregido: light mode no se aplicaba (tokens en `.light` vs clase `.dark`
+  que togglea el hook) → movido a `:root` = light, `.dark` = dark.
+
+### Verificación final
+
+```
+pnpm lint / check-types → 4 tasks OK
+pnpm test → 188 tests (96+16+76) OK
+pnpm build → web dist OK
+```

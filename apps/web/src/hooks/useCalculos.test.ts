@@ -2,17 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { entradasASegmentos } from './useCalculos';
 import type { EntradaPeriodo, JornadaConfig } from '@calc/shared';
 
-const diurna: JornadaConfig = {
-  tipo: 'tiempo_completo',
-  horasSemanales: 44,
-  modalidad: 'diurna',
-};
+const diurna: JornadaConfig = { modalidad: 'diurna' };
 
-const nocturna: JornadaConfig = {
-  tipo: 'tiempo_completo',
-  horasSemanales: 39,
-  modalidad: 'nocturna',
-};
+const nocturna: JornadaConfig = { modalidad: 'nocturna' };
 
 describe('entradasASegmentos', () => {
   it('retorna arrays vacios cuando no hay entradas', () => {

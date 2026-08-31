@@ -5,7 +5,7 @@ type Theme = 'light' | 'dark' | 'system';
 const STORAGE_KEY = 'theme-preference';
 
 function getSystemPref(): 'light' | 'dark' {
-  if (typeof window === 'undefined') return 'light';
+  if (typeof window === 'undefined') return 'dark';
   return window.matchMedia('(prefers-color-scheme: dark)').matches
     ? 'dark'
     : 'light';
@@ -20,7 +20,7 @@ function getStoredTheme(): Theme {
   } catch {
     // localStorage unavailable
   }
-  return 'system';
+  return 'dark';
 }
 
 function applyTheme(theme: Theme) {

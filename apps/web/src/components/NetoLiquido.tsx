@@ -4,15 +4,19 @@ export interface NetoLiquidoProps {
 
 export function NetoLiquido({ neto }: NetoLiquidoProps) {
   return (
-    <div className="glass-card rounded-2xl border-primary/20 p-6 text-center">
-      <p className="text-sm font-medium text-text-secondary">
+    <div className="tool-net p-6 text-center">
+      <p className="text-[13px] font-medium text-text-secondary">
         Salario Neto Líquido
       </p>
       <p
-        className="mt-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-3xl font-bold text-transparent animate-glow-pulse"
+        key={neto}
+        className="amount num-pop mt-2 text-5xl font-semibold text-success"
         role="status"
       >
         ${neto.toFixed(2)}
+      </p>
+      <p className="mt-1 text-[11px] text-text-muted">
+        Bruto total − descuentos de ley
       </p>
     </div>
   );

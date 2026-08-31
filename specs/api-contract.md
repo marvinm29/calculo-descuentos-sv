@@ -3,7 +3,12 @@
 ## Base URL
 
 - **Desarrollo**: `http://localhost:3001/api`
-- **Produccion**: `https://calculo-descuentos-sv.onrender.com/api`
+- **Produccion**: `https://api.marvinmelendez.engineer/api` (DigitalOcean — no Render)
+
+> **Nota (2026-08-30)**: este documento fue corregido para coincidir con la fórmula legal.
+> El fixture numérico usa los valores reales del motor (`packages/shared`); los números viejos
+> ($12.50, $19.69, brutoTotal $472.19, quincena25 `null`) eran errores del contrato,
+> no de la fórmula (Sprint 2 eligió `specs/tasas-legales.md`). Verdad congelada en `openspec/specs/contrato-calcular.md`.
 
 ## POST /api/calcular
 
@@ -20,6 +25,15 @@ interface CalcularRequest {
   antiguedad: 'menos_1' | '1_a_3' | '3_a_9' | '10_o_mas';
   fechaIngreso: string;         // ISO 8601
   segmentos: SegmentoHorario[];
+  horasBaseNocturnas?: number;  // opcional — deriva recargo 25%
+  incentivos?: Incentivo[];     // opcional
+}
+
+interface Incentivo {
+  id: string;
+  concepto: string;
+  monto: number;                // ≥ 0
+  aplicaDescuentos: boolean;    // default true
 }
 
 interface SegmentoHorario {
@@ -66,7 +80,10 @@ interface CalcularResponse {
     diaLibreDiurna: number;
     diaLibreNocturna: number;
     asueto: number;
-    brutoTotal: number;
+    recargoNocturnidad: number;
+    incentivos: number;           // total (gravados + no gravados)
+    incentivosGravados: number;
+    brutoTotal: number;           // brutoGravable + no gravados
   };
   descuentos: {
     isss: {
@@ -115,32 +132,35 @@ interface CalcularResponse {
 {
   "bruto": {
     "salarioBase": 400.00,
-    "horasExtraDiurna": 12.50,
+    "horasExtraDiurna": 13.33,
     "horasExtraNocturna": 0.00,
     "diaLibreDiurna": 40.00,
-    "diaLibreNocturna": 19.69,
+    "diaLibreNocturna": 17.50,
     "asueto": 0.00,
-    "brutoTotal": 472.19
+    "recargoNocturnidad": 0.00,
+    "incentivos": 0.00,
+    "incentivosGravados": 0.00,
+    "brutoTotal": 470.83
   },
   "descuentos": {
     "isss": {
       "porcentaje": 3.00,
-      "salarioAsegurable": 472.19,
-      "descuento": 14.17
+      "salarioAsegurable": 470.83,
+      "descuento": 14.12
     },
     "afp": {
       "porcentaje": 7.25,
-      "salarioCotizable": 472.19,
-      "descuento": 34.23
+      "salarioCotizable": 470.83,
+      "descuento": 34.14
     },
     "renta": {
-      "baseGravable": 423.79,
+      "baseGravable": 422.57,
       "tramo": 2,
       "porcentajeExceso": 10.00,
-      "cuotaFija": 17.67,
-      "descuento": 26.18
+      "cuotaFija": 8.84,
+      "descuento": 23.60
     },
-    "totalDescuentos": 74.58
+    "totalDescuentos": 71.86
   },
   "prestaciones": {
     "aguinaldo": {
@@ -152,13 +172,19 @@ interface CalcularResponse {
       "porcentaje": 30.00,
       "monto": 120.00
     },
-    "quincena25": null
+    "quincena25": {
+      "porcentaje": 50.00,
+      "monto": 400.00
+    }
   },
   "neto": {
-    "salarioLiquido": 397.61
+    "salarioLiquido": 398.97
   }
 }
 ```
+
+> **Nota sobre prestaciones**: quincena25 = $400 para $800 (salario ≤ $1,500). El contrato viejo
+> ponía `null` por error. Vacaciones = bono 30% de 15 días (RF05), informativo.
 
 ### Errores
 

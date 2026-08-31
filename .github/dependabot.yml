@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    ignore:
+      - dependency-name: 'typescript'
+        versions: ['>=6.0.0']
+      - dependency-name: 'eslint'
+        versions: ['>=11.0.0']
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'monthly'

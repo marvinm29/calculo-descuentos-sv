@@ -22,22 +22,20 @@ El usuario debe poder configurar:
 ### RF02 - Jornada Laboral y Horas Extra
 
 El usuario debe poder configurar:
-- Tipo de jornada: tiempo completo (44h/sem diurna / 39h/sem nocturna) o personalizado
-- Modalidad: diurna o nocturna
-- Horas base nocturnas (recargo 25% Art. 168 CT) por semana
-- Horas extra por semana: diurna (2.00x), nocturna (2.25x), día libre diurna (1.50x),
+- Modalidad: diurna o nocturna (solo afecta el recargo de nocturnidad derivado)
+- Horas extra/día libre/asueto por fecha: diurna (2.00x), nocturna (2.25x), día libre diurna (1.50x),
   día libre nocturna (1.75x), asueto (2.00x)
 - Incentivos (bonos, comisiones) con monto y checkbox "aplica descuentos de ley"
-- Múltiples semanas (buckets sin fechas ni navegación)
+- **Cálculo a la carta**: se puede calcular N horas extra sin declarar jornada semanal
+  (cero entradas + salario → solo salario base)
 
 **Criterios de aceptacion:**
-- [ ] Selector de modalidad (diurna/nocturna) y tipo (completo/personalizado)
-- [ ] Si personalizado, input de horas semanales con validación
+- [ ] Selector de modalidad (diurna/nocturna)
 - [ ] Recargo de nocturnidad visible como línea separada en el resumen
-- [ ] Auto-conversión: exceso sobre 44h (diurna) o 39h (nocturna) se paga como extra
 - [ ] Las extras no tienen mínimo — 1 hora se calcula y paga
 - [ ] Incentivos: default checkbox "sujeto a descuentos" (true)
-- [ ] Datos persisten en localStorage (keys `jornada-config`, `registro-periodo`, `incentivos`)
+- [ ] Datos persisten en localStorage (keys `jornada-config`, `entradas-periodo`, `incentivos`)
+- [ ] Con salario > 0 y cero entradas, se muestra el resultado con solo el salario base
 
 ### RF03 - Calculo de Pago de Horas Extra
 
@@ -137,10 +135,11 @@ Mostrar tabla con las tasas vigentes y enlaces a fuentes oficiales.
 
 ### RF09 - Persistencia Local (localStorage)
 
-- Los registros semanales se guardan automaticamente
+- Las entradas del periodo se guardan automaticamente
 - Permitir ver historial de periodos anteriores
 - Permitir eliminar periodos guardados
 - Los datos de configuracion inicial tambien persisten
+- No hay backend de historial: todo vive en el navegador (ADR-003)
 
 **Criterios de aceptacion:**
 - [ ] Al recargar la pagina, los datos se restauran
@@ -193,8 +192,8 @@ Permitir exportar el resumen del periodo como PDF o imprimir.
 
 ### RNF06 - Disponibilidad
 - Frontend: GitHub Pages (SLA > 99.9%)
-- Backend: Render free tier (spin-down en inactividad)
-- Modo offline: calculos funcionan sin backend (logica duplicada)
+- Backend: DigitalOcean droplet (api.marvinmelendez.engineer)
+- Modo offline: calculos funcionan sin backend (lógica en `@calc/shared`)
 
 ---
 
@@ -203,12 +202,12 @@ Permitir exportar el resumen del periodo como PDF o imprimir.
 | Requerimiento | Prioridad | Componente | Criterio de Verificacion |
 |---------------|-----------|------------|--------------------------|
 | RF01 | Alta | ConfigInicial.tsx | Formulario valida y persiste |
-| RF02 | Alta | RegistroSemanal.tsx | CRUD semanal con localStorage |
+| RF02 | Alta | JornadaSelector.tsx + EntradasPeriodo.tsx | CRUD de entradas con localStorage |
 | RF03 | Alta | horasExtra.ts (shared) | Tests unitarios con valores conocidos |
 | RF04 | Alta | descuentos.ts (shared) | Tests vs misalariosv.com |
 | RF05 | Media | prestaciones.ts (shared) | Tests con casos borde |
 | RF06 | Alta | ResultadoNeto.tsx | Desglose numerico correcto |
 | RF07 | Media | GraficoPastel.tsx | Porcentajes y colores correctos |
 | RF08 | Baja | TablaTasas.tsx | Links funcionales a .gob.sv |
-| RF09 | Media | useLocalStorage.ts | CRUD persistente |
+| RF09 | Media | useLocalStorage.ts + HistorialPeriodos.tsx | CRUD persistente |
 | RF10 | Baja | ExportarPDF.tsx | PDF generado correctamente |

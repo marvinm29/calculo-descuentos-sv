@@ -87,7 +87,7 @@ const SECTIONS = [
 
 function FlowDiagram() {
   return (
-    <div className="glass-card rounded-xl p-4 mb-6 overflow-x-auto">
+    <div className="tool-card p-4 mb-6 overflow-x-auto">
       <h3 className="text-sm font-bold text-text mb-4">
         Diagrama del Cálculo
       </h3>
@@ -126,7 +126,7 @@ function FlowDiagram() {
 function FlowNode({ label, color, top }: { label: string; color: string; top?: boolean }) {
   return (
     <div className={`flex flex-col items-center ${top ? 'mt-0' : 'mt-8'}`}>
-      <div className={`${color} text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-sm`}>
+      <div className={`${color} text-white text-[10px] font-bold px-2.5 py-1.5 rounded-md whitespace-nowrap`}>
         {label}
       </div>
     </div>
@@ -135,7 +135,7 @@ function FlowNode({ label, color, top }: { label: string; color: string; top?: b
 
 function FlowNodeSub({ label, color }: { label: string; color: string }) {
   return (
-    <div className={`${color} text-white text-[9px] font-medium px-2 py-1 rounded-lg whitespace-nowrap shadow-sm`}>
+    <div className={`${color} text-white text-[9px] font-medium px-2 py-1 rounded-md whitespace-nowrap`}>
       {label}
     </div>
   );
@@ -147,7 +147,7 @@ function FlowNodeGroup({ label, items, color }: { label: string; items: string[]
       <span className="text-[9px] font-semibold text-text-secondary">{label}</span>
       <div className="flex gap-1">
         {items.map((item) => (
-          <div key={item} className={`${color} text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-sm`}>
+          <div key={item} className={`${color} text-white text-[10px] font-bold px-2.5 py-1.5 rounded-md whitespace-nowrap`}>
             {item}
           </div>
         ))}
@@ -162,7 +162,7 @@ function FlowNodeGroupExt({ label, items, color }: { label: string; items: strin
       <span className="text-[9px] font-semibold text-text-secondary">{label}</span>
       <div className="flex flex-col gap-1">
         {items.map((item) => (
-          <div key={item} className={`${color} text-white text-[9px] font-bold px-2 py-1 rounded-lg whitespace-nowrap shadow-sm`}>
+          <div key={item} className={`${color} text-white text-[9px] font-bold px-2 py-1 rounded-md whitespace-nowrap`}>
             {item}
           </div>
         ))}
@@ -209,7 +209,7 @@ export function GuiaCalculos() {
 
       <div className="space-y-3">
         {SECTIONS.map((s) => (
-          <div key={s.id} id={s.id} className="glass-card rounded-xl p-4 scroll-mt-4">
+          <div key={s.id} id={s.id} className="tool-card p-4 scroll-mt-4">
             <h3 className="text-sm font-bold text-text mb-2">{s.title}</h3>
 
             {s.desc && (
@@ -219,7 +219,7 @@ export function GuiaCalculos() {
             {s.formula && (
               <div className="mb-2">
                 <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wide">Fórmula</span>
-                <pre className="mt-1 glass-card rounded-lg px-3 py-2 text-xs font-mono text-primary leading-relaxed">
+                <pre className="mt-1 tool-card rounded-md px-3 py-2 text-xs font-mono text-primary leading-relaxed">
                   {s.formula}
                 </pre>
               </div>
@@ -227,7 +227,7 @@ export function GuiaCalculos() {
 
             {s.formula2 && (
               <div className="mb-2">
-                <pre className="glass-card rounded-lg px-3 py-2 text-xs font-mono text-primary leading-relaxed">
+                <pre className="tool-card rounded-md px-3 py-2 text-xs font-mono text-primary leading-relaxed">
                   {s.formula2}
                 </pre>
               </div>
@@ -236,7 +236,7 @@ export function GuiaCalculos() {
             {s.formulaRenta && (
               <div className="mb-2">
                 <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wide">Fórmula</span>
-                <pre className="mt-1 glass-card rounded-lg px-3 py-2 text-xs font-mono text-primary leading-relaxed">
+                <pre className="mt-1 tool-card rounded-md px-3 py-2 text-xs font-mono text-primary leading-relaxed">
                   {s.formulaRenta}
                 </pre>
               </div>
@@ -245,7 +245,7 @@ export function GuiaCalculos() {
             {s.example && (
               <div className="mb-3">
                 <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wide">Ejemplo</span>
-                <div className="mt-1 glass-card rounded-lg px-3 py-2 text-xs text-text-secondary leading-relaxed">
+                <div className="mt-1 tool-card rounded-md px-3 py-2 text-xs text-text-secondary leading-relaxed">
                   {(() => {
                     const ex = s.example as Record<string, unknown> | undefined;
                     if (!ex) return null;

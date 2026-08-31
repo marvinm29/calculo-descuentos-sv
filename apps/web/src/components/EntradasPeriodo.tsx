@@ -40,13 +40,13 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
   }
 
   return (
-    <div className="glass-card rounded-xl p-4">
+    <div className="tool-card p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-bold text-text">Horas del Periodo</h3>
         <button
           type="button"
           onClick={() => onChange([...entradas, entradaVacia()])}
-          className="btn-accent rounded-lg px-2.5 py-1 text-xs"
+          className="btn-accent px-2.5 py-1 text-xs"
         >
           Agregar entrada
         </button>
@@ -62,7 +62,7 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
         {entradas.map((e, i) => (
           <div
             key={e.id}
-            className="glass-card rounded-lg p-3 flex flex-wrap items-end gap-2"
+            className="tool-card rounded-md p-3 flex flex-wrap items-end gap-2"
           >
             <div className="w-36">
               <label className="block text-[10px] font-medium text-text-secondary mb-0.5">
@@ -72,7 +72,7 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
                 type="date"
                 value={e.fecha}
                 onChange={(ev) => update(i, { fecha: ev.target.value })}
-                className="glass-input block w-full rounded-lg px-2 py-1.5 text-xs"
+                className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
               />
             </div>
 
@@ -88,7 +88,7 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
                 onChange={(ev) =>
                   update(i, { horasDiurnas: ev.target.value === '' ? 0 : Number(ev.target.value) })
                 }
-                className="glass-input block w-full rounded-lg px-2 py-1.5 text-xs"
+                className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
               />
             </div>
 
@@ -104,7 +104,7 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
                 onChange={(ev) =>
                   update(i, { horasNocturnas: ev.target.value === '' ? 0 : Number(ev.target.value) })
                 }
-                className="glass-input block w-full rounded-lg px-2 py-1.5 text-xs"
+                className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
               />
             </div>
 
@@ -115,7 +115,7 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
               <select
                 value={e.tipo}
                 onChange={(ev) => update(i, { tipo: ev.target.value as TipoEntrada })}
-                className="glass-input block w-full rounded-lg px-2 py-1.5 text-xs"
+                className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
               >
                 {TIPOS.map((t) => (
                   <option key={t.value} value={t.value}>

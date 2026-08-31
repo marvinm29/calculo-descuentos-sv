@@ -1,23 +1,12 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { App } from '../App';
-
-vi.mock('@clerk/react', () => ({
-  ClerkProvider: ({ children }: { children: React.ReactNode }) => children,
-  SignedIn: ({ children }: { children: React.ReactNode }) => children,
-  SignedOut: ({ children }: { children: React.ReactNode }) => children,
-  useAuth: () => ({ isSignedIn: false, getToken: () => Promise.resolve(null), userId: null, orgId: null, orgRole: null }),
-  useUser: () => ({ isLoaded: true, isSignedIn: false, user: null }),
-  Show: ({ children }: { children: React.ReactNode }) => children,
-  SignInButton: ({ children }: { children: React.ReactNode }) => children,
-  UserButton: () => null,
-}));
 
 describe('App', () => {
   it('renderiza titulo principal', () => {
     render(<App />);
     expect(
-      screen.getByText('Calculadora de Descuentos de Ley'),
+      screen.getByText('Descuentos de Ley SV'),
     ).toBeInTheDocument();
   });
 
@@ -43,5 +32,39 @@ describe('App', () => {
     expect(
       screen.getByText('Incentivos (bonos, comisiones, etc.)'),
     ).toBeInTheDocument();
+  });
+
+  describe('cálculo a la carta (sin declarar jornada semanal)', () => {
+    it('calcula el resultado con solo salario base y cero entradas', () => {
+      localStorage.setItem(
+        'config-inicial',
+        JSON.stringify({
+          salarioBase: 800,
+          tipoPago: 'mensual',
+          antiguedad: '1_a_3',
+          fechaIngreso: '2020-01-01',
+        }),
+      );
+
+      render(<App />);
+
+      expect(screen.getByText('Resultado del Periodo')).toBeInTheDocument();
+    });
+
+    it('se mantiene sin resultado cuando el salario base es 0', () => {
+      localStorage.setItem(
+        'config-inicial',
+        JSON.stringify({
+          salarioBase: 0,
+          tipoPago: 'mensual',
+          antiguedad: '1_a_3',
+          fechaIngreso: '',
+        }),
+      );
+
+      render(<App />);
+
+      expect(screen.queryByText('Resultado del Periodo')).not.toBeInTheDocument();
+    });
   });
 });

@@ -6,7 +6,6 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: '3001',
-        DATABASE_PATH: './data/calculos.db',
       },
     },
   ],
