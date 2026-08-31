@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@calc/shared": "workspace:*",
-    "@sentry/react": "^9.0.0",
+    "@sentry/react": "^10.71.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "recharts": "2.15.4"
