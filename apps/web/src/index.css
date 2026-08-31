@@ -13,7 +13,7 @@
   --bg: #f7f5f1;
   --bg-grain: #efebe3;
   --surface: #ffffff;
-  --glass: rgba(255, 255, 255, 0.65);
+  --glass: rgba(255, 255, 255, 0.55);
   --glass-border: rgba(255, 255, 255, 0.85);
   --surface-raised: #faf8f4;
   --surface-2: #ede9e1;
@@ -34,19 +34,28 @@
   --warning-bg: rgba(181, 101, 29, 0.08);
   --selection: rgba(0, 59, 111, 0.18);
   --grain-opacity: 0.04;
+  /* Rim refractivo (4 bordes) + sheen — intensidad por tema */
+  --rim-top: rgba(255, 255, 255, 0.6);
+  --rim-bottom: rgba(255, 255, 255, 0.3);
+  --rim-side: rgba(255, 255, 255, 0.18);
+  --sheen-opacity: 0.5;
+  /* Aurora backdrop (da color que el glass puede muestrear) */
+  --aurora-1: rgba(0, 59, 111, 0.07);
+  --aurora-2: rgba(200, 169, 81, 0.1);
+  --aurora-3: rgba(95, 199, 212, 0.06);
 }
 
-/* ── Dark ── */
+/* ── Dark — OLED true black (Pixel 8 Pro: píxeles apagados) ── */
 .dark {
-  --bg: #0b192c;
-  --bg-grain: #0a1622;
-  --surface: #13253c;
-  --glass: rgba(20, 40, 66, 0.55);
-  --glass-border: rgba(122, 178, 224, 0.25);
-  --surface-raised: #172b45;
-  --surface-2: #1c3149;
-  --border: #2a4060;
-  --border-soft: #233a55;
+  --bg: #000000;
+  --bg-grain: #000000;
+  --surface: #0d0f13;
+  --glass: rgba(16, 18, 24, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --surface-raised: #14161b;
+  --surface-2: #191c22;
+  --border: #262a33;
+  --border-soft: #1e2129;
   --text: #f2f4f6;
   --text-secondary: #c3c9d2;
   --text-muted: #8a919c;
@@ -62,6 +71,15 @@
   --warning-bg: rgba(251, 191, 36, 0.09);
   --selection: rgba(122, 178, 224, 0.28);
   --grain-opacity: 0.05;
+  /* Rim refractivo en dark: más sutil, luz fría */
+  --rim-top: rgba(255, 255, 255, 0.4);
+  --rim-bottom: rgba(255, 255, 255, 0.18);
+  --rim-side: rgba(255, 255, 255, 0.1);
+  --sheen-opacity: 0.35;
+  /* Aurora sobre negro puro — el glass tiene color que refractar */
+  --aurora-1: rgba(0, 80, 160, 0.22);
+  --aurora-2: rgba(200, 169, 81, 0.07);
+  --aurora-3: rgba(95, 199, 212, 0.1);
 }
 
 /* ── Tailwind v4 tokens ── */
@@ -103,6 +121,14 @@
 
   body {
     background-color: var(--bg);
+    /* Aurora backdrop: color suave en marca para que el glass tenga
+       algo que muestrear (sin él, el blur sobre fondo plano se ve muerto).
+       Estático — sin animación, respeta reduced-motion por diseño. */
+    background-image:
+      radial-gradient(ellipse 70% 50% at 15% -5%, var(--aurora-1), transparent 70%),
+      radial-gradient(ellipse 50% 40% at 90% 15%, var(--aurora-3), transparent 70%),
+      radial-gradient(ellipse 60% 45% at 75% 105%, var(--aurora-2), transparent 70%);
+    background-attachment: fixed;
     color: var(--text);
     font-family: var(--font-body);
     font-size: 16px;
@@ -155,37 +181,57 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Liquid glass — con criterio (nav, panel neto, modales, cards
-   de resultado cuando hay textura detrás). NO en inputs ni
-   contenido denso (WCAG AA).
+   Liquid glass — receta Apple (webtricks.dev / html-in-canvas.dev):
+   1. blur + saturate alto = pane grueso iluminado
+   2. rim refractivo en 4 bordes (top fuerte, bottom medio, lados suaves)
+   3. sheen diagonal 135° con mix-blend-mode: screen (::after)
+   4. aurora de color detrás (body) para que el blur tenga qué muestrear
+   NO en inputs ni contenido denso (WCAG AA).
    ══════════════════════════════════════════════════════════════ */
 
 .glass-nav {
+  position: relative;
+  isolation: isolate;
   background: var(--glass);
-  backdrop-filter: blur(12px) saturate(1.4);
-  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(180%) brightness(1.05);
+  -webkit-backdrop-filter: blur(16px) saturate(180%) brightness(1.05);
   border-bottom: 1px solid var(--glass-border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow:
+    inset 0 1px 0 var(--rim-top),
+    0 8px 32px rgba(0, 0, 0, 0.12);
   transition: background 0.2s ease;
 }
 
 .glass-panel {
+  position: relative;
+  isolation: isolate;
   background: var(--glass);
-  backdrop-filter: blur(16px) saturate(1.5);
-  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  backdrop-filter: blur(20px) saturate(180%) brightness(1.05);
+  -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.05);
   border: 1px solid var(--glass-border);
   border-radius: 16px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 32px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    inset 0 1px 1px var(--rim-top),
+    inset 0 -1px 1px var(--rim-bottom),
+    inset 1px 0 1px var(--rim-side),
+    inset -1px 0 1px var(--rim-side),
+    0 8px 32px rgba(0, 0, 0, 0.18);
   transition: background 0.2s ease, transform 0.15s ease-out, box-shadow 0.2s ease;
 }
 
 .glass-card {
+  position: relative;
+  isolation: isolate;
   background: var(--glass);
-  backdrop-filter: blur(10px) saturate(1.3);
-  -webkit-backdrop-filter: blur(10px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(170%) brightness(1.04);
+  -webkit-backdrop-filter: blur(14px) saturate(170%) brightness(1.04);
   border: 1px solid var(--glass-border);
   border-radius: 12px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow:
+    inset 0 1px 1px var(--rim-top),
+    inset 0 -1px 1px var(--rim-bottom),
+    inset 1px 0 1px var(--rim-side),
+    inset -1px 0 1px var(--rim-side);
   transition: background 0.2s ease, border-color 0.15s ease, transform 0.1s ease-out,
     box-shadow 0.2s ease;
 }
@@ -195,16 +241,44 @@
   border-color: var(--gold);
 }
 
-.glass-dialog {
-  background: var(--glass);
-  backdrop-filter: blur(20px) saturate(1.5);
-  -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 16px 48px rgba(0, 0, 0, 0.12);
+/* Sheen diagonal: el brillo "glossy" que hace el glass líquido.
+   ::after con z-index:-1 queda sobre el tinte, bajo el contenido
+   (gracias a isolation: isolate). pointer-events: none = no bloquea. */
+.glass-nav::after,
+.glass-panel::after,
+.glass-card::after,
+.glass-dialog::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.4),
+    rgba(255, 255, 255, 0.08) 28%,
+    transparent 58%
+  );
+  mix-blend-mode: screen;
+  opacity: var(--sheen-opacity);
 }
 
-/* ── Fallback: sin backdrop-filter → sólido ── */
+.glass-dialog {
+  position: relative;
+  isolation: isolate;
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(180%) brightness(1.05);
+  -webkit-backdrop-filter: blur(24px) saturate(180%) brightness(1.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 1px var(--rim-top),
+    inset 0 -1px 1px var(--rim-bottom),
+    0 16px 48px rgba(0, 0, 0, 0.25);
+}
+
+/* ── Fallback: sin backdrop-filter → sólido, sin sheen ── */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass-nav,
   .glass-panel,
@@ -213,6 +287,13 @@
     background: var(--surface);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+  }
+
+  .glass-nav::after,
+  .glass-panel::after,
+  .glass-card::after,
+  .glass-dialog::after {
+    display: none;
   }
 }
 
@@ -225,6 +306,17 @@
     background: var(--surface);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+  }
+
+  .glass-nav::after,
+  .glass-panel::after,
+  .glass-card::after,
+  .glass-dialog::after {
+    display: none;
+  }
+
+  body {
+    background-image: none;
   }
 }
 
@@ -273,20 +365,22 @@
   transform: none;
 }
 
-/* ── Botón primario plano (azul bandera SV) ── */
+/* ── Botón primario: azul bandera + luz interior glass ── */
 .btn-accent {
   background: var(--accent);
   color: #ffffff;
   font-weight: 600;
   border: 1px solid var(--accent);
   border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease-out,
-    opacity 0.15s ease;
+    opacity 0.15s ease, box-shadow 0.15s ease;
 }
 
 .btn-accent:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .btn-accent:active {
@@ -444,7 +538,7 @@ input[type='range'] {
   }
 }
 
-/* ── Print: PDF legible (RF10) — fondo sólido, sin glass ── */
+/* ── Print: PDF legible (RF10) — fondo sólido, sin glass ni aurora ── */
 @media print {
   :root {
     --bg: #ffffff;
@@ -461,10 +555,12 @@ input[type='range'] {
     --accent: #000000;
     --gold: #666666;
     --grain-opacity: 0;
+    --sheen-opacity: 0;
   }
 
   body {
     background: #ffffff !important;
+    background-image: none !important;
   }
 
   body::before {
@@ -482,6 +578,13 @@ input[type='range'] {
     -webkit-backdrop-filter: none !important;
     box-shadow: none !important;
     border-color: #cccccc !important;
+  }
+
+  .glass-nav::after,
+  .glass-panel::after,
+  .glass-card::after,
+  .glass-dialog::after {
+    display: none !important;
   }
 
   .glass-nav {

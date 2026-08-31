@@ -19,7 +19,8 @@ de proceso, no de código a copiar.
    Contraste garantizado sobre glass (fondo semi-opaco nunca por debajo de 8px blur).
 2. **Identidad SV, no kitsch**: azul bandera `#003B6F` (light) / `#7AB2E0` (dark) como
    acento. Dorado `#C8A951` solo como detalle decorativo (separador, firma), nunca funcional.
-   Fondo cálido crema `#F7F5F1` (light) / navy profundo `#0B192C` (dark).
+   Fondo cálido crema `#F7F5F1` (light) / **negro puro `#000000`** (dark — OLED: los píxeles
+   se apagan, batería y contraste en dispositivos AMOLED).
 3. **Tipografía con voz**: Onest (UI) + JetBrains Mono (montos, `tabular-nums`) + **Fraunces**
    (serif display, solo título principal del header y H1 de resultado). Serif + mono = sello
    editorial, no SaaS genérico.
@@ -62,30 +63,47 @@ de proceso, no de código a copiar.
 | `--warning` | `#B5651D` | avisos | 5.0:1 ✓ |
 | `--selection` | `rgba(0, 59, 111, 0.18)` | selección | — |
 
-### Dark
+### Dark (OLED — true black)
 
 | Token | Valor | Uso |
 |---|---|---|
-| `--bg` | `#0B192C` | fondo (navy profundo, "noche cívica") |
-| `--bg-grain` | `#0A1622` | tinte del grain |
-| `--surface` | `#13253C` | cards sólidas |
-| `--glass` | `rgba(20, 40, 66, 0.55)` | glass (nav, panel neto) |
-| `--glass-border` | `rgba(122, 178, 224, 0.25)` | borde glass (luz azul) |
-| `--surface-raised` | `#172B45` | hover/raised |
-| `--surface-2` | `#1C3149` | alt/inset |
-| `--border` | `#2A4060` | hairline |
-| `--border-soft` | `#233A55` | divisiones sutiles |
-| `--text` | `#F2F4F6` | principal (17.5:1 ✓) |
-| `--text-secondary` | `#C3C9D2` | (9.6:1 ✓) |
-| `--text-muted` | `#8A919C` | (5.5:1 ✓) |
-| `--accent` | `#7AB2E0` | azul bandera (10.2:1 ✓) |
-| `--accent-hover` | `#9BC4EC` | hover (11.8:1 ✓) |
+| `--bg` | `#000000` | fondo (negro puro, OLED/AMOLED — píxeles apagados) |
+| `--bg-grain` | `#000000` | tinte del grain |
+| `--surface` | `#0D0F13` | cards sólidas |
+| `--glass` | `rgba(16, 18, 24, 0.55)` | glass (nav, panel neto) |
+| `--glass-border` | `rgba(255, 255, 255, 0.14)` | borde glass (luz) |
+| `--surface-raised` | `#14161B` | hover/raised |
+| `--surface-2` | `#191C22` | alt/inset |
+| `--border` | `#262A33` | hairline |
+| `--border-soft` | `#1E2129` | divisiones sutiles |
+| `--text` | `#F2F4F6` | principal (>20:1 sobre negro ✓) |
+| `--text-secondary` | `#C3C9D2` | (>12:1 ✓) |
+| `--text-muted` | `#8A919C` | (>6:1 ✓) |
+| `--accent` | `#7AB2E0` | azul bandera (>10:1 ✓) |
+| `--accent-hover` | `#9BC4EC` | hover |
 | `--accent-soft` | `rgba(122, 178, 224, 0.14)` | foco/fondos suaves |
 | `--gold` | `#D9B860` | dorado decorativo |
-| `--success` | `#4ADE80` | (9.3:1 ✓) |
-| `--danger` | `#F87171` | (6.7:1 ✓) |
-| `--warning` | `#FBBF24` | (8.9:1 ✓) |
+| `--success` | `#4ADE80` | (>9:1 ✓) |
+| `--danger` | `#F87171` | (>6:1 ✓) |
+| `--warning` | `#FBBF24` | (>8:1 ✓) |
 | `--selection` | `rgba(122, 178, 224, 0.28)` | — |
+
+### Vars de material glass (por tema)
+
+| Var | Light | Dark | Uso |
+|---|---|---|---|
+| `--rim-top` | `rgba(255,255,255,0.6)` | `rgba(255,255,255,0.4)` | highlight especular superior |
+| `--rim-bottom` | `rgba(255,255,255,0.3)` | `rgba(255,255,255,0.18)` | rim inferior medio |
+| `--rim-side` | `rgba(255,255,255,0.18)` | `rgba(255,255,255,0.1)` | rims laterales suaves |
+| `--sheen-opacity` | `0.5` | `0.35` | opacidad del sheen diagonal |
+| `--aurora-1/2/3` | azul/oro/turquesa muy tenues | azul/oro/turquesa sobre negro | color de fondo que el glass muestrea |
+
+## Aurora backdrop
+
+Gradientes radiales estáticos en `body` (`background-attachment: fixed`) en colores de
+marca (azul bandera, dorado, turquesa Torogoz). Sin animación. **Es requisito del glass**:
+sobre fondo plano el blur no tiene nada que muestrear y el efecto se ve muerto. En dark
+sobre `#000000` el aurora da los toques de color que "flotan" detrás del glass.
 
 ## Tipografía
 
@@ -104,12 +122,23 @@ Labels 13px. Cuerpo 14–16px. Display (Fraunces) solo en el título de marca.
    (modales), `.glass-card` (cards de resultado cuando hay fondo de textura detrás).
 2. **Dónde NO**: inputs, selects, contenido de texto denso, tablas de tasas. Sobre fondo
    sólido sin textura el glass se ve muerto — usar `.tool-card` sólido en su lugar.
-3. **Fórmula**: `background: var(--glass)`, `backdrop-filter: blur(12px) saturate(1.4)`,
-   `border: 1px solid var(--glass-border)`, `box-shadow: inset 0 1px 0 rgba(255,255,255,0.4)`
-   (luz interior) — sin sombra difusa externa (anti-slop).
-4. **Fallback**: `@supports not (backdrop-filter: blur(1px))` → `background: var(--surface)`.
+3. **Fórmula** (receta Apple, fuentes webtricks.dev / html-in-canvas.dev):
+   - `backdrop-filter: blur(14–20px) saturate(170–180%) brightness(1.04–1.05)` — la
+     saturación alta es lo que distingue liquid glass de glassmorphism plano.
+   - `border: 1px solid var(--glass-border)`.
+   - **Rim refractivo en 4 bordes** (`inset` shadows): top fuerte (`--rim-top`),
+     bottom medio (`--rim-bottom`), lados suaves (`--rim-side`).
+   - **Sheen diagonal** en `::after`: `linear-gradient(135deg, blanco→transparente)`
+     con `mix-blend-mode: screen`, `z-index: -1`, `isolation: isolate` en el padre,
+     `pointer-events: none`.
+   - **Aurora de color detrás** (body) — sin ella el blur no muestrea nada.
+   - Sombra externa solo en nav/panel/diálogo, nunca en cards.
+4. **Fallback**: `@supports not (backdrop-filter: blur(1px))` → `background: var(--surface)`,
+   sheen oculto.
 5. **Reduced transparency**: `@media (prefers-reduced-transparency: reduce)` →
-   `background: var(--surface)`, sin `backdrop-filter`.
+   `background: var(--surface)`, sin `backdrop-filter`, sin sheen, sin aurora.
+6. **Refraction SVG (feDisplacementMap)**: Chromium-only, se evalúa en sprint futuro —
+   no usar hasta verificar rendimiento en móviles low-end.
 
 ## Grain texture
 
