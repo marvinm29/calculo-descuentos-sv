@@ -1,21 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@clerk/react';
-import type { CalculoState, CalcularResponse } from '@calc/shared';
+import { useCallback } from 'react';
+import type { CalculoState } from '@calc/shared';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { getApiUrl } from '../lib/api';
 
 interface PeriodoGuardado {
   id: string;
   fecha: string;
   neto: number;
   brutoTotal: number;
-}
-
-interface HistoryRow {
-  id: string;
-  request_data: string;
-  response_data: string;
-  created_at: string;
 }
 
 const STORAGE_KEY = 'historial-periodos';
@@ -31,56 +22,12 @@ export interface HistorialPeriodosProps {
 }
 
 export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
-  const { isSignedIn, getToken } = useAuth();
   const [periodos, setPeriodos] = useLocalStorage<PeriodoGuardado[]>(
     STORAGE_KEY,
     [],
   );
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!isSignedIn) return;
-
-    let cancelled = false;
-    setLoading(true);
-
-    async function fetchHistory() {
-      try {
-        const token = await getToken();
-        const res = await fetch(`${getApiUrl()}/api/history`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        if (!res.ok) return;
-        const data = (await res.json()) as HistoryRow[];
-        if (cancelled) return;
-
-        const mapped: PeriodoGuardado[] = data.map((row) => {
-          const response = JSON.parse(row.response_data) as CalcularResponse;
-          return {
-            id: row.id,
-            fecha: row.created_at,
-            neto: response.neto.salarioLiquido,
-            brutoTotal: response.bruto.brutoTotal,
-          };
-        });
-        setPeriodos(mapped);
-      } catch {
-        // Silently fail — app works offline
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    void fetchHistory();
-    return () => {
-      cancelled = true;
-    };
-  }, [isSignedIn, getToken, setPeriodos]);
-
-  const guardar = useCallback(async () => {
+  const guardar = useCallback(() => {
     if (calculoState.status !== 'success') return;
 
     const nuevo: PeriodoGuardado = {
@@ -90,69 +37,31 @@ export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
       brutoTotal: calculoState.data.bruto.brutoTotal,
     };
 
-    if (isSignedIn) {
-      try {
-        const token = await getToken();
-
-        const res = await fetch(`${getApiUrl()}/api/history`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ request: calculoState.request, response: calculoState.data }),
-        });
-        if (res.ok) {
-          const created = (await res.json()) as HistoryRow;
-          nuevo.id = created.id;
-        }
-      } catch {
-        // Fallback to local save
-      }
-    }
-
     setPeriodos((prev) => [...prev, nuevo]);
-  }, [calculoState, isSignedIn, getToken, setPeriodos]);
+  }, [calculoState, setPeriodos]);
 
   const eliminar = useCallback(
-    async (id: string) => {
-      if (isSignedIn) {
-        try {
-          const token = await getToken();
-          await fetch(`${getApiUrl()}/api/history/${id}`, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
-        } catch {
-          // Fallback — remove locally
-        }
-      }
+    (id: string) => {
       setPeriodos((prev) => prev.filter((p) => p.id !== id));
     },
-    [isSignedIn, getToken, setPeriodos],
+    [setPeriodos],
   );
 
   return (
-    <div className="glass-card rounded-xl p-4">
+    <div className="tool-card p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-text">
           Historial de Periodos
         </h3>
         <button
-          onClick={() => { void guardar(); }}
-          className="btn-accent rounded-lg px-3 py-1.5 text-xs"
+          onClick={guardar}
+          className="btn-accent px-3 py-1.5 text-xs"
         >
           Guardar periodo actual
         </button>
       </div>
 
-      {loading && (
-        <p className="mt-2 text-xs text-text-muted">Cargando historial...</p>
-      )}
-
-      {!loading && periodos.length === 0 && (
+      {periodos.length === 0 && (
         <p className="mt-2 text-xs text-text-muted">
           No hay periodos guardados.
         </p>
@@ -177,9 +86,7 @@ export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
                 </span>
               </div>
               <button
-                onClick={() => {
-                  void eliminar(p.id);
-                }}
+                onClick={() => eliminar(p.id)}
                 className="text-xs text-danger hover:text-danger focus:underline focus:outline-none"
                 aria-label={`Eliminar periodo de ${new Date(p.fecha).toLocaleDateString('es-SV')}`}
               >

@@ -4,8 +4,6 @@ import type { ConfigInicialData } from '../components/ConfigInicial';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
 const DEFAULT_JORNADA: JornadaConfig = {
-  tipo: 'tiempo_completo',
-  horasSemanales: 44,
   modalidad: 'diurna',
 };
 

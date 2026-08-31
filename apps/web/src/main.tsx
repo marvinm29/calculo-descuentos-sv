@@ -1,12 +1,10 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ClerkProvider } from '@clerk/react';
 import * as Sentry from '@sentry/react';
 import { App } from './App';
 import './index.css';
 
 const env = import.meta.env as Record<string, string>;
-const PUBLISHABLE_KEY: string = env['VITE_CLERK_PUBLISHABLE_KEY'] ?? '';
 const SENTRY_DSN: string = env['VITE_SENTRY_DSN'] ?? '';
 
 if (SENTRY_DSN) {
@@ -23,8 +21,6 @@ if (!root) {
 
 createRoot(root).render(
   <StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <App />
-    </ClerkProvider>
+    <App />
   </StrictMode>,
 );

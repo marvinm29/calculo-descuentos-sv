@@ -80,7 +80,7 @@ const TASAS = [
 
 export function TablaTasas() {
   return (
-    <div className="glass-card rounded-xl p-4">
+    <div className="tool-card p-4">
       <h3 className="text-sm font-bold text-text">
         Tasas de Referencia Vigentes
       </h3>
@@ -102,7 +102,7 @@ export function TablaTasas() {
             {TASAS.map((t) => (
               <tr key={t.concepto} className="border-b border-border-light">
                 <td className="py-1.5 pr-2">{t.concepto}</td>
-                <td className="py-1.5 pr-2 font-mono font-semibold">{t.valor}</td>
+                <td className="amount py-1.5 pr-2 font-semibold">{t.valor}</td>
                 <td className="py-1.5 pr-2">{t.detalle}</td>
                 <td className="py-1.5">
                   <a

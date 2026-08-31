@@ -1,8 +1,12 @@
 # Plan de Rediseño — Jornada, Horas Extra e Incentivos (Sprint 10)
 
-> **Estado**: Aprobado por el usuario (2026-07-22). Pendiente de ejecución en Build mode.
-> **Origen**: Audit de bugs 2026-07-22 — el modelo día-por-día con bloques horarios
-> causó directamente los bugs #3, #4, #5 y #6. Se reemplaza por completo.
+> **Estado**: ✅ **Ejecutado como Sprint 10a (2026-07-22) y luego SUPERADO por Sprint 10b (2026-07-23)**.
+> El modelo de buckets semanales (`SemanaRegistro`/`SemanaExtrasCard`) descrito aquí fue
+> reemplazado por la **lista plana `EntradaPeriodo[]`** (ver `specs/sprints.md` Sprint 10b y
+> `openspec/specs/captura-horas.md`). Este documento se conserva como registro del diseño 10a
+> y su base legal verificada (sigue vigente), pero **NO describe el sistema actual**.
+> El rediseño 2026-08-30 simplifica además `JornadaConfig` a solo `modalidad` (ver
+> `specs/plan-rediseno-frontend.md`).
 
 ## 0. Base legal verificada (fuentes consultadas 2026-07-22)
 

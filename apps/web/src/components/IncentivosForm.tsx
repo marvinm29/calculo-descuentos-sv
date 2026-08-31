@@ -28,7 +28,7 @@ export function IncentivosForm({ incentivos, onChange }: IncentivosFormProps) {
   }
 
   return (
-    <div className="glass-card rounded-xl p-4">
+    <div className="tool-card p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-bold text-text">
           Incentivos (bonos, comisiones, etc.)
@@ -36,7 +36,7 @@ export function IncentivosForm({ incentivos, onChange }: IncentivosFormProps) {
         <button
           type="button"
           onClick={() => onChange([...incentivos, crearVacio()])}
-          className="btn-accent rounded-lg px-2.5 py-1 text-xs"
+          className="btn-accent px-2.5 py-1 text-xs"
         >
           Agregar
         </button>
@@ -52,7 +52,7 @@ export function IncentivosForm({ incentivos, onChange }: IncentivosFormProps) {
         {incentivos.map((inc, i) => (
           <div
             key={inc.id}
-            className="glass-card rounded-lg p-3 flex flex-wrap items-end gap-2"
+            className="tool-card rounded-md p-3 flex flex-wrap items-end gap-2"
           >
             <div className="flex-1 min-w-[120px]">
               <label className="block text-[10px] font-medium text-text-secondary mb-0.5">
@@ -63,7 +63,7 @@ export function IncentivosForm({ incentivos, onChange }: IncentivosFormProps) {
                 value={inc.concepto}
                 onChange={(e) => update(i, { concepto: e.target.value })}
                 placeholder="Bono, comisión..."
-                className="glass-input block w-full rounded-lg px-2 py-1.5 text-xs"
+                className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
               />
             </div>
 
@@ -80,7 +80,7 @@ export function IncentivosForm({ incentivos, onChange }: IncentivosFormProps) {
                   const v = e.target.value === '' ? 0 : Number(e.target.value);
                   update(i, { monto: v });
                 }}
-                className="glass-input block w-full rounded-lg px-2 py-1.5 text-xs"
+                className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
               />
             </div>
 

@@ -1,4 +1,3 @@
-import { Show, SignInButton, UserButton } from '@clerk/react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ConfigInicial } from './components/ConfigInicial';
 import { JornadaSelector } from './components/JornadaSelector';
@@ -21,7 +20,7 @@ function ThemeToggle() {
     <button
       onClick={toggle}
       type="button"
-      className="glass-card rounded-lg p-2 text-text-secondary hover:text-text"
+      className="tool-card p-2 text-text-secondary transition-colors hover:text-text"
       aria-label={
         resolved === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'
       }
@@ -39,95 +38,118 @@ function ThemeToggle() {
   );
 }
 
+function SectionHeading({
+  n,
+  title,
+  description,
+}: {
+  n: string;
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div className="flex items-baseline gap-3">
+      <span className="amount text-xs font-semibold text-accent">{n}</span>
+      <div>
+        <h2 className="text-base font-semibold text-text">{title}</h2>
+        {description ? (
+          <p className="text-[13px] text-text-muted">{description}</p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function AppContent() {
   const { jornada, setJornada, entradas, setEntradas, incentivos, setIncentivos } = useAppContext();
   const calculosState = useCalculos();
 
   return (
     <ErrorBoundary>
-      {/* Animated background */}
-      <div className="bg-orbs" aria-hidden="true" />
-      <div className="bg-map" aria-hidden="true">
-        <svg viewBox="0 0 400 600" fill="var(--sv-blue)" xmlns="http://www.w3.org/2000/svg">
-          <path d="M280 40c30 10 60 30 80 55 20 25 35 55 38 85 3 30-5 60-18 88-13 28-30 54-50 76-20 22-42 40-60 62-18 22-30 48-38 76-8 28-10 58-6 88 4 30 14 58 28 85 14 27 32 52 50 76 8 10 12 24 8 36-4 12-14 22-26 28-12 6-26 8-40 6-14-2-26-10-36-20-10-10-18-22-24-36-6-14-10-28-14-42-4-14-6-28-6-42 0-14 2-28 6-42 4-14 10-28 18-40 8-12 18-22 28-32 10-10 18-22 24-36 12-28 20-58 22-88 2-30-2-60-12-88-10-28-26-52-46-72-20-20-44-36-70-46-26-10-54-16-82-16-28 0-56 6-82 16 14-30 34-56 58-78 24-22 52-40 82-52 30-12 62-18 94-18 32 0 64 6 92 18z" />
-        </svg>
-      </div>
-
-      <div className="relative z-10 mx-auto min-h-screen max-w-2xl px-4 py-6 print:px-2 print:py-2">
-        <header className="mb-8 text-center print:mb-2 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <ThemeToggle />
-            <div className="flex items-center gap-2">
-              <Show when="signed-out">
-                <SignInButton>
-                  <button
-                    type="button"
-                    className="glass-card rounded-lg px-3 py-1 text-xs font-medium text-text-secondary hover:text-text"
-                  >
-                    Iniciar sesión
-                  </button>
-                </SignInButton>
-              </Show>
-              <Show when="signed-in">
-                <UserButton />
-              </Show>
+      <div className="relative z-10 mx-auto min-h-screen max-w-6xl px-4 pb-12 pt-4 print:px-2 print:py-2">
+        <header className="tool-header sticky top-0 z-20 -mx-4 mb-8 border-b px-4 py-3 print:static print:mb-4 print:border-0 print:bg-none">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <svg
+                className="size-5 shrink-0 text-primary"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2h6a1 1 0 011 1v10a1 1 0 01-1 1H7a1 1 0 01-1-1V5a1 1 0 011-1zm.75 2.5a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-4.5zm0 3a.75.75 0 000 1.5h1.5a.75.75 0 000-1.5h-1.5z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <p className="truncate text-lg font-semibold tracking-tight text-text">
+                Descuentos de Ley SV
+              </p>
+              <span className="hidden rounded border border-border px-1.5 py-0.5 font-mono text-[10px] text-text-muted sm:inline">
+                SV
+              </span>
             </div>
+            <ThemeToggle />
           </div>
-          <h1 className="mt-6 text-3xl font-bold text-text">
-            Calculadora de Descuentos de Ley
-          </h1>
-          <p className="mt-2 text-sm text-text-muted print:hidden">
-            El Salvador — ISSS, AFP, Renta, horas extra y prestaciones
-          </p>
         </header>
 
-        <main className="space-y-5 print:space-y-3">
-          <div className="print:hidden animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
-            <ConfigInicial />
-          </div>
-          <div className="print:hidden animate-fade-in-up space-y-3" style={{ animationDelay: '0.1s' }}>
-            <JornadaSelector value={jornada} onChange={setJornada} />
-            <EntradasPeriodo entradas={entradas} onChange={setEntradas} />
-            <IncentivosForm incentivos={incentivos} onChange={setIncentivos} />
+        <main className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] print:block">
+          <div className="space-y-5 print:hidden">
+            <section className="space-y-3">
+              <SectionHeading n="01" title="Configuración" description="Salario base y jornada" />
+              <ConfigInicial />
+            </section>
+            <section className="space-y-3">
+              <SectionHeading n="02" title="Jornada" description="Modalidad diurna o nocturna" />
+              <JornadaSelector value={jornada} onChange={setJornada} />
+            </section>
+            <section className="space-y-3">
+              <SectionHeading n="03" title="Horas del periodo" description="Extras, días libres y asuetos" />
+              <EntradasPeriodo entradas={entradas} onChange={setEntradas} />
+            </section>
+            <section className="space-y-3">
+              <SectionHeading n="04" title="Incentivos" description="Bonos y comisiones" />
+              <IncentivosForm incentivos={incentivos} onChange={setIncentivos} />
+            </section>
           </div>
 
-          <div className="animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
+          <div className="space-y-4 lg:sticky lg:top-24">
             <ResultadoNeto state={calculosState} />
-          </div>
-
-          {calculosState.status === 'success' && (
-            <>
-              <div className="print:hidden animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            {calculosState.status === 'success' && (
+              <div className="print:hidden">
                 <ExportarPDF />
               </div>
-              <div className="animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
-                <GraficoPastel
-                  neto={calculosState.data.neto.salarioLiquido}
-                  descuentos={calculosState.data.descuentos}
-                />
-              </div>
-              <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                <HistorialPeriodos calculoState={calculosState} />
-              </div>
-            </>
-          )}
-
-          <div className="print:hidden animate-fade-in-up" style={{ animationDelay: '0.35s' }}>
-            <TablaTasas />
+            )}
           </div>
-
-          <details className="animate-fade-in-up group" style={{ animationDelay: '0.4s' }}>
-            <summary className="glass-card cursor-pointer rounded-xl px-4 py-3 text-sm font-semibold text-text hover:text-primary list-none flex items-center justify-between">
-              <span>Guía de Cálculos</span>
-              <svg className="size-4 text-text-muted group-open:rotate-180 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-              </svg>
-            </summary>
-            <div className="mt-3">
-              <GuiaCalculos />
-            </div>
-          </details>
         </main>
+
+        {calculosState.status === 'success' && (
+          <section className="mt-6 grid gap-4 md:grid-cols-2 print:hidden">
+            <GraficoPastel
+              neto={calculosState.data.neto.salarioLiquido}
+              descuentos={calculosState.data.descuentos}
+            />
+            <HistorialPeriodos calculoState={calculosState} />
+          </section>
+        )}
+
+        <section className="mt-6 space-y-4 print:hidden">
+          <SectionHeading n="05" title="Tasas de ley" description="ISSS, AFP y tramos de renta" />
+          <TablaTasas />
+        </section>
+
+        <details className="mt-4 group print:hidden">
+          <summary className="tool-card cursor-pointer px-4 py-3 text-sm font-semibold text-text hover:text-primary flex list-none items-center justify-between">
+            <span>Guía de Cálculos</span>
+            <svg className="size-4 text-text-muted transition-transform group-open:rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+            </svg>
+          </summary>
+          <div className="mt-3">
+            <GuiaCalculos />
+          </div>
+        </details>
       </div>
     </ErrorBoundary>
   );

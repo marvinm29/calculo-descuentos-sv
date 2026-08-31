@@ -9,11 +9,10 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "NODE_OPTIONS=--no-experimental-webstorage vitest run"
   },
   "dependencies": {
     "@calc/shared": "workspace:*",
-    "@clerk/react": "^6.12.5",
     "@sentry/react": "^9.0.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",

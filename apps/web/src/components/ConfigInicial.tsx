@@ -70,7 +70,7 @@ export function ConfigInicial() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="glass-card mx-auto max-w-lg space-y-5 rounded-2xl p-6"
+      className="tool-card mx-auto max-w-lg space-y-5 rounded-md p-6"
     >
       <h2 className="text-lg font-bold text-text">
         Configuración Inicial
@@ -92,7 +92,7 @@ export function ConfigInicial() {
           onChange={(e) => {
             handleSalarioChange(e.target.value);
           }}
-          className="glass-input mt-1 block w-full rounded-xl px-3 py-2 text-sm"
+          className="tool-input mt-1 block w-full rounded-md px-3 py-2 text-sm"
           aria-describedby={errors.salarioBase ? 'salarioBase-error' : undefined}
           aria-invalid={!!errors.salarioBase}
         />
@@ -120,7 +120,7 @@ export function ConfigInicial() {
             }));
             setSaved(false);
           }}
-          className="glass-input mt-1 block w-full rounded-xl px-3 py-2 text-sm"
+          className="tool-input mt-1 block w-full rounded-md px-3 py-2 text-sm"
         >
           <option value="mensual">Mensual</option>
           <option value="quincenal">Quincenal</option>
@@ -144,7 +144,7 @@ export function ConfigInicial() {
             }));
             setSaved(false);
           }}
-          className="glass-input mt-1 block w-full rounded-xl px-3 py-2 text-sm"
+          className="tool-input mt-1 block w-full rounded-md px-3 py-2 text-sm"
         >
           <option value="menos_1">Menos de 1 año</option>
           <option value="1_a_3">1 a 3 años</option>
@@ -167,7 +167,7 @@ export function ConfigInicial() {
           onChange={(e) => {
             handleFechaIngresoChange(e.target.value);
           }}
-          className="glass-input mt-1 block w-full rounded-xl px-3 py-2 text-sm"
+          className="tool-input mt-1 block w-full rounded-md px-3 py-2 text-sm"
           aria-describedby={
             errors.fechaIngreso ? 'fechaIngreso-error' : undefined
           }
@@ -182,7 +182,7 @@ export function ConfigInicial() {
 
       <button
         type="submit"
-        className="btn-accent w-full rounded-xl px-4 py-2.5 text-sm"
+        className="btn-accent w-full rounded-md px-4 py-2.5 text-sm"
       >
         Guardar configuración
       </button>

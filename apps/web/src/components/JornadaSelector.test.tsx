@@ -4,55 +4,47 @@ import userEvent from '@testing-library/user-event';
 import { JornadaSelector } from './JornadaSelector';
 import type { JornadaConfig } from '@calc/shared';
 
-const defaultConfig: JornadaConfig = {
-  tipo: 'tiempo_completo',
-  horasSemanales: 44,
-  modalidad: 'diurna',
-};
+const diurna: JornadaConfig = { modalidad: 'diurna' };
 
 describe('JornadaSelector', () => {
   it('renderiza con valores por defecto', () => {
-    render(<JornadaSelector value={defaultConfig} onChange={() => {}} />);
+    render(<JornadaSelector value={diurna} onChange={() => {}} />);
     expect(screen.getByText('Jornada Laboral')).toBeInTheDocument();
-    expect(screen.getByText('Diurna')).toBeInTheDocument();
-    expect(screen.getByText('Nocturna')).toBeInTheDocument();
+    expect(screen.getByLabelText('Diurna')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nocturna')).toBeInTheDocument();
   });
 
-  it('llama onChange al cambiar a personalizado', async () => {
-    const user = userEvent.setup();
-    const onChange = vi.fn();
-    render(<JornadaSelector value={defaultConfig} onChange={onChange} />);
-
-    await user.selectOptions(
-      screen.getByRole('combobox'),
-      'personalizado',
-    );
-
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ tipo: 'personalizado', horasSemanales: 44 }),
-    );
+  it('marca la modalidad activa como seleccionada', () => {
+    render(<JornadaSelector value={{ modalidad: 'nocturna' }} onChange={() => {}} />);
+    expect(screen.getByLabelText('Nocturna')).toBeChecked();
+    expect(screen.getByLabelText('Diurna')).not.toBeChecked();
   });
 
   it('llama onChange al cambiar modalidad a nocturna', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    render(<JornadaSelector value={defaultConfig} onChange={onChange} />);
+    render(<JornadaSelector value={diurna} onChange={onChange} />);
 
     await user.click(screen.getByLabelText('Nocturna'));
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ modalidad: 'nocturna' }),
-    );
+    expect(onChange).toHaveBeenCalledWith({ modalidad: 'nocturna' });
   });
 
-  it('muestra advertencia de exceso en personalizado nocturno', () => {
-    const config: JornadaConfig = {
-      tipo: 'personalizado',
-      horasSemanales: 50,
-      modalidad: 'nocturna',
-    };
-    render(<JornadaSelector value={config} onChange={() => {}} />);
+  it('llama onChange al volver a diurna', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<JornadaSelector value={{ modalidad: 'nocturna' }} onChange={onChange} />);
+
+    await user.click(screen.getByLabelText('Diurna'));
+    expect(onChange).toHaveBeenCalledWith({ modalidad: 'diurna' });
+  });
+
+  it('no promete pago automatico de exceso de jornada', () => {
+    render(<JornadaSelector value={diurna} onChange={() => {}} />);
     expect(
-      screen.getByText(/El exceso sobre 39h se pagará como hora extra/),
-    ).toBeInTheDocument();
+      screen.queryByText(/exceso sobre 44h|se pagará como hora extra/i),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/tiempo completo|personalizado|horas semanales/i),
+    ).not.toBeInTheDocument();
   });
 });
