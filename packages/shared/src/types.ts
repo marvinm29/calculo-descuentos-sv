@@ -51,7 +51,6 @@ export interface CalcularRequest {
   antiguedad: Antiguedad;
   fechaIngreso: string; // ISO 8601
   segmentos: SegmentoHorario[];
-  horasBaseNocturnas?: number;
   incentivos?: Incentivo[];
 }
 
@@ -62,7 +61,6 @@ export interface BrutoResponse {
   diaLibreDiurna: number;
   diaLibreNocturna: number;
   asueto: number;
-  recargoNocturnidad: number;
   incentivos: number;
   incentivosGravados: number;
   brutoTotal: number;

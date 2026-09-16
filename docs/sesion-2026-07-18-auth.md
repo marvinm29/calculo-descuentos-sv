@@ -1,3 +1,10 @@
+# ⚠️ HISTÓRICO / SUPERADO — NO USAR COMO GUÍA
+
+> Este documento describe la arquitectura con Clerk + SQLite + historial remoto, **retirada el
+> 2026-08-30** (ADR-011, `.agents/adr/011-sin-autenticacion.md`). No usar como guía de
+> implementación ni despliegue. Arquitectura vigente: `AGENTS.md`, `specs/architecture.md`,
+> `openspec/specs/persistencia.md` y `CHANGELOG.md`.
+
 # Sesión: Auth con Clerk + SQLite + Migración a @clerk/react v6
 
 **Fecha**: 2026-07-18

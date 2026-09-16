@@ -1,16 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { entradasASegmentos } from './useCalculos';
-import type { EntradaPeriodo, JornadaConfig } from '@calc/shared';
-
-const diurna: JornadaConfig = { modalidad: 'diurna' };
-
-const nocturna: JornadaConfig = { modalidad: 'nocturna' };
+import type { EntradaPeriodo } from '@calc/shared';
 
 describe('entradasASegmentos', () => {
-  it('retorna arrays vacios cuando no hay entradas', () => {
-    const r = entradasASegmentos([], diurna);
-    expect(r.segmentos).toEqual([]);
-    expect(r.horasBaseNocturnas).toBe(0);
+  it('retorna array vacio cuando no hay entradas', () => {
+    expect(entradasASegmentos([])).toEqual([]);
   });
 
   it('convierte entrada extra diurna en segmento extra_diurna', () => {
@@ -21,8 +15,7 @@ describe('entradasASegmentos', () => {
       horasDiurnas: 3,
       horasNocturnas: 0,
     };
-    const r = entradasASegmentos([entrada], diurna);
-    expect(r.segmentos).toEqual([
+    expect(entradasASegmentos([entrada])).toEqual([
       { fecha: '2026-07-01', tipo: 'extra_diurna', horas: 3 },
     ]);
   });
@@ -35,8 +28,7 @@ describe('entradasASegmentos', () => {
       horasDiurnas: 0,
       horasNocturnas: 2,
     };
-    const r = entradasASegmentos([entrada], diurna);
-    expect(r.segmentos).toEqual([
+    expect(entradasASegmentos([entrada])).toEqual([
       { fecha: '2026-07-01', tipo: 'extra_nocturna', horas: 2 },
     ]);
   });
@@ -49,8 +41,7 @@ describe('entradasASegmentos', () => {
       horasDiurnas: 8,
       horasNocturnas: 0,
     };
-    const r = entradasASegmentos([entrada], diurna);
-    expect(r.segmentos).toEqual([
+    expect(entradasASegmentos([entrada])).toEqual([
       { fecha: '2026-07-05', tipo: 'dia_libre_diurna', horas: 8 },
     ]);
   });
@@ -63,8 +54,7 @@ describe('entradasASegmentos', () => {
       horasDiurnas: 0,
       horasNocturnas: 4,
     };
-    const r = entradasASegmentos([entrada], diurna);
-    expect(r.segmentos).toEqual([
+    expect(entradasASegmentos([entrada])).toEqual([
       { fecha: '2026-07-05', tipo: 'dia_libre_nocturna', horas: 4 },
     ]);
   });
@@ -77,8 +67,7 @@ describe('entradasASegmentos', () => {
       horasDiurnas: 6,
       horasNocturnas: 2,
     };
-    const r = entradasASegmentos([entrada], diurna);
-    expect(r.segmentos).toEqual([
+    expect(entradasASegmentos([entrada])).toEqual([
       { fecha: '2026-07-01', tipo: 'asueto', horas: 8 },
     ]);
   });
@@ -91,8 +80,7 @@ describe('entradasASegmentos', () => {
       horasDiurnas: 0,
       horasNocturnas: 0,
     };
-    const r = entradasASegmentos([entrada], diurna);
-    expect(r.segmentos).toEqual([]);
+    expect(entradasASegmentos([entrada])).toEqual([]);
   });
 
   it('convierte entrada con diurnas y nocturnas en dos segmentos separados', () => {
@@ -103,53 +91,28 @@ describe('entradasASegmentos', () => {
       horasDiurnas: 2,
       horasNocturnas: 3,
     };
-    const r = entradasASegmentos([entrada], diurna);
-    expect(r.segmentos).toHaveLength(2);
-    expect(r.segmentos).toContainEqual({
+    const segmentos = entradasASegmentos([entrada]);
+    expect(segmentos).toHaveLength(2);
+    expect(segmentos).toContainEqual({
       fecha: '2026-07-01',
       tipo: 'extra_diurna',
       horas: 2,
     });
-    expect(r.segmentos).toContainEqual({
+    expect(segmentos).toContainEqual({
       fecha: '2026-07-01',
       tipo: 'extra_nocturna',
       horas: 3,
     });
   });
 
-  describe('horasBaseNocturnas', () => {
-    it('es 0 cuando modalidad es diurna', () => {
-      const entrada: EntradaPeriodo = {
-        id: '1',
-        fecha: '2026-07-01',
-        tipo: 'extra',
-        horasDiurnas: 2,
-        horasNocturnas: 0,
-      };
-      const r = entradasASegmentos([entrada], diurna);
-      expect(r.horasBaseNocturnas).toBe(0);
-    });
-
-    it('deriva 7h por fecha unica cuando modalidad es nocturna', () => {
-      const entrada: EntradaPeriodo = {
-        id: '1',
-        fecha: '2026-07-01',
-        tipo: 'extra',
-        horasDiurnas: 2,
-        horasNocturnas: 0,
-      };
-      const r = entradasASegmentos([entrada], nocturna);
-      expect(r.horasBaseNocturnas).toBe(7);
-    });
-
-    it('cuenta fechas unicas × 7 para nocturna con multiples fechas', () => {
-      const entradas: EntradaPeriodo[] = [
-        { id: '1', fecha: '2026-07-01', tipo: 'extra', horasDiurnas: 2, horasNocturnas: 0 },
-        { id: '2', fecha: '2026-07-02', tipo: 'extra', horasDiurnas: 0, horasNocturnas: 3 },
-        { id: '3', fecha: '2026-07-01', tipo: 'asueto', horasDiurnas: 8, horasNocturnas: 0 },
-      ];
-      const r = entradasASegmentos(entradas, nocturna);
-      expect(r.horasBaseNocturnas).toBe(14); // 2 fechas unicas × 7
-    });
+  it('no genera segmentos regulares ni recargo inferido (Regla 7 integridad)', () => {
+    const entradas: EntradaPeriodo[] = [
+      { id: '1', fecha: '2026-07-01', tipo: 'extra', horasDiurnas: 2, horasNocturnas: 0 },
+      { id: '2', fecha: '2026-07-02', tipo: 'extra', horasDiurnas: 0, horasNocturnas: 3 },
+    ];
+    const tipos = entradasASegmentos(entradas).map((s) => s.tipo);
+    expect(tipos).not.toContain('regular_diurna');
+    expect(tipos).not.toContain('regular_nocturna');
+    expect(tipos).toEqual(['extra_diurna', 'extra_nocturna']);
   });
 });

@@ -39,7 +39,7 @@ export function JornadaSelector({ value, onChange }: JornadaSelectorProps) {
           </label>
         </div>
         <p className="mt-2 text-xs text-text-muted">
-          Solo afecta el recargo de nocturnidad de las horas base (7 h/día).
+          Solo informativo: las horas extra nocturnas ya usan su factor de 2.25x.
         </p>
       </fieldset>
     </div>

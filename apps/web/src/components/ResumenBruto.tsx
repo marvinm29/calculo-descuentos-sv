@@ -51,14 +51,6 @@ export function ResumenBruto({ bruto }: ResumenBrutoProps) {
             <dd className="amount">${bruto.asueto.toFixed(2)}</dd>
           </div>
         )}
-        {bruto.recargoNocturnidad > 0 && (
-          <div className="flex justify-between">
-            <dt>Recargo nocturnidad (Art. 168)</dt>
-            <dd className="amount">
-              ${bruto.recargoNocturnidad.toFixed(2)}
-            </dd>
-          </div>
-        )}
         {bruto.incentivos > 0 && (
           <div className="flex justify-between">
             <dt>Incentivos</dt>

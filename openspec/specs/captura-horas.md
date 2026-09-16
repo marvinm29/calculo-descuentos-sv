@@ -1,7 +1,9 @@
 # Spec: Captura de Horas
 
 > Verdad actual congelada del Sprint 10b (2026-07-23) — **reemplaza** al modelo semanal de 10a.
-> Fuente de comportamiento: `apps/web/src/context/AppContext.tsx`, `apps/web/src/hooks/useCalculos.ts`,
+> **Actualizada 2026-09-15**: eliminada la derivación de `horasBaseNocturnas` (Regla 7 de
+> `integridad-calculo.md`). Fuente de comportamiento: `apps/web/src/context/AppContext.tsx`,
+> `apps/web/src/hooks/useCalculos.ts`,
 > `apps/web/src/components/{EntradasPeriodo,JornadaSelector,IncentivosForm}.tsx`.
 
 ## Modelo de entrada
@@ -15,22 +17,17 @@
 ## `JornadaConfig`
 
 - `{ modalidad: 'diurna' | 'nocturna' }` (key `jornada-config`).
-- **Solo `modalidad`** alimenta el motor: la heurística de nocturnidad. No hay `tipo` ni
-  `horasSemanales` (residuo del modelo 10a, **eliminado** el 2026-08-30). No existe promesa
-  de auto-conversión de exceso: las horas se ingresan explícitamente como entradas.
-
-## Derivación de `horasBaseNocturnas`
-
-- **Heurística, no input**: si `modalidad === 'nocturna'`, se cuentan fechas únicas en `entradas` y se multiplica por `JORNADA.NOCTURNA_DIARIA (7)`. Nunca se pregunta al usuario.
+- **Solo informativo en la UI**: ya no alimenta ninguna heurística del motor (2026-09-15).
+  Las horas extra nocturnas usan su factor 2.25× explícito; no hay recargo inferido.
 
 ## Conversión a segmentos
 
-`entradasASegmentos(entradas, jornada)` produce:
+`entradasASegmentos(entradas)` produce:
 
 - `extra` → `extra_diurna` y/o `extra_nocturna` según horas.
 - `dia_libre` → `dia_libre_diurna` y/o `dia_libre_nocturna`.
 - `asueto` → un solo segmento `asueto` con `horas = horasDiurnas + horasNocturnas` (factor 2.00 no distingue modalidad).
-- Devuelve también `horasBaseNocturnas` derivado.
+- Entradas con fecha inválida se descartan; no genera ningún segmento `regular_*`.
 
 ## Cálculo a la carta
 
@@ -39,7 +36,11 @@
 
 ## Fechas
 
-- `fechaInicio`/`fechaFin` del request = **hoy** (no hay calendario de periodo; solo alimentan aguinaldo proporcional).
+- El período del request se **deriva**: `fechaInicio = min(fechas de entradas ∪ {hoy})`,
+  `fechaFin = max(fechas de entradas ∪ {hoy})`. Un período capturado que exceda 31 días
+  inclusivos produce estado de error visible en la UI (Regla 5 de integridad).
+- La UI valida las mismas reglas que el contrato (`calcularRequestSchema`): fecha real,
+  horas 0–24, suma diaria ≤ 24 h; las filas inválidas muestran feedback y no alimentan el cálculo.
 
 ## Modelo muerto (no usar)
 

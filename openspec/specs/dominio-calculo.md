@@ -8,7 +8,10 @@
 
 - `salarioDiario = salarioMensual / 30`
 - `salarioHoraDiurna = salarioDiario / 8`
-- `recargoNocturnidad = horasBaseNocturnas × salarioHoraDiurna × 0.25` (Art. 168 CT) — línea visible.
+- **Sin recargo nocturno inferido** (2026-09-15, Regla 7 de `integridad-calculo.md`): la
+  nocturnidad sólo entra por los factores 2.25× (extra nocturna) y 1.75× (día libre nocturno).
+  `RECARGO_NOCTURNIDAD` (0.25) permanece en `tasas.ts` como referencia legal (Art. 168 CT)
+  hasta que exista captura explícita de horas regulares; el motor no la usa.
 
 ## Factores de pago (Art. 168/169/173 CT)
 
@@ -31,14 +34,14 @@
   - `baseGravable = brutoPeriodo − ISSS − AFP`
   - Tramos I–IV con cuota fija y % sobre exceso.
   - **Quincenal divide tramos y cuotas fijas entre 2** (spec legal; el `api-contract.md` viejo se equivocaba).
-  - `fechaInicio`/`fechaFin` = hoy (solo alimentan aguinaldo proporcional).
+  - `fechaInicio`/`fechaFin` se derivan de las fechas capturadas ∪ {hoy} (solo alimentan aguinaldo proporcional vía `fechaFin`).
 
 ## Bruto y neto
 
 ```
 brutoGravable = salarioBasePeriodo + horasExtraDiurna + horasExtraNocturna
               + diaLibreDiurna + diaLibreNocturna + asueto
-              + recargoNocturnidad + Σ incentivos(aplicaDescuentos)
+              + Σ incentivos(aplicaDescuentos)
 
 brutoTotal    = brutoGravable + Σ incentivos(no gravados)
 

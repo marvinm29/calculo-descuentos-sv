@@ -9,11 +9,12 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
-    "test": "NODE_OPTIONS=--no-experimental-webstorage vitest run"
+    "test": "NODE_OPTIONS=--no-experimental-webstorage vitest run",
+    "test:coverage": "NODE_OPTIONS=--no-experimental-webstorage vitest run --coverage"
   },
   "dependencies": {
     "@calc/shared": "workspace:*",
-    "@sentry/react": "^9.0.0",
+    "@sentry/react": "^10.74.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "recharts": "2.15.4"
@@ -34,6 +35,7 @@
     "tailwindcss": "4.1.7",
     "typescript": "5.9.3",
     "vite": "8.0.0",
-    "vitest": "4.1.10"
+    "vitest": "4.1.10",
+    "zod": "4.4.3"
   }
 }

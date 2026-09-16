@@ -2,7 +2,6 @@ import type { CalcularRequest, CalcularResponse, Incentivo } from '../types';
 import {
   calcularSalarioHora,
   calcularPagoSegmentos,
-  calcularRecargoNocturnidad,
   round2,
 } from './horasExtra.js';
 import { calcularDescuentos } from './descuentos.js';
@@ -32,7 +31,6 @@ export function calcular(request: CalcularRequest): CalcularResponse {
     fechaIngreso,
     fechaFin,
     segmentos,
-    horasBaseNocturnas,
     incentivos,
   } = request;
   const factorPeriodo = tipoPago === 'quincenal' ? 0.5 : 1;
@@ -40,11 +38,6 @@ export function calcular(request: CalcularRequest): CalcularResponse {
   const { salarioHoraDiurna } = calcularSalarioHora(salarioBase);
 
   const pagoSegmentos = calcularPagoSegmentos(segmentos, salarioHoraDiurna);
-
-  const recargoNocturnidad =
-    horasBaseNocturnas != null
-      ? calcularRecargoNocturnidad(salarioBase, horasBaseNocturnas)
-      : 0;
 
   const incentivosArray = incentivos ?? [];
   const incentivosGravados = sumIncentivosGravados(incentivosArray);
@@ -60,7 +53,6 @@ export function calcular(request: CalcularRequest): CalcularResponse {
       pagoSegmentos.diaLibreDiurna +
       pagoSegmentos.diaLibreNocturna +
       pagoSegmentos.asueto +
-      recargoNocturnidad +
       incentivosGravados,
   );
 
@@ -84,7 +76,6 @@ export function calcular(request: CalcularRequest): CalcularResponse {
       diaLibreDiurna: pagoSegmentos.diaLibreDiurna,
       diaLibreNocturna: pagoSegmentos.diaLibreNocturna,
       asueto: pagoSegmentos.asueto,
-      recargoNocturnidad,
       incentivos: totalIncentivos,
       incentivosGravados,
       brutoTotal,

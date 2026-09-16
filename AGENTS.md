@@ -1,8 +1,10 @@
 # Calculadora de Descuentos de Ley — El Salvador
 
-Monorepo (pnpm + Turborepo) — 4 packages: `@calc/web` (React 19 + Vite 8), `@calc/api` (Express 5), `@calc/shared` (tipos/lógica), `@calc/config` (ESLint/TS/Prettier).
+Monorepo (pnpm + Turborepo) — 4 packages: `@calc/web` (React 19 + Vite 8), `@calc/api` (Express 5), `@calc/shared` (tipos/Zod/lógica), `@calc/config` (ESLint/TS/Prettier).
 
 Node 22, pnpm 9 obligatorios.
+
+**Arquitectura vigente**: API pública y stateless (un solo endpoint `POST /api/calcular`), **sin Clerk, sin SQLite y sin historial remoto** (ADR-011). Historial 100% en localStorage. Las notas de sesión en `docs/sesion-*.md` que mencionan Clerk/SQLite/history son histórico — no usar como guía.
 
 ## Comandos
 
@@ -11,11 +13,12 @@ pnpm dev              # web :5173 + api :3001
 pnpm build            # todos los paquetes
 pnpm turbo run build --filter=@calc/web   # solo frontend (CI deploya esto)
 pnpm test             # todos los tests
-pnpm test -- --coverage                   # con coverage (thresholds 80%)
+pnpm coverage         # tests + cobertura por paquete (thresholds 80%, sin caché)
 pnpm lint && pnpm check-types && pnpm test  # gate CI (orden exacto)
+pnpm check            # gate completo: install congelado + build + lint + tipos + cobertura
 ```
 
-Cada paquete tiene sus propios scripts: `pnpm --filter=<paquete> test`.
+Cada paquete tiene sus propios scripts: `pnpm --filter=<paquete> test` y `test:coverage`.
 
 ## Quirks
 
@@ -24,30 +27,30 @@ Cada paquete tiene sus propios scripts: `pnpm --filter=<paquete> test`.
 - **eslint.config.js por paquete**: ESLint 10 flat config no busca upward. Cada paquete (`apps/*`, `packages/*`) necesita su propio `eslint.config.js`.
 - **Tailwind v4**: CSS-first (`@import 'tailwindcss'` en `index.css`), sin `tailwind.config.js`. Config vía `@theme` en CSS. Plugin `@tailwindcss/vite`.
 - **ErrorBoundary**: única clase (excepción a "functional components"). El resto son componentes funcionales + hooks.
-- **Auth**: Clerk (`@clerk/react` en frontend, `@clerk/express` en backend). Usar `getAuth(req)` para obtener `userId`. `clerkMiddleware()` va scoped a `/api/history`.
-- **BD**: SQLite vía `better-sqlite3` en `apps/api/data/calculos.db`. `:memory:` para tests. Singleton en `apps/api/src/db.ts`. Directorio se crea automáticamente.
-- **Historial**: endpoints `GET/POST/DELETE /api/history` autenticados. Servicio en `routes/history/`. Frontend sincroniza con server cuando logueado, cae a localStorage si no.
-- **Sin BD relacional** (salvo SQLite para historial): persistencia principal sigue siendo `localStorage` — hook genérico `useLocalStorage<T>()`.
+- **Sin BD**: el API es stateless; persistencia principal es `localStorage` vía `useLocalStorage<T>(key, initial, parse?)`. El tercer parámetro `parse` es obligatorio para claves de dominio: valida con Zod (`apps/web/src/lib/storage.ts`); datos corruptos → clave eliminada + default + aviso (`clavesDescartadas` en `AppContext`). Claves muertas (`registro-periodo`, `registro-semanal`) se eliminan al cargar.
 - **Estado global**: `AppContext` (provider en `App.tsx`). Sin Redux/zustand.
+- **Contrato estricto** (`openspec/specs/integridad-calculo.md` — reglas 1–10): fechas de calendario reales, segmentos dentro del período, ≤ 24 h acumuladas por fecha, ≤ 31 días inclusivos, ≤ 100 segmentos / 50 incentivos, números finitos, campos desconocidos rechazados (`z.strictObject`). La UI aplica las mismas reglas que el API.
+- **Sin recargo nocturno inferido**: `horasBaseNocturnas` y `recargoNocturnidad` eliminados (2026-09-15). Los factores 2.25×/1.75× de horas extra/día libre nocturnas permanecen. Reintroducir requiere captura explícita + nueva spec.
+- **CORS/proxy**: CORS sólo en Express (`CORS_ORIGIN`, lista por comas). `TRUST_PROXY=1` en producción (Caddy→Express) para rate limit por IP real. Caddy no añade headers CORS. Express escucha en `127.0.0.1` por defecto (`HOST` env).
 
 ## Arquitectura
 
 ```
 apps/web/src/            → React SPA (deploy: GitHub Pages — marvinmelendez.engineer)
-apps/api/src/            → Express REST API (deploy: DigitalOcean — api.marvinmelendez.engineer)
+apps/api/src/            → Express REST API, público y stateless (deploy: DigitalOcean — api.marvinmelendez.engineer)
 packages/shared/src/     → tipos, Zod schemas, tasas legales, lógica de cálculo
 packages/config/         → ESLint flat config, tsconfig/base.json
 ```
 
 - Cálculos corren duplicados: frontend (`@calc/shared` importado directo, offline) y backend (`POST /api/calcular`, validación).
-- Backend: Express 5, Zod validation, rate limit 100/min, un solo endpoint.
+- Backend: Express 5, Zod strict validation, rate limit 100/min por IP real, un solo endpoint. Factory `createApp()` en `app.ts` para configurar CORS/trust proxy/rate limit/Sentry en tests.
 - Frontend: `tsc -b && vite build` (TS compile + Vite bundle).
 
 ## Fuente única de tasas
 
 - **`packages/shared/src/tasas.ts`** — única ubicación.
 - **`specs/tasas-legales.md`** — documentación con fuentes `.gob.sv`. Actualizar ambos en el mismo cambio.
-- No hardcodear tasas en otro archivo — importar desde `tasa`s.
+- No hardcodear tasas en otro archivo — importar desde `tasas`.
 
 ## Convenciones
 
@@ -67,40 +70,27 @@ packages/config/         → ESLint flat config, tsconfig/base.json
 - `vitest-rtl-supertest` — patrones de testing, coverage > 80%.
 - `sprint-workflow` — cadencia de 7 sprints, gate y documentación.
 
-## 🎯 Objetivo actual (completado — Sprint 10b)
-
-**Sprint 10b completado** — Simplificación del input de horas extra: lista plana por fecha (EntradasPeriodo), sin time-pickers ni navegación de semanas.
-
-## 🚀 Sprint 10b completado (2026-07-23)
-
-- ✅ Tipos `EntradaPeriodo`, `TipoEntrada` en shared/types.ts
-- ✅ Componente `EntradasPeriodo.tsx`: date picker + número de horas diurnas/nocturnas + selector tipo (extra/dia_libre/asueto)
-- ✅ `AppContext.tsx`: reemplazado `registro-periodo` + `registro-semanal` por `entradas` (`EntradaPeriodo[]`)
-- ✅ `useCalculos.ts`: convierte `EntradaPeriodo[]` → segmentos, deriva `horasBaseNocturnas` de JornadaConfig.modalidad
-- ✅ Archivos obsoletos eliminados: `FilaDia`, `TotalesSemana`, `RegistroSemanal`, `ResumenSemanalVisual`, `useRegistroSemanal`, `registroTypes`, `migrarRegistro`
-- ✅ `useCalculos.test.ts` — 11 tests para `entradasASegmentos` (conversión, skip 0h, nocturnidad)
-- ✅ `EntradasPeriodo.test.tsx` — 9 tests (empty, add, render, update fecha/diurnas/nocturnas, select tipo, delete, factor)
-- ✅ Gate: `pnpm lint && pnpm check-types && pnpm test` — 195 tests, 0 failures
-
 ## Estado de producción
 
 | Servicio | URL | Estado |
 |----------|-----|--------|
-| API (DO droplet) | `https://api.marvinmelendez.engineer` | ✅ Live (PM2 + Caddy) |
+| API (DO droplet) | `https://api.marvinmelendez.engineer` | ✅ Live (PM2 usuario de servicio + Caddy; `.env` en `/etc/calculo-descuentos/api.env`) |
 | Web (GitHub Pages) | `https://marvinmelendez.engineer` | ✅ Live (CI pasa, deploy automático) |
+
+Despliegue/endurecimiento del droplet: `docs/setup-droplet.sh` (despliegue versionado con rollback, sin `git reset --hard`).
 
 ## Quirks adicionales
 
-- **Dark mode**: Tailwind v4 class-based. Usar `@custom-variant dark (&:where(.dark, .dark *))` en CSS. El hook `useTheme()` persiste preferencia en localStorage. Toggle button en header con icono sol/luna.
+- **Dark mode**: Tailwind v4 class-based. Usar `@custom-variant dark (&:where(.dark, .dark *))` en CSS. El hook `useTheme()` persiste preferencia en localStorage (`theme-preference`). Toggle button en header con icono sol/luna.
 - **Colores frontend**: Definir paleta en `@theme` dentro de `index.css` usando `--color-*` custom properties. Aplicar `dark:` variants en todos los componentes.
 - **Caracteres españoles**: Usar UTF-8 plano (á, é, í, ó, ú, ñ, ü) directamente en JSX. React escapa automáticamente. No usar HTML entities (`&oacute;`, `&ntilde;`, etc.).
-- **Jornada**: `JornadaSelector` (modalidad diurna/nocturna, tiempo completo/personalizado). Horas extras como buckets semanales sin fechas (`SemanaExtrasCard`). Exceso legal → auto-conversión a extra.
-- **Incentivos**: `IncentivosForm` con checkbox "Aplica descuentos de ley" default true. Los no gravados se suman al bruto total sin cotizar.
-- **Historico viejo**: localStorage key `registro-semanal` (formato `DiaRegistro[]` con bloques horarios) fue reemplazada por `jornada-config` + `registro-periodo` + `incentivos`. Migración best-effort en `migrarRegistro.ts` — datos corruptos → defaults, no inventar.
+- **Jornada**: `JornadaSelector` solo informativo (modalidad diurna/nocturna). No hay auto-conversión de exceso; las horas se ingresan explícitamente como entradas por fecha.
+- **Incentivos**: `IncentivosForm` con checkbox "Aplica descuentos de ley" default true. Los no gravados se suman al bruto total sin cotizar. Filas vacías (sin concepto y sin monto) no se envían al cálculo.
 
 ## Recursos clave
 
-- `specs/architecture.md` — ADRs, diagramas de componentes.
-- `specs/api-contract.md` — contrato REST (request/response/errores).
+- `openspec/specs/integridad-calculo.md` — reglas de integridad rectoras (2026-09-15).
+- `openspec/specs/contrato-calcular.md` + `specs/api-contract.md` — contrato REST sincronizado.
+- `specs/architecture.md` — ADRs, diagramas de componentes (ADR-011: sin autenticación).
 - `specs/requirements.md` — RF01–RF10 con criterios de aceptación.
-- `specs/sprints.md` — plan de implementación y estado de ejecución.
+- `CHANGELOG.md` — decisiones y cambios con fecha.

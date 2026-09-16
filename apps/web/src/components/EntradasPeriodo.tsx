@@ -1,4 +1,5 @@
 import type { EntradaPeriodo, TipoEntrada } from '@calc/shared';
+import { esFechaCalendarioValida, LIMITES_CONTRATO } from '@calc/shared';
 
 export interface EntradasPeriodoProps {
   entradas: EntradaPeriodo[];
@@ -27,6 +28,24 @@ function entradaVacia(): EntradaPeriodo {
   };
 }
 
+// Mismas reglas que el contrato (openspec/specs/integridad-calculo.md).
+function validarFila(e: EntradaPeriodo, todas: EntradaPeriodo[]): string | null {
+  if (!esFechaCalendarioValida(e.fecha)) return 'Fecha inválida';
+  if (e.horasDiurnas < 0 || e.horasNocturnas < 0) {
+    return 'Las horas no pueden ser negativas';
+  }
+  if (e.horasDiurnas > 24 || e.horasNocturnas > 24) {
+    return 'Las horas no pueden exceder 24';
+  }
+  const totalDia = todas
+    .filter((o) => o.fecha === e.fecha)
+    .reduce((s, o) => s + o.horasDiurnas + o.horasNocturnas, 0);
+  if (totalDia > LIMITES_CONTRATO.MAX_HORAS_DIARIAS) {
+    return `La suma de horas del día excede ${LIMITES_CONTRATO.MAX_HORAS_DIARIAS} h`;
+  }
+  return null;
+}
+
 export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
   function update(index: number, partial: Partial<EntradaPeriodo>) {
     const nuevas = entradas.map((e, i) =>
@@ -46,7 +65,13 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
         <button
           type="button"
           onClick={() => onChange([...entradas, entradaVacia()])}
-          className="btn-accent px-2.5 py-1 text-xs"
+          disabled={entradas.length >= LIMITES_CONTRATO.MAX_SEGMENTOS}
+          title={
+            entradas.length >= LIMITES_CONTRATO.MAX_SEGMENTOS
+              ? `Máximo ${LIMITES_CONTRATO.MAX_SEGMENTOS} entradas`
+              : undefined
+          }
+          className="btn-accent px-2.5 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
         >
           Agregar entrada
         </button>
@@ -59,51 +84,70 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
       )}
 
       <div className="space-y-2">
-        {entradas.map((e, i) => (
+        {entradas.map((e, i) => {
+          const error = validarFila(e, entradas);
+          return (
           <div
             key={e.id}
             className="tool-card rounded-md p-3 flex flex-wrap items-end gap-2"
           >
             <div className="w-36">
-              <label className="block text-[10px] font-medium text-text-secondary mb-0.5">
+              <label
+                htmlFor={`fecha-${e.id}`}
+                className="block text-[10px] font-medium text-text-secondary mb-0.5"
+              >
                 Fecha
               </label>
               <input
+                id={`fecha-${e.id}`}
                 type="date"
                 value={e.fecha}
                 onChange={(ev) => update(i, { fecha: ev.target.value })}
+                aria-invalid={error !== null}
                 className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
               />
             </div>
 
             <div className="w-28">
-              <label className="block text-[10px] font-medium text-text-secondary mb-0.5">
+              <label
+                htmlFor={`diurnas-${e.id}`}
+                className="block text-[10px] font-medium text-text-secondary mb-0.5"
+              >
                 Horas diurnas
               </label>
               <input
+                id={`diurnas-${e.id}`}
                 type="number"
                 min={0}
+                max={24}
                 step={0.5}
                 value={e.horasDiurnas || ''}
                 onChange={(ev) =>
                   update(i, { horasDiurnas: ev.target.value === '' ? 0 : Number(ev.target.value) })
                 }
+                aria-invalid={error !== null}
                 className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
               />
             </div>
 
             <div className="w-28">
-              <label className="block text-[10px] font-medium text-text-secondary mb-0.5">
+              <label
+                htmlFor={`nocturnas-${e.id}`}
+                className="block text-[10px] font-medium text-text-secondary mb-0.5"
+              >
                 Horas nocturnas
               </label>
               <input
+                id={`nocturnas-${e.id}`}
                 type="number"
                 min={0}
+                max={24}
                 step={0.5}
                 value={e.horasNocturnas || ''}
                 onChange={(ev) =>
                   update(i, { horasNocturnas: ev.target.value === '' ? 0 : Number(ev.target.value) })
                 }
+                aria-invalid={error !== null}
                 className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
               />
             </div>
@@ -132,8 +176,15 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
             >
               Eliminar
             </button>
+
+            {error && (
+              <p className="w-full text-[10px] font-medium text-danger" role="alert">
+                {error}
+              </p>
+            )}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {entradas.length > 0 && (

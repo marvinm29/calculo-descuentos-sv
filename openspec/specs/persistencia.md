@@ -14,7 +14,11 @@
 | `historial-periodos` | `PeriodoGuardado[]` | neto/bruto/fecha de periodos guardados |
 | `theme` | `'light' \| 'dark' \| 'system'` | preferencia del hook `useTheme` |
 
-Mecanismo: hook genérico `useLocalStorage<T>()` (SSR-safe, tolerante a JSON corrupto).
+Mecanismo: hook genérico `useLocalStorage<T>(key, initial, parse?)`. Desde 2026-09-15 el
+parse es obligatorio para las claves de dominio (`lib/storage.ts`): Zod valida la forma antes
+de usarla (Regla 8 de `integridad-calculo.md`). Claves muertas (`registro-periodo`,
+`registro-semanal`) se eliminan al cargar la app; si una clave se descarta por corrupción, la
+UI muestra un aviso (`clavesDescartadas` en `AppContext`) y se usa el default.
 
 ## Backend
 
@@ -24,8 +28,8 @@ Mecanismo: hook genérico `useLocalStorage<T>()` (SSR-safe, tolerante a JSON cor
 ## Reglas
 
 - Los datos **no se envían a ningún servidor externo** (RF09).
-- Migración de localStorage viejo (`registro-semanal` → `entradas-periodo`): best-effort, ya resuelta en 10b.
-- Datos corruptos → defaults; nunca inventar.
+- Migración de limpieza: claves del modelo semanal viejo (`registro-periodo`, `registro-semanal`) se eliminan explícitamente al cargar.
+- Datos corruptos → clave eliminada + default + aviso de UI; nunca inventar ni propagar `NaN`.
 
 ## ADRs relacionados
 

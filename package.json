@@ -12,7 +12,7 @@
     "overrides": {
       "brace-expansion@>=5": "5.0.9",
       "brace-expansion@>=2 <5": "2.1.4",
-      "js-yaml@>=4": "4.3.1"
+      "js-yaml@>=4": "4.3.2"
     }
   },
   "scripts": {
@@ -23,7 +23,8 @@
     "check-types": "turbo run check-types",
     "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
-    "start": "bash scripts/dev.sh"
+    "start": "bash scripts/dev.sh",
+    "coverage": "turbo run test:coverage"
   },
   "devDependencies": {
     "prettier": "3.9.5",

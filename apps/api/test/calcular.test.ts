@@ -5,7 +5,7 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import type { Request, Response } from 'express';
 
-import { app } from '../src/app';
+import { app, createApp } from '../src/app';
 import { calcularRoutes } from '../src/routes/calcular/calcular.routes';
 import { errorHandler } from '../src/middleware/errorHandler';
 
@@ -65,7 +65,6 @@ describe('POST /api/calcular', () => {
         .post('/api/calcular')
         .send(reqSinOpcionales)
         .expect(200);
-      expect(res.body.bruto.recargoNocturnidad).toBe(0);
       expect(res.body.bruto.incentivos).toBe(0);
       expect(res.body.bruto.incentivosGravados).toBe(0);
     });
@@ -238,6 +237,201 @@ describe('POST /api/calcular', () => {
       expect(res.body.details[0].field).toBe('fechaFin');
       expect(res.body.details[0].message).toContain('31');
     });
+
+    it('rechaza 32 días inclusivos (diferencia de 31 días calendario)', async () => {
+      const res = await request(app)
+        .post('/api/calcular')
+        .send({
+          ...validRequest,
+          fechaInicio: '2026-07-01',
+          fechaFin: '2026-08-01',
+        })
+        .expect(400);
+
+      expect(res.body.error).toBe('VALIDATION_ERROR');
+      expect(res.body.details[0].field).toBe('fechaFin');
+      expect(res.body.details[0].message).toContain('31');
+    });
+
+    it('acepta 31 días inclusivos (2026-07-01 a 2026-07-31)', async () => {
+      const res = await request(app)
+        .post('/api/calcular')
+        .send({
+          ...validRequest,
+          fechaInicio: '2026-07-01',
+          fechaFin: '2026-07-31',
+        })
+        .expect(200);
+      expect(res.body.neto.salarioLiquido).toBeGreaterThan(0);
+    });
+  });
+
+  describe('400 — integridad (openspec/specs/integridad-calculo.md)', () => {
+    it('rechaza fechas de calendario imposibles (2026-02-30)', async () => {
+      const res = await request(app)
+        .post('/api/calcular')
+        .send({ ...validRequest, fechaFin: '2026-02-30' })
+        .expect(400);
+
+      expect(res.body.error).toBe('VALIDATION_ERROR');
+      expect(res.body.details[0].field).toBe('fechaFin');
+    });
+
+    it('rechaza segmento fuera del período con path indexado', async () => {
+      const res = await request(app)
+        .post('/api/calcular')
+        .send({
+          ...validRequest,
+          segmentos: [
+            { fecha: '2026-07-20', tipo: 'extra_diurna', horas: 2 },
+          ],
+        })
+        .expect(400);
+
+      const fields = res.body.details.map((d: { field: string }) => d.field);
+      expect(fields).toContain('segmentos.0.fecha');
+    });
+
+    it('rechaza más de 24 h acumuladas en una misma fecha', async () => {
+      const res = await request(app)
+        .post('/api/calcular')
+        .send({
+          ...validRequest,
+          segmentos: [
+            { fecha: '2026-07-05', tipo: 'extra_diurna', horas: 14 },
+            { fecha: '2026-07-05', tipo: 'extra_nocturna', horas: 14 },
+          ],
+        })
+        .expect(400);
+
+      const fields = res.body.details.map((d: { field: string }) => d.field);
+      expect(fields.some((f: string) => f.startsWith('segmentos.1'))).toBe(
+        true,
+      );
+    });
+
+    it('rechaza horas = Infinity', async () => {
+      const res = await request(app)
+        .post('/api/calcular')
+        .send({
+          ...validRequest,
+          segmentos: [
+            { fecha: '2026-07-05', tipo: 'extra_diurna', horas: Infinity },
+          ],
+        })
+        .expect(400);
+
+      expect(res.body.error).toBe('VALIDATION_ERROR');
+    });
+
+    it('rechaza más de 100 segmentos', async () => {
+      const muchos = Array.from({ length: 101 }, (_, i) => ({
+        fecha: `2026-07-${String((i % 15) + 1).padStart(2, '0')}`,
+        tipo: 'extra_diurna' as const,
+        horas: 0.1,
+      }));
+      const res = await request(app)
+        .post('/api/calcular')
+        .send({ ...validRequest, segmentos: muchos })
+        .expect(400);
+
+      const fields = res.body.details.map((d: { field: string }) => d.field);
+      expect(fields).toContain('segmentos');
+    });
+
+    it('rechaza más de 50 incentivos', async () => {
+      const muchos = Array.from({ length: 51 }, (_, i) => ({
+        id: `i${i}`,
+        concepto: 'Bono',
+        monto: 1,
+        aplicaDescuentos: true,
+      }));
+      const res = await request(app)
+        .post('/api/calcular')
+        .send({ ...validRequest, incentivos: muchos })
+        .expect(400);
+
+      const fields = res.body.details.map((d: { field: string }) => d.field);
+      expect(fields).toContain('incentivos');
+    });
+
+    it('rechaza campos desconocidos (horasBaseNocturnas eliminado — contrato estricto)', async () => {
+      const res = await request(app)
+        .post('/api/calcular')
+        .send({ ...validRequest, horasBaseNocturnas: 39 })
+        .expect(400);
+
+      expect(res.body.error).toBe('VALIDATION_ERROR');
+      const fields = res.body.details.map((d: { field: string }) => d.field);
+      expect(fields).toContain('request');
+      expect(res.body.details[0].message).toContain('horasBaseNocturnas');
+    });
+  });
+
+  describe('CORS — un solo punto de control en Express (Regla 9)', () => {
+    const corsApp = createApp({
+      corsOrigins: ['https://marvinmelendez.engineer'],
+    });
+
+    it('origen permitido recibe Access-Control-Allow-Origin con su propio origen', async () => {
+      const res = await request(corsApp)
+        .post('/api/calcular')
+        .set('Origin', 'https://marvinmelendez.engineer')
+        .send(validRequest)
+        .expect(200);
+      expect(res.headers['access-control-allow-origin']).toBe(
+        'https://marvinmelendez.engineer',
+      );
+    });
+
+    it('origen no permitido no recibe Access-Control-Allow-Origin', async () => {
+      const res = await request(corsApp)
+        .post('/api/calcular')
+        .set('Origin', 'https://sitio-malicioso.ejemplo')
+        .send(validRequest)
+        .expect(200);
+      expect(res.headers['access-control-allow-origin']).toBeUndefined();
+    });
+
+    it('preflight OPTIONS desde origen permitido responde con métodos limitados', async () => {
+      const res = await request(corsApp)
+        .options('/api/calcular')
+        .set('Origin', 'https://marvinmelendez.engineer')
+        .set('Access-Control-Request-Method', 'POST')
+        .expect(204);
+      expect(res.headers['access-control-allow-origin']).toBe(
+        'https://marvinmelendez.engineer',
+      );
+    });
+  });
+
+  describe('trust proxy — rate limit por IP real detrás de proxy (Regla 9)', () => {
+    // Topología Caddy→Express: Caddy añade UNA entrada XFF con la IP del cliente.
+    function ipRequest(target: ReturnType<typeof createApp>, ip: string) {
+      return request(target)
+        .post('/api/calcular')
+        .set('X-Forwarded-For', ip)
+        .send(validRequest);
+    }
+
+    it('IPs distintas tienen buckets independientes con trustProxy=1', async () => {
+      const proxiedApp = createApp({ trustProxy: 1, rateLimitMax: 2 });
+
+      await ipRequest(proxiedApp, '1.1.1.1').expect(200);
+      await ipRequest(proxiedApp, '1.1.1.1').expect(200);
+      await ipRequest(proxiedApp, '1.1.1.1').expect(429);
+
+      // Otra IP real: su propio bucket
+      await ipRequest(proxiedApp, '2.2.2.2').expect(200);
+    });
+
+    it('responde 429 RATE_LIMIT_EXCEEDED con RateLimit headers estándar', async () => {
+      const proxiedApp = createApp({ trustProxy: 1, rateLimitMax: 1 });
+      await ipRequest(proxiedApp, '3.3.3.3').expect(200);
+      const res = await ipRequest(proxiedApp, '3.3.3.3').expect(429);
+      expect(res.body.error).toBe('RATE_LIMIT_EXCEEDED');
+      expect(res.headers['ratelimit-limit']).toBeDefined();
+    });
   });
 
   describe('429 — RATE_LIMIT_EXCEEDED', () => {
@@ -274,5 +468,32 @@ describe('errorHandler', () => {
     const res = await request(testApp).get('/error').expect(500);
     expect(res.body.error).toBe('INTERNAL_ERROR');
     expect(res.body.message).toBe('Error interno del servidor');
+  });
+
+  it('500 no filtra detalles internos ni stack (Regla 10)', async () => {
+    const testApp = express();
+    testApp.use(express.json());
+    testApp.get('/error', () => {
+      throw new Error('secreto-interno: password=hunter2');
+    });
+    testApp.use(errorHandler);
+
+    const res = await request(testApp).get('/error').expect(500);
+    const body = JSON.stringify(res.body);
+    expect(body).not.toContain('secreto-interno');
+    expect(body).not.toContain('hunter2');
+    expect(body).not.toContain('stack');
+  });
+
+  it('sentryDsn opcional habilita el handler de Sentry sin romper rutas', async () => {
+    const sentryApp = createApp({
+      sentryDsn: 'https://public@sentry.example.com/1',
+      environment: 'test',
+    });
+    const res = await request(sentryApp)
+      .post('/api/calcular')
+      .send(validRequest)
+      .expect(200);
+    expect(res.body.bruto.brutoTotal).toBeGreaterThan(0);
   });
 });
