@@ -40,7 +40,7 @@
   "devDependencies": {
     "@calc/config": "workspace:*",
     "@types/node": "26.1.1",
-    "@vitest/coverage-v8": "4.1.10",
+    "@vitest/coverage-v8": "5.0.0",
     "eslint": "10.7.0",
     "typescript": "5.9.3",
     "vitest": "4.1.10"
