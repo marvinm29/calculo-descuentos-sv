@@ -25,7 +25,6 @@ const successState: CalculoState = {
       diaLibreDiurna: 0,
       diaLibreNocturna: 0,
       asueto: 0,
-      recargoNocturnidad: 0,
       incentivos: 0,
       incentivosGravados: 0,
       brutoTotal: 800,

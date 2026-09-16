@@ -1,3 +1,9 @@
+# ⚠️ HISTÓRICO / SUPERADO — NO USAR COMO GUÍA
+
+> Los pasos de despliegue de esta sesión fueron reemplazados por `docs/setup-droplet.sh`
+> endurecido (2026-09-15): versiones fijadas, usuario de servicio, `.env` fuera del checkout,
+> despliegue versionado con rollback y Express sólo en loopback. Ver `CHANGELOG.md` y ADR-011.
+
 # Sesión: deploy y fixes post-sprints
 
 **Fecha**: 2026-07-13

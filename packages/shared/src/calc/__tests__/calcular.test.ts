@@ -221,24 +221,31 @@ describe('calcular', () => {
     });
   });
 
-  describe('recargo nocturnidad (Sprint 10)', () => {
-    it('39h base nocturnas salario $800 → recargo ≈ $32.50', () => {
+  describe('sin recargo nocturno inferido (openspec integridad, Regla 7)', () => {
+    it('el response no incluye recargoNocturnidad y brutoGravable solo suma segmentos', () => {
+      const result = calcular({
+        salarioBase: 800,
+        tipoPago: 'mensual',
+        fechaInicio: '2026-07-01',
+        fechaFin: '2026-07-31',
+        antiguedad: '1_a_3',
+        fechaIngreso: '2025-01-15',
+        segmentos: [
+          { fecha: '2026-07-01', tipo: 'extra_nocturna', horas: 3 },
+        ],
+      });
+      expect(result.bruto).not.toHaveProperty('recargoNocturnidad');
       const horaDiurna = 800 / 30 / 8;
-      const esperado = round2(39 * horaDiurna * 0.25);
-      const result = calcular({
-        salarioBase: 800,
-        tipoPago: 'mensual',
-        fechaInicio: '2026-07-01',
-        fechaFin: '2026-07-31',
-        antiguedad: '1_a_3',
-        fechaIngreso: '2025-01-15',
-        segmentos: [],
-        horasBaseNocturnas: 39,
-      });
-      expect(result.bruto.recargoNocturnidad).toBe(esperado);
+      expect(result.bruto.horasExtraNocturna).toBe(
+        round2(horaDiurna * 2.25 * 3),
+      );
+      expect(result.bruto.brutoTotal).toBe(
+        round2(800 + horaDiurna * 2.25 * 3),
+      );
     });
 
-    it('0 horas base nocturnas → recargo 0', () => {
+    it('horas extra nocturnas usan factor 2.25 sin doble recargo', () => {
+      const horaDiurna = 800 / 30 / 8;
       const result = calcular({
         salarioBase: 800,
         tipoPago: 'mensual',
@@ -246,23 +253,13 @@ describe('calcular', () => {
         fechaFin: '2026-07-31',
         antiguedad: '1_a_3',
         fechaIngreso: '2025-01-15',
-        segmentos: [],
-        horasBaseNocturnas: 0,
+        segmentos: [
+          { fecha: '2026-07-01', tipo: 'extra_nocturna', horas: 8 },
+        ],
       });
-      expect(result.bruto.recargoNocturnidad).toBe(0);
-    });
-
-    it('sin campo horasBaseNocturnas → recargo 0 (backward compat)', () => {
-      const result = calcular({
-        salarioBase: 800,
-        tipoPago: 'mensual',
-        fechaInicio: '2026-07-01',
-        fechaFin: '2026-07-31',
-        antiguedad: '1_a_3',
-        fechaIngreso: '2025-01-15',
-        segmentos: [],
-      });
-      expect(result.bruto.recargoNocturnidad).toBe(0);
+      expect(result.bruto.horasExtraNocturna).toBe(
+        round2(horaDiurna * 2.25 * 8),
+      );
     });
   });
 

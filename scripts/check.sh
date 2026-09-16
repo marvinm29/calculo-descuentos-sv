@@ -30,7 +30,7 @@ section "4. TypeScript check"
 pnpm check-types 2>&1 | tail -10 && pass "check-types" || fail "check-types"
 
 section "5. Tests (con coverage)"
-pnpm test -- --coverage 2>&1 | tail -20 && pass "test" || fail "test"
+pnpm coverage 2>&1 | tail -25 && pass "test" || fail "test"
 
 section "6. Build completo (todos los paquetes)"
 pnpm build 2>&1 | tail -10 && pass "build" || fail "build"

@@ -27,6 +27,7 @@ export function NetoLiquido({ neto }: NetoLiquidoProps) {
       </p>
       <p
         key={neto}
+        data-testid="neto-liquido"
         className="amount num-pop mt-2 text-5xl font-semibold text-success"
         role="status"
       >

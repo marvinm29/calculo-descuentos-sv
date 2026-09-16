@@ -63,12 +63,22 @@ function SectionHeading({
 }
 
 function AppContent() {
-  const { jornada, setJornada, entradas, setEntradas, incentivos, setIncentivos } = useAppContext();
+  const { jornada, setJornada, entradas, setEntradas, incentivos, setIncentivos, clavesDescartadas } = useAppContext();
   const calculosState = useCalculos();
 
   return (
     <ErrorBoundary>
       <div className="relative z-10 mx-auto min-h-screen max-w-6xl px-4 pb-12 pt-4 print:px-2 print:py-2">
+        {clavesDescartadas.length > 0 && (
+          <div
+            role="alert"
+            className="glass-card mb-4 border border-danger/40 p-3 text-xs text-text"
+          >
+            Se descartaron datos guardados corruptos (
+            {clavesDescartadas.join(', ')}) y se restablecieron los valores por
+            defecto.
+          </div>
+        )}
         <header className="glass-nav sticky top-0 z-20 -mx-4 mb-8 px-4 py-3 print:static print:mb-4 print:border-0 print:bg-none">
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-2.5">

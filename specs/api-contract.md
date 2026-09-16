@@ -5,39 +5,39 @@
 - **Desarrollo**: `http://localhost:3001/api`
 - **Produccion**: `https://api.marvinmelendez.engineer/api` (DigitalOcean — no Render)
 
-> **Nota (2026-08-30)**: este documento fue corregido para coincidir con la fórmula legal.
-> El fixture numérico usa los valores reales del motor (`packages/shared`); los números viejos
-> ($12.50, $19.69, brutoTotal $472.19, quincena25 `null`) eran errores del contrato,
-> no de la fórmula (Sprint 2 eligió `specs/tasas-legales.md`). Verdad congelada en `openspec/specs/contrato-calcular.md`.
+> **Nota (2026-09-15)**: contrato estricto. Se eliminó `horasBaseNocturnas` del request y
+> `recargoNocturnidad` del response (no hay recargo nocturno inferido; los factores de horas
+> extra nocturnas 2.25× y día libre nocturno 1.75× permanecen). Verdad congelada en
+> `openspec/specs/contrato-calcular.md` y reglas de integridad en `openspec/specs/integridad-calculo.md`.
 
 ## POST /api/calcular
 
 Calcula salario bruto, descuentos de ley y prestaciones para un periodo.
+Único endpoint, público y stateless (ADR-011). CORS vive sólo en Express (`CORS_ORIGIN`).
 
 ### Request
 
 ```typescript
 interface CalcularRequest {
-  salarioBase: number;
+  salarioBase: number;             // finito, > 0, <= 100000
   tipoPago: 'mensual' | 'quincenal';
-  fechaInicio: string;          // ISO 8601: "2026-07-01"
-  fechaFin: string;             // ISO 8601: "2026-07-15"
+  fechaInicio: string;             // ISO 8601 + fecha de calendario real
+  fechaFin: string;                // ISO 8601 + fecha de calendario real
   antiguedad: 'menos_1' | '1_a_3' | '3_a_9' | '10_o_mas';
-  fechaIngreso: string;         // ISO 8601
-  segmentos: SegmentoHorario[];
-  horasBaseNocturnas?: number;  // opcional — deriva recargo 25%
-  incentivos?: Incentivo[];     // opcional
+  fechaIngreso: string;            // ISO 8601 + fecha de calendario real
+  segmentos: SegmentoHorario[];    // máximo 100
+  incentivos?: Incentivo[];        // opcional, máximo 50
 }
 
 interface Incentivo {
-  id: string;
-  concepto: string;
-  monto: number;                // ≥ 0
-  aplicaDescuentos: boolean;    // default true
+  id: string;                      // 1–64 caracteres
+  concepto: string;                // 1–100 caracteres
+  monto: number;                   // finito, >= 0
+  aplicaDescuentos: boolean;       // default true
 }
 
 interface SegmentoHorario {
-  fecha: string;                // ISO 8601
+  fecha: string;                   // ISO 8601, dentro de [fechaInicio, fechaFin]
   tipo: 'regular_diurna'
       | 'regular_nocturna'
       | 'extra_diurna'
@@ -45,9 +45,12 @@ interface SegmentoHorario {
       | 'dia_libre_diurna'
       | 'dia_libre_nocturna'
       | 'asueto';
-  horas: number;                // Entre 0 y 24
+  horas: number;                   // finito, 0–24; suma por fecha <= 24
 }
 ```
+
+El objeto es estricto: campos desconocidos (p. ej. el retirado `horasBaseNocturnas`)
+se rechazan con 400.
 
 **Ejemplo de request:**
 
@@ -80,7 +83,6 @@ interface CalcularResponse {
     diaLibreDiurna: number;
     diaLibreNocturna: number;
     asueto: number;
-    recargoNocturnidad: number;
     incentivos: number;           // total (gravados + no gravados)
     incentivosGravados: number;
     brutoTotal: number;           // brutoGravable + no gravados
@@ -137,7 +139,6 @@ interface CalcularResponse {
     "diaLibreDiurna": 40.00,
     "diaLibreNocturna": 17.50,
     "asueto": 0.00,
-    "recargoNocturnidad": 0.00,
     "incentivos": 0.00,
     "incentivosGravados": 0.00,
     "brutoTotal": 470.83
@@ -227,16 +228,19 @@ interface CalcularResponse {
 
 ### Validaciones de Negocio
 
-El backend valida las siguientes reglas:
+El backend valida las siguientes reglas (detalle: `openspec/specs/integridad-calculo.md`):
 
 | Regla | Mensaje de error |
 |-------|-----------------|
-| `salarioBase > 0 && salarioBase <= 100000` | "Salario base debe ser positivo y menor a $100,000" |
+| `salarioBase` finito, `> 0 && <= 100000` | "Salario base debe ser positivo" |
+| fechas (`fechaInicio`, `fechaFin`, `fechaIngreso`, `segmentos[].fecha`) con calendario real (bisiesto incluido) | "Fecha de calendario inválida (mes o día imposible)" |
 | `fechaInicio <= fechaFin` | "Fecha de inicio debe ser anterior a la fecha de fin" |
-| `diferenciaDias <= 31` | "El periodo no puede exceder 31 dias" |
-| `segmentos[].horas >= 0 && <= 24` | "Las horas por dia deben estar entre 0 y 24" |
-| `segmentos[].tipo` valido | "Tipo de segmento invalido" |
-| `fechaIngreso <= fechaFin` | "Fecha de ingreso no puede ser posterior al periodo" |
+| `fechaFin − fechaInicio <= 30 días` (**31 días inclusivos**) | "El periodo no puede exceder 31 días (inclusivos)" |
+| `segmentos[].fecha` dentro de `[fechaInicio, fechaFin]` | "La fecha del segmento debe estar dentro del período" |
+| `segmentos[].horas` finito, `0–24`, y **suma por fecha <= 24** | "Las horas por día deben estar entre 0 y 24" / "La suma de horas para {fecha} excede 24 h" |
+| `segmentos` <= 100 elementos; `incentivos` <= 50 | "Máximo 100 segmentos" / "Máximo 50 incentivos" |
+| `incentivos[].monto` finito >= 0; `concepto` 1–100; `id` 1–64 | mensajes por campo |
+| campos desconocidos rechazados (objeto estricto) | "Unrecognized key: ..." |
 
 ### Cabeceras
 
@@ -248,7 +252,10 @@ Content-Type: application/json
 **Response:**
 ```
 Content-Type: application/json
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1750000000
+RateLimit-Limit: 100
+RateLimit-Remaining: 95
+RateLimit-Reset: 30
 ```
+
+El rate limit (100 req/min) contabiliza por IP real: en producción `TRUST_PROXY=1`
+confía el salto Caddy→Express y usa `X-Forwarded-For`.

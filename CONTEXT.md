@@ -18,7 +18,7 @@ Una fecha + tipo de jornada + horas. Es la unidad que el motor `calcular()` reci
 _Avoid_: bloque, bucket
 
 **brutoGravable**:
-`salarioBasePeriodo + pago de segmentos + recargoNocturnidad + incentivos gravados`.
+`salarioBasePeriodo + pago de segmentos + incentivos gravados`.
 Es la base sobre la que se calculan ISSS, AFP y Renta.
 _Avoid_: bruto total
 
@@ -42,13 +42,9 @@ Aguinaldo, vacaciones y Quincena 25. Son **informativas**: no entran al `salario
 Registro individual: fecha + tipo (`extra` | `dia_libre` | `asueto`) + horas diurnas/nocturnas. Lista plana, sin semanas.
 _Avoid_: registro, semana, bucket
 
-**recargoNocturnidad**:
-`horasBaseNocturnas × salarioHoraDiurna × 0.25` (Art. 168 CT). Se deriva automáticamente; no es input.
-_Avoid_: nocturnidad (ambigüo)
-
 **jornada** (`JornadaConfig`):
-Modalidad (`diurna` | `nocturna`). Solo `modalidad` alimenta el motor (heurística de nocturnidad).
-No hay `tipo` ni `horasSemanales`.
+Modalidad (`diurna` | `nocturna`). Solo informativa en la UI (desde 2026-09-15): el motor
+no infiere recargo nocturno; las horas extra nocturnas ya llevan su factor 2.25×.
 
 **tipoPago**:
 `mensual` (factor 1) o `quincenal` (factor 0.5, tablas y cuotas fijas divididas entre 2).
@@ -59,7 +55,7 @@ Tramo de años de servicio (`menos_1` | `1_a_3` | `3_a_9` | `10_o_mas`) que dete
 ## Persistencia
 
 **localStorage**:
-Única forma de persistencia del producto. Keys: `config-inicial`, `jornada-config`, `entradas-periodo`, `incentivos`, `historial-periodos`, `theme`. No hay base de datos (ADR-003).
+Única forma de persistencia del producto. Keys: `config-inicial`, `jornada-config`, `entradas-periodo`, `incentivos`, `historial-periodos`, `theme-preference`. No hay base de datos (ADR-003). Toda lectura se valida con Zod antes de usarse (Regla 8 de integridad); datos corruptos → clave eliminada + default + aviso en UI.
 
 ## Reglas no obvias
 
@@ -67,3 +63,4 @@ Tramo de años de servicio (`menos_1` | `1_a_3` | `3_a_9` | `10_o_mas`) que dete
 - Los segmentos `regular_*` pagan 0: el salario base no se deriva de horas ordinarias.
 - El API no se consume en runtime; calcula el cliente (offline-first, ADR-006).
 - No hay autenticación: utilidad pública, historial 100% local (ADR-011).
+- Contrato estricto: el request no acepta campos desconocidos y la UI aplica las mismas validaciones que el API.

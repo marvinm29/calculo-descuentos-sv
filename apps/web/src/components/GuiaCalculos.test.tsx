@@ -12,13 +12,6 @@ describe('GuiaCalculos', () => {
     expect(screen.getByText('Renta (ISR)')).toBeInTheDocument();
   });
 
-  it('incluye seccion de recargo nocturnidad', () => {
-    render(<GuiaCalculos />);
-    expect(
-      screen.getByText(/Recargo de Nocturnidad/),
-    ).toBeInTheDocument();
-  });
-
   it('incluye seccion de incentivos', () => {
     render(<GuiaCalculos />);
     expect(

@@ -1,133 +1,168 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 # ============================================================
-# Setup script for Calculadora de Descuentos droplet
-# Corre como root en Ubuntu 24.04
+# Setup/Deploy hardening — Calculadora de Descuentos (API)
+# Ubuntu 24.04, corre como root para el provisioning inicial.
 #
-# REQUIERE variables de entorno (pasalas inline):
+#   * Binarios desde repositorios oficiales y versiones fijadas
+#     (Node 22 LTS, pnpm 9.15.9, Caddy desde su repo apt).
+#   * App y PM2 corren con usuario de servicio `calculo` sin shell.
+#   * .env vive FUERA del checkout: /etc/calculo-descuentos/api.env
+#   * Despliegue versionado (tag o commit) — sin git reset --hard.
+#     Backup del commit anterior en .last-deploy para rollback.
+#   * Express sólo en loopback (127.0.0.1); Caddy hace el TLS.
+#   * Sin headers CORS en Caddy: CORS vive únicamente en Express.
 #
-#   CLERK_SECRET_KEY=sk_... \
-#   SENTRY_DSN=https://...  \
-#   DD_API_KEY=xxxxxxxxxx    \
-#   bash < setup-droplet.sh
+# USO:
+#   SENTRY_DSN=... bash docs/setup-droplet.sh <tag-o-commit>
+#   (default: la versión en VERSION_PIN si existe, si no origin/main)
 #
-# O creá /opt/calculo-descuentos/apps/api/.env manualmente
-# despues de correr el script.
+# ROLLBACK:
+#   cd /opt/calculo-descuentos
+#   git checkout "$(cat .last-deploy)"
+#   pnpm install --frozen-lockfile && pnpm build
+#   sudo -u calculo pm2 reload calculo-api
 # ============================================================
+
+DEPLOY_VERSION="${1:-}"
+APP_DIR="/opt/calculo-descuentos"
+ENV_DIR="/etc/calculo-descuentos"
+ENV_FILE="$ENV_DIR/api.env"
+SERVICE_USER="calculo"
+PNPM_VERSION="9.15.9"
+NODE_MAJOR="22"
 
 export DEBIAN_FRONTEND=noninteractive
 
-echo "=== 1. Actualizando sistema ==="
+echo "=== 1. Sistema actualizado ==="
 apt-get update -qq
 apt-get upgrade -y -qq
 
-echo "=== 2. Instalando dependencias del sistema ==="
-apt-get install -y -qq curl git build-essential
+echo "=== 2. Dependencias base ==="
+apt-get install -y -qq curl git build-essential ca-certificates gnupg
 
-echo "=== 3. Instalando Node.js 22 ==="
-curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+echo "=== 3. Node.js ${NODE_MAJOR} LTS (repositorio oficial NodeSource) ==="
+curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash -
 apt-get install -y -qq nodejs
 node -v
-npm -v
 
-echo "=== 4. Instalando pnpm ==="
+echo "=== 4. pnpm ${PNPM_VERSION} (versión fijada, no @latest) ==="
 corepack enable
-corepack prepare pnpm@latest --activate
+corepack prepare "pnpm@${PNPM_VERSION}" --activate
 pnpm -v
 
-echo "=== 5. Instalando Caddy (binario directo) ==="
-curl -fsSL 'https://caddyserver.com/api/download?os=linux&arch=amd64' -o /usr/bin/caddy
-chmod +x /usr/bin/caddy
-groupadd --system caddy 2>/dev/null || true
-useradd --system --gid caddy --create-home --home-dir /var/lib/caddy --shell /usr/sbin/nologin --comment "Caddy web server" caddy 2>/dev/null || true
-curl -fsSL 'https://raw.githubusercontent.com/caddyserver/dist/master/init/caddy.service' -o /etc/systemd/system/caddy.service
-systemctl daemon-reload
-systemctl enable caddy
+echo "=== 5. Caddy desde repositorio apt oficial (versionado) ==="
+apt-get install -y -qq debian-keyring debian-archive-keyring apt-transport-https
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+  | gpg --batch --yes --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
+  | tee /etc/apt/sources.list.d/caddy-stable.list
+apt-get update -qq
+apt-get install -y -qq caddy
+caddy version
 
-echo "=== 6. Instalando PM2 globalmente ==="
+echo "=== 6. PM2 global ==="
 npm install -g pm2
 
-echo "=== 7. Creando directorio de la app ==="
-mkdir -p /opt/calculo-descuentos
-cd /opt/calculo-descuentos
+echo "=== 7. Usuario de servicio ${SERVICE_USER} (sin login) ==="
+id -u "$SERVICE_USER" &>/dev/null || useradd --system --create-home \
+  --home-dir "$APP_DIR" --shell /usr/sbin/nologin --comment "Calculadora API" "$SERVICE_USER"
 
-echo "=== 8. Clonando/actualizando repositorio ==="
-if [ -d .git ]; then
-  git fetch origin
-  git reset --hard origin/main
-else
+echo "=== 8. Directorio de la app ==="
+mkdir -p "$APP_DIR"
+cd "$APP_DIR"
+
+echo "=== 9. Despliegue VERSIONADO (sin reset --hard) ==="
+if [ ! -d .git ]; then
   git clone https://github.com/marvinm29/calculo-descuentos-sv.git .
 fi
+git fetch origin --tags --force
 
-echo "=== 9. Creando archivo .env ==="
-cat > /opt/calculo-descuentos/apps/api/.env << EOF
-# Obligatorio
-CLERK_SECRET_KEY=${CLERK_SECRET_KEY:-}
-DATABASE_PATH=./data/calculos.db
+if [ -z "$DEPLOY_VERSION" ] && [ -f VERSION_PIN ]; then
+  DEPLOY_VERSION="$(cat VERSION_PIN)"
+fi
+if [ -z "$DEPLOY_VERSION" ]; then
+  DEPLOY_VERSION="origin/main"
+fi
+
+if [ -f .last-deploy ]; then
+  echo "   Deploy anterior ($(cat .last-deploy)) respaldado en .last-deploy"
+fi
+git rev-parse HEAD > .last-deploy 2>/dev/null || true
+
+# El checkout debe quedar limpio: el código desplegado es exactamente $DEPLOY_VERSION.
+git checkout -- . 2>/dev/null || true
+git clean -fdq --exclude=.last-deploy --exclude=VERSION_PIN
+git checkout "$DEPLOY_VERSION"
+echo "   Desplegado: $DEPLOY_VERSION ($(git rev-parse --short HEAD))"
+
+echo "=== 10. .env FUERA del checkout ($ENV_FILE) ==="
+mkdir -p "$ENV_DIR"
+if [ ! -f "$ENV_FILE" ]; then
+  cat > "$ENV_FILE" << EOF
+# Configuración de la API — propiedad root, permisos 600.
+# Fuera del checkout a propósito: los secretos nunca viven en el repo.
 PORT=3001
+HOST=127.0.0.1
 NODE_ENV=production
+CORS_ORIGIN=https://marvinmelendez.engineer
+TRUST_PROXY=1
 
 # Opcional — Sentry
-SENTRY_DSN=${SENTRY_DSN:-}
+# SENTRY_DSN=https://xxxxx@sentry.io/xxxxx
 
 # Opcional — Datadog
-DD_API_KEY=${DD_API_KEY:-}
-DD_SITE=${DD_SITE:-datadoghq.com}
+# DD_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# DD_SITE=datadoghq.com
 EOF
+fi
+chown root:root "$ENV_FILE"
+chmod 600 "$ENV_FILE"
+chown -R root:root "$ENV_DIR"
+chmod 755 "$ENV_DIR"
 
-echo "=== 10. Instalando dependencias ==="
+echo "=== 11. Dependencias congeladas + build ==="
 pnpm install --frozen-lockfile
+pnpm build
 
-echo "=== 11. Construyendo shared ==="
-pnpm --filter=@calc/shared build
+echo "=== 12. PM2 bajo el usuario de servicio ==="
+sudo -u "$SERVICE_USER" pm2 start apps/api/ecosystem.config.cjs --name calculo-api 2>/dev/null \
+  || sudo -u "$SERVICE_USER" pm2 reload calculo-api
+sudo -u "$SERVICE_USER" pm2 save
 
-echo "=== 12. Construyendo api ==="
-pnpm --filter=@calc/api build
+# PM2 arranca con systemd usando el usuario de servicio (no root).
+pm2 startup systemd -u "$SERVICE_USER" --hp "/home/$SERVICE_USER" 2>/dev/null || true
 
-echo "=== 13. Creando directorio data ==="
-mkdir -p /opt/calculo-descuentos/apps/api/data
-
-echo "=== 14. Iniciando API con PM2 ==="
-cd /opt/calculo-descuentos/apps/api
-pm2 start dist/index.js --name calculo-api -f
-
-echo "=== 15. Guardando configuración de PM2 ==="
-pm2 save || true
-pm2 startup systemd -u root --hp /root --no-daemon 2>/dev/null || true
-
-echo "=== 16. Configurando Caddy ==="
+echo "=== 13. Caddy: proxy sin headers CORS (CORS sólo en Express) ==="
 cat > /etc/caddy/Caddyfile << 'CADDYEOF'
 api.marvinmelendez.engineer {
-    reverse_proxy localhost:3001
-    header Access-Control-Allow-Origin *
-    header Access-Control-Allow-Methods "GET, POST, DELETE, OPTIONS"
-    header Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
-
-    @options {
-        method OPTIONS
-    }
-    handle @options {
-        respond 204
-    }
+    # Express escucha sólo en 127.0.0.1: TRUST_PROXY=1 contabiliza
+    # el rate limit por IP real (X-Forwarded-For que Caddy añade).
+    reverse_proxy 127.0.0.1:3001
 }
 CADDYEOF
-
-systemctl start caddy 2>/dev/null || systemctl restart caddy
+caddy validate --config /etc/caddy/Caddyfile
+systemctl enable caddy
+systemctl restart caddy
 
 echo ""
 echo "============================================"
 echo "  Setup completado"
 echo "============================================"
+echo "  API: 127.0.0.1:3001 (loopback) bajo usuario $SERVICE_USER"
+echo "  Proxy: api.marvinmelendez.engineer (Caddy, TLS automático)"
+echo "  Env: $ENV_FILE (600, root)"
 echo ""
-echo "  API corriendo en: http://localhost:3001"
-echo "  Caddy reverse proxy listo para api.marvinmelendez.engineer"
+echo "  Verificación post-deploy:"
+echo "    curl -s -o /dev/null -w '%{http_code}' -X POST https://api.marvinmelendez.engineer/api/calcular \\"
+echo "      -H 'Content-Type: application/json' -H 'Origin: https://marvinmelendez.engineer' \\"
+echo "      -d '{\"salarioBase\":800,\"tipoPago\":\"mensual\",\"fechaInicio\":\"2026-09-01\",\"fechaFin\":\"2026-09-15\",\"antiguedad\":\"1_a_3\",\"fechaIngreso\":\"2020-01-01\",\"segmentos\":[]}'"
+echo "    # esperado: 200 con CORS_ORIGIN correcto, 400/403 fuera del allowlist"
 echo ""
-echo "  Proximos pasos:"
-echo "  1. Verificar que DNS apunte: api.marvinmelendez.engineer -> <IP_droplet>"
-echo "  2. En Clerk Dashboard, cambiar URLs de test a produccion"
-echo "  3. Verificar Sentry capturando errores (si configuraste SENTRY_DSN)"
-echo "  4. Verificar Datadog APM (si configuraste DD_API_KEY)"
+echo "  Rollback:"
+echo "    cd $APP_DIR && git checkout \"\$(cat .last-deploy)\" && pnpm install --frozen-lockfile && pnpm build"
+echo "    sudo -u $SERVICE_USER pm2 reload calculo-api"
 echo ""
 pm2 status
 caddy version

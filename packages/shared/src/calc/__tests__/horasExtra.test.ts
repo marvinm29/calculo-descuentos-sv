@@ -1,11 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import {
   calcularSalarioHora,
-  calcularRecargoNocturnidad,
   calcularPagoSegmentos,
   round2,
 } from '../horasExtra';
-import { HORAS_EXTRA, RECARGO_NOCTURNIDAD } from '../../tasas';
+import { HORAS_EXTRA } from '../../tasas';
 import type { SegmentoHorario } from '../../types';
 
 describe('calcularSalarioHora', () => {
@@ -19,25 +18,6 @@ describe('calcularSalarioHora', () => {
   it('salario 0 da salarioHora 0', () => {
     const { salarioHoraDiurna } = calcularSalarioHora(0);
     expect(salarioHoraDiurna).toBe(0);
-  });
-});
-
-describe('calcularRecargoNocturnidad', () => {
-  it('calcula recargo = horasBaseNocturnas × salarioHora × 0.25', () => {
-    const result = calcularRecargoNocturnidad(800, 39);
-    const horaDiurna = 800 / 30 / 8;
-    expect(result).toBeCloseTo(39 * horaDiurna * RECARGO_NOCTURNIDAD, 2);
-  });
-
-  it('trazable al ejemplo MTPS $1.04 → $1.30', () => {
-    // $250 salario → hora diurna = 250/30/8 ≈ 1.0417
-    // recargo = 1.0417 × 0.25 ≈ 0.26
-    const result = calcularRecargoNocturnidad(250, 1);
-    expect(result).toBeCloseTo(0.26, 2);
-  });
-
-  it('0 horas base nocturnas → 0 recargo', () => {
-    expect(calcularRecargoNocturnidad(800, 0)).toBe(0);
   });
 });
 
