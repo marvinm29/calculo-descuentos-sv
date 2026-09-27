@@ -49,8 +49,10 @@ interface SegmentoHorario {
 }
 ```
 
-El objeto es estricto: campos desconocidos (p. ej. el retirado `horasBaseNocturnas`)
-se rechazan con 400.
+El objeto es estricto de forma **recursiva**: campos desconocidos en el objeto raíz y en los
+sub-objetos `segmentos[]` / `incentivos[]` (p. ej. el retirado `horasBaseNocturnas`, o
+`segmentos[0].nota`) se rechazan con 400 y no se recortan (2026-09-20; ver
+`openspec/specs/contrato-calcular.md`).
 
 **Ejemplo de request:**
 
@@ -240,7 +242,7 @@ El backend valida las siguientes reglas (detalle: `openspec/specs/integridad-cal
 | `segmentos[].horas` finito, `0–24`, y **suma por fecha <= 24** | "Las horas por día deben estar entre 0 y 24" / "La suma de horas para {fecha} excede 24 h" |
 | `segmentos` <= 100 elementos; `incentivos` <= 50 | "Máximo 100 segmentos" / "Máximo 50 incentivos" |
 | `incentivos[].monto` finito >= 0; `concepto` 1–100; `id` 1–64 | mensajes por campo |
-| campos desconocidos rechazados (objeto estricto) | "Unrecognized key: ..." |
+| campos desconocidos rechazados (objeto estricto recursivo: raíz y `segmentos[]`/`incentivos[]`) | "Unrecognized key: ..." |
 
 ### Cabeceras
 

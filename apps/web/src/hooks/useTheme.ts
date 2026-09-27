@@ -6,19 +6,20 @@ const STORAGE_KEY = 'theme-preference';
 
 function getSystemPref(): 'light' | 'dark' {
   if (typeof window === 'undefined') return 'dark';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
+// El tema persiste con lectura estrechada (sin cast): un valor corrupto o
+// desconocido en localStorage cae al default 'dark' — mismo criterio que la
+// política de datos corruptos del historial (Regla 8, escalada a preferencias).
 function getStoredTheme(): Theme {
   try {
-    const stored = window.localStorage.getItem(STORAGE_KEY) as Theme | null;
+    const stored: unknown = window.localStorage.getItem(STORAGE_KEY);
     if (stored === 'light' || stored === 'dark' || stored === 'system') {
       return stored;
     }
   } catch {
-    // localStorage unavailable
+    // localStorage no disponible (modo privado): default
   }
   return 'dark';
 }

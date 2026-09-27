@@ -4,7 +4,7 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import * as Sentry from '@sentry/node';
 import { calcularRoutes } from './routes/calcular/calcular.routes.js';
-import { errorHandler } from './middleware/errorHandler.js';
+import { errorHandler, MENSAJE_RATE_LIMIT } from './middleware/errorHandler.js';
 
 export interface AppOptions {
   /** Orígenes CORS permitidos. Default: CORS_ORIGIN (lista separada por comas) o http://localhost:5173. */
@@ -15,6 +15,7 @@ export interface AppOptions {
   rateLimitMax?: number;
   /** DSN de Sentry. Default: SENTRY_DSN env. */
   sentryDsn?: string;
+  /** Entorno para Sentry y formato de logs de morgan. Default: NODE_ENV o 'development'. */
   environment?: string;
 }
 
@@ -45,8 +46,7 @@ export function createApp(options: AppOptions = {}): express.Express {
   const trustProxy = options.trustProxy ?? leerTrustProxyEnv();
   const rateLimitMax = options.rateLimitMax ?? 100;
   const sentryDsn = options.sentryDsn ?? process.env['SENTRY_DSN'] ?? '';
-  const environment =
-    options.environment ?? process.env['NODE_ENV'] ?? 'development';
+  const environment = options.environment ?? process.env['NODE_ENV'] ?? 'development';
 
   app.set('trust proxy', trustProxy);
 
@@ -66,8 +66,7 @@ export function createApp(options: AppOptions = {}): express.Express {
       handler: (_req, res) => {
         res.status(429).json({
           error: 'RATE_LIMIT_EXCEEDED',
-          message:
-            'Demasiadas solicitudes. Intente de nuevo en 60 segundos.',
+          message: MENSAJE_RATE_LIMIT,
         });
       },
     }),

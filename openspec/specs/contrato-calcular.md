@@ -38,8 +38,17 @@ interface Incentivo {
 }
 ```
 
-Objeto **estricto**: campos desconocidos → 400. `horasBaseNocturnas` fue eliminado
-(2026-09-15): no existe recargo nocturno inferido.
+Objeto **estricto de forma recursiva**: campos desconocidos en el objeto raíz **y dentro de
+`segmentos[]` e `incentivos[]`** → 400 (los sub-esquemas usan `z.strictObject`; los campos
+desconocidos no se recortan, se rechazan: son corrupción del contrato, no datos ignorables).
+`horasBaseNocturnas` fue eliminado (2026-09-15): no existe recargo nocturno inferido.
+
+> Decisión documentada (2026-09-20): antes de esta fecha los sub-objetos usaban `z.object`
+> (recorte silencioso). El estrito recursivo es la opción conservadora: la UI y el API rechazan
+> exactamente el mismo conjunto de cargas y ningún campo desconocido altera el cálculo por
+> omisión. Riesgo aceptado: un cliente que enviara campos extra inofensivos ahora recibe 400;
+> mitigación: el mensaje lista la clave no reconocida. Rollback: revertir los sub-esquemas a
+> `z.object` y esta nota (requiere nueva decisión documentada).
 
 ## Response (200 OK)
 
@@ -73,8 +82,11 @@ interface CalcularResponse {
 
 ## Errores
 
-- `400 VALIDATION_ERROR` (Zod, objeto estricto) — con `details[]` `{field, message}` y paths
-  indexados (`segmentos.0.fecha`); campos desconocidos → `field: "request"`.
+- `400 VALIDATION_ERROR` (Zod, objeto estricto recursivo) — con `details[]` `{field, message}` y
+  paths indexados (`segmentos.0.fecha`); campos desconocidos → `field: "request"` en el objeto
+  raíz y `field: "segmentos.0"` / `field: "incentivos.0"` en los anidados, con el mensaje Zod
+  `Unrecognized key: "clave"` que nombra la clave rechazada (comportamiento de Zod v4
+  `unrecognized_keys`).
 - `400` reglas de negocio (`validarNegocio`): período > 31 días inclusivos.
 - `429 RATE_LIMIT_EXCEEDED` (100 req/min, por IP real con `TRUST_PROXY=1` detrás de Caddy).
 - `500 INTERNAL_ERROR` — mensaje fijo, sin stack ni detalles internos.

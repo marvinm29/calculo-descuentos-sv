@@ -3,18 +3,17 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ══════════════════════════════════════════════════════════════
-   Design System "Liquid Glass SV" (Independencia)
-   openspec/specs/diseno-liquid-glass-sv.md · apps/web/DESIGN.md
-   Glass con criterio + identidad SV. Supercede "Linear Instrument".
+   Design System "Calculadora clara y calmada"
+   Norma: openspec/specs/diseno-calculadora-clara.md
+   Implementación: apps/web/DESIGN.md · ADR-014
+   Superficies sólidas, bordes legibles, una acción primaria por sección.
+   Sin efectos de desenfoque, transparencia ni texturas decorativas (spec § Prohibiciones).
    ══════════════════════════════════════════════════════════════ */
 
 /* ── Light (:root — la clase .dark togglea a dark) ── */
 :root {
   --bg: #f7f5f1;
-  --bg-grain: #efebe3;
   --surface: #ffffff;
-  --glass: rgba(255, 255, 255, 0.55);
-  --glass-border: rgba(255, 255, 255, 0.85);
   --surface-raised: #faf8f4;
   --surface-2: #ede9e1;
   --border: #d8d2c7;
@@ -25,7 +24,7 @@
   --accent: #003b6f;
   --accent-hover: #002a52;
   --accent-soft: rgba(0, 59, 111, 0.1);
-  --gold: #c8a951;
+  --on-accent: #ffffff;
   --success: #1b7a3d;
   --danger: #b3261e;
   --warning: #b5651d;
@@ -33,25 +32,12 @@
   --danger-bg: rgba(179, 38, 30, 0.08);
   --warning-bg: rgba(181, 101, 29, 0.08);
   --selection: rgba(0, 59, 111, 0.18);
-  --grain-opacity: 0.04;
-  /* Rim refractivo (4 bordes) + sheen — intensidad por tema */
-  --rim-top: rgba(255, 255, 255, 0.6);
-  --rim-bottom: rgba(255, 255, 255, 0.3);
-  --rim-side: rgba(255, 255, 255, 0.18);
-  --sheen-opacity: 0.5;
-  /* Aurora backdrop (da color que el glass puede muestrear) */
-  --aurora-1: rgba(0, 59, 111, 0.07);
-  --aurora-2: rgba(200, 169, 81, 0.1);
-  --aurora-3: rgba(95, 199, 212, 0.06);
 }
 
-/* ── Dark — OLED true black (Pixel 8 Pro: píxeles apagados) ── */
+/* ── Dark — superficies sólidas sobre fondo negro ── */
 .dark {
   --bg: #000000;
-  --bg-grain: #000000;
   --surface: #0d0f13;
-  --glass: rgba(16, 18, 24, 0.55);
-  --glass-border: rgba(255, 255, 255, 0.14);
   --surface-raised: #14161b;
   --surface-2: #191c22;
   --border: #262a33;
@@ -62,7 +48,7 @@
   --accent: #7ab2e0;
   --accent-hover: #9bc4ec;
   --accent-soft: rgba(122, 178, 224, 0.14);
-  --gold: #d9b860;
+  --on-accent: #0d0f13;
   --success: #4ade80;
   --danger: #f87171;
   --warning: #fbbf24;
@@ -70,46 +56,33 @@
   --danger-bg: rgba(248, 113, 113, 0.09);
   --warning-bg: rgba(251, 191, 36, 0.09);
   --selection: rgba(122, 178, 224, 0.28);
-  --grain-opacity: 0.05;
-  /* Rim refractivo en dark: más sutil, luz fría */
-  --rim-top: rgba(255, 255, 255, 0.4);
-  --rim-bottom: rgba(255, 255, 255, 0.18);
-  --rim-side: rgba(255, 255, 255, 0.1);
-  --sheen-opacity: 0.35;
-  /* Aurora sobre negro puro — el glass tiene color que refractar */
-  --aurora-1: rgba(0, 80, 160, 0.22);
-  --aurora-2: rgba(200, 169, 81, 0.07);
-  --aurora-3: rgba(95, 199, 212, 0.1);
 }
 
-/* ── Tailwind v4 tokens ── */
+/* ── Tailwind v4 tokens (diseno-calculadora-clara.md § Tokens) ── */
 @theme {
   --font-body: 'Onest', sans-serif;
   --font-display: 'Fraunces', 'Onest', serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --color-primary: var(--accent);
-  --color-primary-hover: var(--accent-hover);
-  --color-primary-soft: var(--accent-soft);
+  --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-surface-alt: var(--surface-2);
   --color-border: var(--border);
-  --color-border-light: var(--border-soft);
+  --color-border-soft: var(--border-soft);
   --color-text: var(--text);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
+  --color-primary: var(--accent);
+  --color-primary-hover: var(--accent-hover);
+  --color-primary-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-warning: var(--warning);
   --color-success-bg: var(--success-bg);
   --color-danger-bg: var(--danger-bg);
   --color-warning-bg: var(--warning-bg);
-  --color-gold: var(--gold);
-  --color-glass: var(--glass);
-  --color-glass-border: var(--glass-border);
-  --color-sv-blue: #003b6f;
-  --color-sv-blue-dark: #7ab2e0;
 }
 
 /* ── Layer base ── */
@@ -121,31 +94,10 @@
 
   body {
     background-color: var(--bg);
-    /* Aurora backdrop: color suave en marca para que el glass tenga
-       algo que muestrear (sin él, el blur sobre fondo plano se ve muerto).
-       Estático — sin animación, respeta reduced-motion por diseño. */
-    background-image:
-      radial-gradient(ellipse 70% 50% at 15% -5%, var(--aurora-1), transparent 70%),
-      radial-gradient(ellipse 50% 40% at 90% 15%, var(--aurora-3), transparent 70%),
-      radial-gradient(ellipse 60% 45% at 75% 105%, var(--aurora-2), transparent 70%);
-    background-attachment: fixed;
     color: var(--text);
     font-family: var(--font-body);
     font-size: 16px;
     line-height: 1.6;
-  }
-
-  /* El grain como pseudo-elemento con opacidad controlada por tema */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-repeat: repeat;
-    background-size: 120px 120px;
-    opacity: var(--grain-opacity);
   }
 
   h1,
@@ -181,154 +133,33 @@
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Liquid glass — receta Apple (webtricks.dev / html-in-canvas.dev):
-   1. blur + saturate alto = pane grueso iluminado
-   2. rim refractivo en 4 bordes (top fuerte, bottom medio, lados suaves)
-   3. sheen diagonal 135° con mix-blend-mode: screen (::after)
-   4. aurora de color detrás (body) para que el blur tenga qué muestrear
-   NO en inputs ni contenido denso (WCAG AA).
+   Componentes sólidos (DESIGN.md § Componentes y composición)
    ══════════════════════════════════════════════════════════════ */
 
-.glass-nav {
-  position: relative;
-  isolation: isolate;
-  background: var(--glass);
-  backdrop-filter: blur(16px) saturate(180%) brightness(1.05);
-  -webkit-backdrop-filter: blur(16px) saturate(180%) brightness(1.05);
-  border-bottom: 1px solid var(--glass-border);
-  box-shadow:
-    inset 0 1px 0 var(--rim-top),
-    0 8px 32px rgba(0, 0, 0, 0.12);
-  transition: background 0.2s ease;
-}
-
-.glass-panel {
-  position: relative;
-  isolation: isolate;
-  background: var(--glass);
-  backdrop-filter: blur(20px) saturate(180%) brightness(1.05);
-  -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.05);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  box-shadow:
-    inset 0 1px 1px var(--rim-top),
-    inset 0 -1px 1px var(--rim-bottom),
-    inset 1px 0 1px var(--rim-side),
-    inset -1px 0 1px var(--rim-side),
-    0 8px 32px rgba(0, 0, 0, 0.18);
-  transition: background 0.2s ease, transform 0.15s ease-out, box-shadow 0.2s ease;
-}
-
-.glass-card {
-  position: relative;
-  isolation: isolate;
-  background: var(--glass);
-  backdrop-filter: blur(14px) saturate(170%) brightness(1.04);
-  -webkit-backdrop-filter: blur(14px) saturate(170%) brightness(1.04);
-  border: 1px solid var(--glass-border);
+/* panel: agrupación de contenido con fondo surface, borde y radio moderado */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow:
-    inset 0 1px 1px var(--rim-top),
-    inset 0 -1px 1px var(--rim-bottom),
-    inset 1px 0 1px var(--rim-side),
-    inset -1px 0 1px var(--rim-side);
-  transition: background 0.2s ease, border-color 0.15s ease, transform 0.1s ease-out,
-    box-shadow 0.2s ease;
 }
 
-.glass-card:hover {
-  filter: brightness(1.06);
-  border-color: var(--gold);
-}
-
-/* Sheen diagonal: el brillo "glossy" que hace el glass líquido.
-   ::after con z-index:-1 queda sobre el tinte, bajo el contenido
-   (gracias a isolation: isolate). pointer-events: none = no bloquea. */
-.glass-nav::after,
-.glass-panel::after,
-.glass-card::after,
-.glass-dialog::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.4),
-    rgba(255, 255, 255, 0.08) 28%,
-    transparent 58%
-  );
-  mix-blend-mode: screen;
-  opacity: var(--sheen-opacity);
-}
-
-.glass-dialog {
-  position: relative;
-  isolation: isolate;
-  background: var(--glass);
-  backdrop-filter: blur(24px) saturate(180%) brightness(1.05);
-  -webkit-backdrop-filter: blur(24px) saturate(180%) brightness(1.05);
-  border: 1px solid var(--glass-border);
+/* section-card / result-card comparten base sólida */
+.result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
-  box-shadow:
-    inset 0 1px 1px var(--rim-top),
-    inset 0 -1px 1px var(--rim-bottom),
-    0 16px 48px rgba(0, 0, 0, 0.25);
 }
 
-/* ── Fallback: sin backdrop-filter → sólido, sin sheen ── */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .glass-nav,
-  .glass-panel,
-  .glass-card,
-  .glass-dialog {
-    background: var(--surface);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
-  .glass-nav::after,
-  .glass-panel::after,
-  .glass-card::after,
-  .glass-dialog::after {
-    display: none;
-  }
+/* Encabezado del sitio: superficie sólida con borde inferior */
+.site-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
-
-/* ── Reduced transparency → sólido (accesibilidad) ── */
-@media (prefers-reduced-transparency: reduce) {
-  .glass-nav,
-  .glass-panel,
-  .glass-card,
-  .glass-dialog {
-    background: var(--surface);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
-  .glass-nav::after,
-  .glass-panel::after,
-  .glass-card::after,
-  .glass-dialog::after {
-    display: none;
-  }
-
-  body {
-    background-image: none;
-  }
-}
-
-/* ══════════════════════════════════════════════════════════════
-   Cards sólidas (contenido denso, tablas — accesibles sin glass)
-   ══════════════════════════════════════════════════════════════ */
 
 .tool-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease-out;
 }
 
 .tool-card:hover {
@@ -336,13 +167,13 @@
   border-color: var(--border);
 }
 
-/* ── Inputs sólidos (accesibles, sin glass) ── */
+/* ── Inputs sólidos (accesibles) ── */
 .tool-input {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
   color: var(--text);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease-out;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .tool-input:hover {
@@ -355,36 +186,24 @@
   outline: none;
 }
 
-.tool-input:active {
-  transform: scale(0.99);
-}
-
 .tool-input:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
 }
 
-/* ── Botón primario: azul bandera + luz interior glass ── */
+/* ── Botón primario: azul funcional, sin efectos ── */
 .btn-accent {
   background: var(--accent);
-  color: #ffffff;
+  color: var(--on-accent);
   font-weight: 600;
   border: 1px solid var(--accent);
   border-radius: 12px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease-out,
-    opacity 0.15s ease, box-shadow 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
 }
 
 .btn-accent:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
-}
-
-.btn-accent:active {
-  transform: scale(0.97);
 }
 
 .btn-accent:focus-visible {
@@ -395,35 +214,20 @@
 .btn-accent:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
 }
 
-/* ── Montos: mono + tabular (la firma "engineered") ── */
+/* ── Montos: mono + tabular ── */
 .amount {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
 
-/* ── Display serif (Fraunces) — solo título de marca + H1 resultado ── */
+/* ── Display serif — solo título de marca + H1 resultado ── */
 .display {
   font-family: var(--font-display);
   font-weight: 600;
   letter-spacing: -0.02em;
-}
-
-/* ── Separador dorado (detalle de identidad, no bandera) ── */
-.gold-rule {
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    var(--gold) 30%,
-    var(--gold) 70%,
-    transparent
-  );
-  opacity: 0.4;
-  border: 0;
 }
 
 /* ── Micro-interacción: el neto "pop" al recalcular ── */
@@ -440,38 +244,6 @@
 
 .num-pop {
   animation: num-pop 0.3s ease-out;
-}
-
-/* ── Torogoz: vuelo sutil (pausable por reduced-motion) ── */
-@keyframes torogoz-float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-2px) rotate(-1deg);
-  }
-}
-
-.torogoz-float {
-  animation: torogoz-float 4s ease-in-out infinite;
-  transform-origin: center;
-}
-
-/* ── Monumento: trazo dibujándose (una vez al entrar viewport) ── */
-@keyframes monumento-stroke {
-  from {
-    stroke-dashoffset: 800;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-.monumento-trazo {
-  stroke-dasharray: 800;
-  stroke-dashoffset: 0;
-  animation: monumento-stroke 2.5s ease-out 1 forwards;
 }
 
 /* Controles nativos con el acento de marca */
@@ -492,60 +264,38 @@ input[type='range'] {
   }
 }
 
-/* ── Texto semántico ── */
-.text-glow-success {
-  color: var(--success);
-}
-
-.text-glow-danger {
-  color: var(--danger);
-}
-
-/* ── Diálogo sólido (fallback si no hay glass) ── */
-.tool-dialog {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-}
-
-/* ── Focus ring accesible ── */
-@layer utilities {
-  .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
+/* ── Forced colors: bordes, foco y estados del sistema (DESIGN.md) ── */
+@media (forced-colors: active) {
+  .panel,
+  .result-card,
+  .site-header,
+  .tool-card,
+  .tool-input {
+    border-color: CanvasText;
   }
 
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
+  .btn-accent {
+    border-color: ButtonText;
   }
 
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  .btn-accent:focus-visible {
+    outline-color: Highlight;
   }
 
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: var(--border);
-    border-radius: 3px;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: var(--text-muted);
+  .tool-input:focus {
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
   }
 }
 
-/* ── Print: PDF legible (RF10) — fondo sólido, sin glass ni aurora ── */
+/* ── Print: PDF legible (RF10) — fondo blanco, sin decoración ── */
 @media print {
   :root {
     --bg: #ffffff;
-    --bg-grain: #ffffff;
     --surface: #ffffff;
     --surface-2: #f2f2f2;
     --border: #cccccc;
+    --border-soft: #dddddd;
     --text: #000000;
     --text-secondary: #333333;
     --text-muted: #555555;
@@ -553,46 +303,26 @@ input[type='range'] {
     --danger: #000000;
     --warning: #000000;
     --accent: #000000;
-    --gold: #666666;
-    --grain-opacity: 0;
-    --sheen-opacity: 0;
   }
 
   body {
     background: #ffffff !important;
-    background-image: none !important;
   }
 
-  body::before {
-    display: none;
-  }
-
-  .glass-nav,
-  .glass-panel,
-  .glass-card,
-  .glass-dialog,
-  .tool-card,
-  .tool-dialog {
+  .site-header,
+  .panel,
+  .result-card,
+  .tool-card {
     background: #ffffff !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
     box-shadow: none !important;
     border-color: #cccccc !important;
   }
 
-  .glass-nav::after,
-  .glass-panel::after,
-  .glass-card::after,
-  .glass-dialog::after {
-    display: none !important;
-  }
-
-  .glass-nav {
+  .site-header {
     position: static !important;
   }
 
-  .torogoz-float,
-  .monumento-trazo {
+  .num-pop {
     animation: none !important;
   }
 

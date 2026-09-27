@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { calcularRequestSchema, validarNegocio, esFechaCalendarioValida } from '../schemas';
+import {
+  calcularRequestSchema,
+  validarNegocio,
+  esFechaCalendarioValida,
+  esTimestampIsoValido,
+  historialPeriodosSchema,
+} from '../schemas';
 import type { CalcularRequest } from '../types';
 
 const base: CalcularRequest = {
@@ -257,6 +263,99 @@ describe('Regla 7 — contrato sin horasBaseNocturnas', () => {
   it('esFechaCalendarioValida rechaza formatos no ISO', () => {
     expect(esFechaCalendarioValida('01-07-2026')).toBe(false);
     expect(esFechaCalendarioValida('')).toBe(false);
+  });
+});
+
+// Contrato estricto recursivo (2026-09-20): los sub-objetos del request
+// rechazan campos desconocidos en lugar de recortarlos. Zod reporta el path
+// del objeto contenedor (`segmentos.0`) y el mensaje nombra la clave.
+describe('Contrato estricto recursivo — campos desconocidos anidados', () => {
+  function issuesDe(req: unknown): { field: string; message: string }[] {
+    const r = calcularRequestSchema.safeParse(req);
+    if (r.success) return [];
+    return r.error.issues.map((i) => ({
+      field: i.path.join('.'),
+      message: i.message,
+    }));
+  }
+
+  it('rechaza campo desconocido dentro de segmentos[0]', () => {
+    const issues = issuesDe({
+      ...base,
+      segmentos: [
+        { fecha: '2026-07-05', tipo: 'extra_diurna', horas: 2, nota: 'hola' },
+      ],
+    });
+    const porClave = issues.filter((i) => i.message.includes('nota'));
+    expect(porClave.length).toBeGreaterThan(0);
+    expect(porClave.some((i) => i.field === 'segmentos.0')).toBe(true);
+  });
+
+  it('rechaza campo desconocido dentro de incentivos[0]', () => {
+    const issues = issuesDe({
+      ...base,
+      incentivos: [
+        { id: 'i1', concepto: 'Bono', monto: 5, aplicaDescuentos: true, fuente: 'nomina' },
+      ],
+    });
+    const porClave = issues.filter((i) => i.message.includes('fuente'));
+    expect(porClave.length).toBeGreaterThan(0);
+    expect(porClave.some((i) => i.field === 'incentivos.0')).toBe(true);
+  });
+
+  it('acepta segmentos e incentivos con solo los campos del contrato', () => {
+    expect(
+      parseOk({
+        ...base,
+        segmentos: [{ fecha: '2026-07-05', tipo: 'extra_diurna', horas: 2 }],
+        incentivos: [{ id: 'i1', concepto: 'Bono', monto: 5, aplicaDescuentos: true }],
+      }),
+    ).toBe(true);
+  });
+});
+
+// Regla 8 — historial local: la marca de guardado es un timestamp ISO UTC
+// canónico (lo que produce new Date(...).toISOString()).
+describe('periodoGuardadoSchema — timestamp ISO de guardado', () => {
+  const periodo = (fecha: string) => ({
+    id: 'p1',
+    fecha,
+    neto: 700,
+    brutoTotal: 1000,
+  });
+
+  it('esTimestampIsoValido acepta la salida de new Date().toISOString()', () => {
+    expect(esTimestampIsoValido(new Date(2026, 8, 20, 12, 0, 0).toISOString())).toBe(true);
+    expect(esTimestampIsoValido('2026-09-20T18:30:00.000Z')).toBe(true);
+  });
+
+  it('rechaza fecha inválida, string arbitrario y offset no UTC', () => {
+    expect(esTimestampIsoValido('2026-13-01T00:00:00.000Z')).toBe(false); // mes imposible
+    expect(esTimestampIsoValido('2026-02-30T00:00:00.000Z')).toBe(false); // día imposible
+    expect(esTimestampIsoValido('20-09-2026')).toBe(false); // string arbitrario
+    expect(esTimestampIsoValido('2026-09-20')).toBe(false); // fecha sin hora
+    expect(esTimestampIsoValido('2026-09-20T18:30:00+00:00')).toBe(false); // no canónico UTC
+    expect(esTimestampIsoValido('')).toBe(false);
+  });
+
+  it('historialPeriodosSchema acepta timestamps válidos', () => {
+    const r = historialPeriodosSchema.safeParse([periodo('2026-09-20T18:30:00.000Z')]);
+    expect(r.success).toBe(true);
+  });
+
+  it('historialPeriodosSchema rechaza historial corrupto (fecha arbitraria)', () => {
+    const r = historialPeriodosSchema.safeParse([periodo('ayer por la tarde')]);
+    expect(r.success).toBe(false);
+  });
+
+  it('historialPeriodosSchema rechaza fecha imposible y campo desconocido', () => {
+    expect(
+      historialPeriodosSchema.safeParse([periodo('2026-02-30T00:00:00.000Z')]).success,
+    ).toBe(false);
+    expect(
+      historialPeriodosSchema.safeParse([{ ...periodo('2026-09-20T18:30:00.000Z'), extra: 1 }])
+        .success,
+    ).toBe(false);
   });
 });
 

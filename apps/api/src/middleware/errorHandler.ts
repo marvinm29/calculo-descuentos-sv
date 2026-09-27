@@ -2,6 +2,11 @@ import type { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import type { ZodIssue } from 'zod';
 
+// Mensaje único del 429: lo usa el handler de express-rate-limit (app.ts) y
+// este errorHandler. Cambiarlo en un solo lugar.
+export const MENSAJE_RATE_LIMIT =
+  'Demasiadas solicitudes. Intente de nuevo en 60 segundos.';
+
 interface ApiErrorBody {
   error: string;
   message: string;
@@ -28,13 +33,9 @@ export function errorHandler(
     return;
   }
 
-  if (err instanceof Error && err.name === 'RateLimitError') {
-    res.status(429).json({
-      error: 'RATE_LIMIT_EXCEEDED',
-      message: 'Demasiadas solicitudes. Intente de nuevo en 60 segundos.',
-    });
-    return;
-  }
+  // Nota: el 429 no pasa por aquí — express-rate-limit v7 no lanza errores de
+  // rate limit; responde directamente con su `handler` configurado en app.ts.
+  // Todo lo que llega a este punto es un error interno (500).
 
   console.error('[ERROR]', err instanceof Error ? err.stack : err);
 

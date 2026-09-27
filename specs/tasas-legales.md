@@ -25,6 +25,26 @@
 
 ---
 
+## Estado de verificación de fuentes (2026-09-20)
+
+La revisión contra fuentes primarias (`.gob.sv`) alcanzó cobertura **parcial**. Esta
+nota es trazabilidad para la calculadora; **no** constituye conformidad ni certificación
+legal, que requeriría una auditoría formal.
+
+| Tasa / prestación | Estado | Evidencia |
+|-------------------|--------|-----------|
+| Quincena 25: 50%, tope $1,500.00, pago 15–25 de enero, sin ISSS/AFP/Renta; obligatoria sector público 2026 y privado desde 2027 | ✅ Verificada en fuente primaria | MTPS (`mtps.gob.sv`, enero 2026) |
+| Hora extra diurna **2.00×** | ✅ Verificada en fuente primaria | Art. 169 CT; FAQ MTPS 2025-11-24 |
+| ISSS **3.00%** / tope **$1,000.00** | ⚠️ Pendiente de confirmación primaria | Coincidencia en fuentes secundarias |
+| AFP **7.25%** / tope **$6,843.48** | ⚠️ Pendiente de confirmación primaria | Coincidencia en fuentes secundarias |
+| Tabla de renta (Decreto 293, Tomo 447) | ⚠️ Pendiente de confirmación primaria | Coincidencia en fuentes secundarias |
+| Hora extra nocturna **2.25×** | ⚠️ Ambigua — sin cambios | El ejemplo aritmético publicado por MTPS no es concluyente entre 2.25× y 2.50×; se mantiene 2.25× (Art. 168+169 CT) a la espera de confirmación primaria |
+
+`FECHA_ACTUALIZACION_TASAS` refleja la última vigencia documental (`Julio 2026`), **no**
+la fecha de esta auditoría: no se modifica mientras no cambien los valores legales.
+
+---
+
 ## ISSS - Instituto Salvadoreno del Seguro Social
 
 ### Cotizacion Laboral (Descuento al Trabajador)
@@ -251,6 +271,9 @@ cotizar.
 ```typescript
 // packages/shared/src/tasas.ts
 
+// Vigencia documental compartida (la UI muestra esta fecha, nunca una copia).
+export const FECHA_ACTUALIZACION_TASAS = 'Julio 2026' as const;
+
 export const ISSS = {
   PORCENTAJE_TRABAJADOR: 0.03,
   PORCENTAJE_PATRONAL: 0.075,
@@ -264,10 +287,13 @@ export const AFP = {
 } as const;
 
 export const RENTA_TRAMOS_MENSUAL = [
-  { tramo: 1, desde: 0.01, hasta: 550.00, porcentajeExceso: 0.00, cuotaFija: 0.00 },
-  { tramo: 2, desde: 550.01, hasta: 895.24, porcentajeExceso: 0.10, cuotaFija: 17.67 },
-  { tramo: 3, desde: 895.25, hasta: 2038.10, porcentajeExceso: 0.20, cuotaFija: 60.00 },
-  { tramo: 4, desde: 2038.11, hasta: Infinity, porcentajeExceso: 0.30, cuotaFija: 288.57 },
+  // `excesoDesde` = columna "Sobre el exceso de" de la tabla oficial del MH:
+  // el limite inferior del tramo anterior. Para quincenal la tabla completa
+  // (excesoDesde incluido) se divide entre 2.
+  { tramo: 1, desde: 0.01, hasta: 550.00, excesoDesde: 0.00, porcentajeExceso: 0.00, cuotaFija: 0.00 },
+  { tramo: 2, desde: 550.01, hasta: 895.24, excesoDesde: 550.00, porcentajeExceso: 0.10, cuotaFija: 17.67 },
+  { tramo: 3, desde: 895.25, hasta: 2038.10, excesoDesde: 895.24, porcentajeExceso: 0.20, cuotaFija: 60.00 },
+  { tramo: 4, desde: 2038.11, hasta: Infinity, excesoDesde: 2038.10, porcentajeExceso: 0.30, cuotaFija: 288.57 },
 ] as const;
 
 export const HORAS_EXTRA = {
@@ -276,6 +302,13 @@ export const HORAS_EXTRA = {
   DIA_LIBRE_DIURNA: 1.50,
   DIA_LIBRE_NOCTURNA: 1.75,
   ASUETO: 2.00,
+} as const;
+
+// Divisores del salario base (Art. 168 CT: jornada diurna de 8 horas; mes
+// comercial de 30 días).
+export const DIVISORES_SALARIO = {
+  DIAS_MES: 30,
+  HORAS_JORNADA_DIURNA: 8,
 } as const;
 
 // Recargo puro de nocturnidad (Art. 168 CT). El multiplicador de pago es 1 + RECARGO_NOCTURNIDAD.

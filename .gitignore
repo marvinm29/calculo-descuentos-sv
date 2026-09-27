@@ -10,7 +10,6 @@ coverage/
 .idea/
 *.tsbuildinfo
 .DS_Store
-clerk-react/
 .agents/
 .opencode/skills/
 skills-lock.json

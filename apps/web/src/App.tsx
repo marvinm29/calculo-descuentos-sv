@@ -1,19 +1,36 @@
+import { lazy, Suspense, useState } from 'react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ConfigInicial } from './components/ConfigInicial';
-import { JornadaSelector } from './components/JornadaSelector';
 import { EntradasPeriodo } from './components/EntradasPeriodo';
 import { IncentivosForm } from './components/IncentivosForm';
 import { ResultadoNeto } from './components/ResultadoNeto';
-import { GraficoPastel } from './components/GraficoPastel';
 import { TablaTasas } from './components/TablaTasas';
-import { HistorialPeriodos } from './components/HistorialPeriodos';
 import { ExportarPDF } from './components/ExportarPDF';
-import { GuiaCalculos } from './components/GuiaCalculos';
-import { Torogoz } from './components/Torogoz';
-import { MonumentoSalvador } from './components/MonumentoSalvador';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { useCalculos } from './hooks/useCalculos';
 import { useTheme } from './hooks/useTheme';
+
+// FE-12: vistas secundarias en carga diferida. Recharts es el paquete pesado;
+// el historial se difiere y la guía se monta recién al abrir su `<details>`,
+// para no cargar ni evaluar nada de eso en el primer render.
+const GraficoPastel = lazy(() =>
+  import('./components/GraficoPastel').then((m) => ({ default: m.GraficoPastel })),
+);
+const HistorialPeriodos = lazy(() =>
+  import('./components/HistorialPeriodos').then((m) => ({
+    default: m.HistorialPeriodos,
+  })),
+);
+const GuiaCalculos = lazy(() =>
+  import('./components/GuiaCalculos').then((m) => ({ default: m.GuiaCalculos })),
+);
+function CargandoSeccion() {
+  return (
+    <div className="panel p-4 text-sm text-text-muted" role="status">
+      Cargando sección…
+    </div>
+  );
+}
 
 function ThemeToggle() {
   const { toggle, resolved } = useTheme();
@@ -22,7 +39,7 @@ function ThemeToggle() {
     <button
       onClick={toggle}
       type="button"
-      className="glass-card p-2 text-text-secondary transition-colors hover:text-text"
+      className="panel p-2 text-text-secondary transition-colors hover:text-text print:hidden"
       aria-label={
         resolved === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'
       }
@@ -51,7 +68,7 @@ function SectionHeading({
 }) {
   return (
     <div className="flex items-baseline gap-3">
-      <span className="amount text-xs font-semibold text-accent">{n}</span>
+      <span className="amount text-xs font-semibold text-primary">{n}</span>
       <div>
         <h2 className="display text-base font-semibold text-text">{title}</h2>
         {description ? (
@@ -63,8 +80,12 @@ function SectionHeading({
 }
 
 function AppContent() {
-  const { jornada, setJornada, entradas, setEntradas, incentivos, setIncentivos, clavesDescartadas } = useAppContext();
+  const { entradas, setEntradas, incentivos, setIncentivos, clavesDescartadas, errorPersistencia } = useAppContext();
   const calculosState = useCalculos();
+  // FE-12: la guía vive en un `<details>` cerrado; se monta recién al abrirlo
+  // para no descargarla ni evaluarla en el primer render (y evitar suspender en
+  // paralelo con el gráfico y el historial).
+  const [guiaAbierta, setGuiaAbierta] = useState(false);
 
   return (
     <ErrorBoundary>
@@ -72,51 +93,44 @@ function AppContent() {
         {clavesDescartadas.length > 0 && (
           <div
             role="alert"
-            className="glass-card mb-4 border border-danger/40 p-3 text-xs text-text"
+            className="panel mb-4 border border-danger/40 p-3 text-xs text-text"
           >
             Se descartaron datos guardados corruptos (
             {clavesDescartadas.join(', ')}) y se restablecieron los valores por
             defecto.
           </div>
         )}
-        <header className="glass-nav sticky top-0 z-20 -mx-4 mb-8 px-4 py-3 print:static print:mb-4 print:border-0 print:bg-none">
+        {errorPersistencia && (
+          <div
+            role="alert"
+            className="panel mb-4 border border-warning/40 p-3 text-xs text-text"
+          >
+            No se pudieron guardar los cambios en este navegador (almacenamiento
+            lleno o modo privado). Tus datos se perderán al cerrar la página.
+          </div>
+        )}
+        <header className="site-header sticky top-0 z-20 -mx-4 mb-8 px-4 py-3 print:static print:mb-4 print:border-0 print:bg-none">
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-2.5">
-              <Torogoz className="size-6 shrink-0" />
               <h1 className="display truncate text-lg font-semibold tracking-tight text-text">
                 Descuentos de Ley SV
               </h1>
-              <span className="hidden rounded-full border border-gold/40 px-2 py-0.5 font-mono text-[10px] text-gold sm:inline">
-                15·IX
-              </span>
             </div>
             <ThemeToggle />
           </div>
         </header>
 
-        <hr className="gold-rule mb-8 print:hidden" />
+        <hr className="mb-8 print:hidden" />
 
         <main className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] print:block">
-          <div className="space-y-5 print:hidden">
-            <section className="space-y-3">
-              <SectionHeading n="01" title="Configuración" description="Salario base y jornada" />
-              <ConfigInicial />
-            </section>
-            <section className="space-y-3">
-              <SectionHeading n="02" title="Jornada" description="Modalidad diurna o nocturna" />
-              <JornadaSelector value={jornada} onChange={setJornada} />
-            </section>
-            <section className="space-y-3">
-              <SectionHeading n="03" title="Horas del periodo" description="Extras, días libres y asuetos" />
-              <EntradasPeriodo entradas={entradas} onChange={setEntradas} />
-            </section>
-            <section className="space-y-3">
-              <SectionHeading n="04" title="Incentivos" description="Bonos y comisiones" />
-              <IncentivosForm incentivos={incentivos} onChange={setIncentivos} />
-            </section>
-          </div>
-
-          <div className="space-y-4 lg:sticky lg:top-24">
+          {/* FE-08 (2026-09-20): el resultado precede a la captura EN EL DOM,
+              no solo visualmente — el orden de teclado y lector sigue el DOM.
+              Prohibido `order-*` para invertir columnas (engaña al ojo). En
+              escritorio la inversión visual usa colocación explícita de grid
+              (col-start/row-start): formulario a la izquierda (col 1),
+              resultado a la derecha (col 2). El orden de foco es constante:
+              resultado → captura → detalles. */}
+          <div className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-24">
             <ResultadoNeto state={calculosState} />
             {calculosState.status === 'success' && (
               <div className="print:hidden">
@@ -124,24 +138,46 @@ function AppContent() {
               </div>
             )}
           </div>
+
+          <div className="space-y-5 lg:col-start-1 lg:row-start-1 print:hidden">
+            <section className="space-y-3">
+              <SectionHeading n="01" title="Configuración" description="Salario base y frecuencia de pago" />
+              <ConfigInicial />
+            </section>
+            <section className="space-y-3">
+              <SectionHeading n="02" title="Horas del periodo" description="Extras, días libres y asuetos" />
+              <EntradasPeriodo entradas={entradas} onChange={setEntradas} />
+            </section>
+            <section className="space-y-3">
+              <SectionHeading n="03" title="Incentivos" description="Bonos y comisiones" />
+              <IncentivosForm incentivos={incentivos} onChange={setIncentivos} />
+            </section>
+          </div>
         </main>
 
         {calculosState.status === 'success' && (
           <section className="mt-6 grid gap-4 md:grid-cols-2 print:hidden">
-            <GraficoPastel
-              neto={calculosState.data.neto.salarioLiquido}
-              descuentos={calculosState.data.descuentos}
-            />
-            <HistorialPeriodos calculoState={calculosState} />
+            <Suspense fallback={<CargandoSeccion />}>
+              <GraficoPastel
+                neto={calculosState.data.neto.salarioLiquido}
+                descuentos={calculosState.data.descuentos}
+              />
+            </Suspense>
+            <Suspense fallback={<CargandoSeccion />}>
+              <HistorialPeriodos calculoState={calculosState} />
+            </Suspense>
           </section>
         )}
 
         <section className="mt-6 space-y-4 print:hidden">
-          <SectionHeading n="05" title="Tasas de ley" description="ISSS, AFP y tramos de renta" />
+          <SectionHeading n="04" title="Tasas de ley" description="ISSS, AFP y tramos de renta" />
           <TablaTasas />
         </section>
 
-        <details className="mt-4 group print:hidden">
+        <details
+          className="mt-4 group print:hidden"
+          onToggle={(e) => setGuiaAbierta(e.currentTarget.open)}
+        >
           <summary className="tool-card cursor-pointer px-4 py-3 text-sm font-semibold text-text hover:text-primary flex list-none items-center justify-between">
             <span>Guía de Cálculos</span>
             <svg className="size-4 text-text-muted transition-transform group-open:rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -149,18 +185,18 @@ function AppContent() {
             </svg>
           </summary>
           <div className="mt-3">
-            <GuiaCalculos />
+            {guiaAbierta && (
+              <Suspense fallback={<CargandoSeccion />}>
+                <GuiaCalculos />
+              </Suspense>
+            )}
           </div>
         </details>
 
-        <hr className="gold-rule mt-10 print:hidden" />
+        <hr className="mt-10 print:hidden" />
         <footer className="flex flex-col items-center gap-2 pt-6 text-center print:hidden">
-          <MonumentoSalvador className="size-12 opacity-60" />
           <p className="text-[11px] text-text-muted">
             Calculadora de descuentos de ley · El Salvador
-          </p>
-          <p className="text-[10px] text-text-muted">
-            Mes de la Independencia · 15 de septiembre
           </p>
         </footer>
       </div>

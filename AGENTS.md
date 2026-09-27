@@ -1,5 +1,10 @@
 # Calculadora de Descuentos de Ley — El Salvador
 
+> **Contrato operativo para agentes de IA (vigente 2026-09-20).** Este archivo es la
+> fuente de verdad para trabajar en el repositorio. Los documentos enlazados en este
+> archivo aportan contexto; si existe contradicción, gana este contrato y la spec/ADR
+> vigente más específica.
+
 Monorepo (pnpm + Turborepo) — 4 packages: `@calc/web` (React 19 + Vite 8), `@calc/api` (Express 5), `@calc/shared` (tipos/Zod/lógica), `@calc/config` (ESLint/TS/Prettier).
 
 Node 22, pnpm 9 obligatorios.
@@ -19,6 +24,48 @@ pnpm check            # gate completo: install congelado + build + lint + tipos 
 ```
 
 Cada paquete tiene sus propios scripts: `pnpm --filter=<paquete> test` y `test:coverage`.
+
+## Contrato de trabajo para agentes de IA
+
+Antes de modificar código, un agente DEBE:
+
+1. Leer esta guía y las specs/ADRs del área que tocará.
+2. Clasificar el cambio como bug, requisito, seguridad, UX, mantenimiento o documentación.
+3. Escribir o actualizar primero la spec cuando cambie comportamiento, contrato, datos,
+   accesibilidad o diseño visual. Cada requisito debe tener un identificador, criterio de
+   aceptación y prueba asociada.
+4. Revisar el árbol de dependencias y los consumidores antes de cambiar una interfaz pública.
+5. Mantener una única fuente de verdad para tasas, validaciones, tokens de diseño y decisiones
+   de arquitectura; no copiar constantes ni reintroducir decisiones supersedidas.
+
+Al terminar, DEBE dejar evidencia reproducible: comandos ejecutados, resultado, riesgos
+residuales y documentación sincronizada. Un agente no debe afirmar “cumple ISO/IEEE” o
+“está certificado”: el proyecto adopta prácticas seleccionadas y necesitaría una auditoría
+formal para declarar conformidad o certificación. La matriz y el checklist están en
+[`docs/plan-frontend-calidad-sdd.md`](docs/plan-frontend-calidad-sdd.md) y
+[`docs/ai-agents/review-checklist.md`](docs/ai-agents/review-checklist.md).
+
+### Alcance y seguridad de las operaciones
+
+- No introducir secretos, credenciales, datos personales ni información de usuarios en el
+  repositorio, prompts, fixtures o logs.
+- No ejecutar comandos destructivos ni cambiar producción, migraciones o dependencias mayores
+  sin explicar el impacto y conservar rollback.
+- No reintroducir Clerk, SQLite, autenticación o historial remoto: ADR-011 lo prohíbe salvo un
+  nuevo ADR aprobado que cambie el alcance del producto.
+- La aplicación es stateless en API y offline-first en web. El historial es local y debe
+  validarse con Zod antes de usarse.
+- Las validaciones de UI, `@calc/shared` y API deben permanecer equivalentes; si no es posible,
+  se documenta la excepción y su riesgo.
+
+### Flujo Spec-Driven Development (SDD)
+
+`descubrir → especificar → diseñar → implementar → verificar → documentar → entregar`.
+
+Cada cambio debe incluir, según corresponda: OpenSpec, ADR, implementación, pruebas unitarias e
+integración, prueba de accesibilidad/performance/seguridad, actualización de README/CONTEXT/
+CHANGELOG y una nota de rollback. Los cambios de frontend siguen además el plan de calidad
+basado en ISO/IEC/IEEE, WCAG y SWEBOK enlazado arriba.
 
 ## Quirks
 
@@ -62,20 +109,20 @@ packages/config/         → ESLint flat config, tsconfig/base.json
 - Feature-based backend: `routes/feature/feature.{routes,controller,service}.ts`.
 - Valores monetarios: `number`, 2 decimales, `round2()` helper.
 
-## Skills (.opencode/skills/)
+## Skills y referencias para agentes
 
-- `sv-legal-calc` — fórmulas legales SV, invariantes de `tasas.ts`, fixtures.
-- `react-vite-tailwind4` — convenciones React 19 / Vite 8 / Tailwind v4.
-- `frontend-design` — UI/UX polish, theming, diseño visual.
-- `vitest-rtl-supertest` — patrones de testing, coverage > 80%.
-- `sprint-workflow` — cadencia de 7 sprints, gate y documentación.
+Las capacidades disponibles dependen del entorno del agente. No asumir que existe una carpeta
+`.opencode/skills/` ni inventar una skill que no esté instalada. La guía operativa del repo está
+en `docs/ai-agents/`; para diseño y frontend se debe seguir `apps/web/DESIGN.md` y la spec visual
+vigente. El agente debe declarar cualquier herramienta o skill ausente y continuar con las reglas
+de este archivo, no con instrucciones obsoletas de una sesión histórica.
 
 ## Estado de producción
 
-| Servicio | URL | Estado |
-|----------|-----|--------|
-| API (DO droplet) | `https://api.marvinmelendez.engineer` | ✅ Live (PM2 usuario de servicio + Caddy; `.env` en `/etc/calculo-descuentos/api.env`) |
-| Web (GitHub Pages) | `https://marvinmelendez.engineer` | ✅ Live (CI pasa, deploy automático) |
+| Servicio           | URL                                   | Estado                                                                                 |
+| ------------------ | ------------------------------------- | -------------------------------------------------------------------------------------- |
+| API (DO droplet)   | `https://api.marvinmelendez.engineer` | ✅ Live (PM2 usuario de servicio + Caddy; `.env` en `/etc/calculo-descuentos/api.env`) |
+| Web (GitHub Pages) | `https://marvinmelendez.engineer`     | ✅ Live (CI pasa, deploy automático)                                                   |
 
 Despliegue/endurecimiento del droplet: `docs/setup-droplet.sh` (despliegue versionado con rollback, sin `git reset --hard`).
 
@@ -84,8 +131,14 @@ Despliegue/endurecimiento del droplet: `docs/setup-droplet.sh` (despliegue versi
 - **Dark mode**: Tailwind v4 class-based. Usar `@custom-variant dark (&:where(.dark, .dark *))` en CSS. El hook `useTheme()` persiste preferencia en localStorage (`theme-preference`). Toggle button en header con icono sol/luna.
 - **Colores frontend**: Definir paleta en `@theme` dentro de `index.css` usando `--color-*` custom properties. Aplicar `dark:` variants en todos los componentes.
 - **Caracteres españoles**: Usar UTF-8 plano (á, é, í, ó, ú, ñ, ü) directamente en JSX. React escapa automáticamente. No usar HTML entities (`&oacute;`, `&ntilde;`, etc.).
-- **Jornada**: `JornadaSelector` solo informativo (modalidad diurna/nocturna). No hay auto-conversión de exceso; las horas se ingresan explícitamente como entradas por fecha.
+- **Jornada retirada**: la sección "Jornada"/`JornadaConfig` se eliminó de la web (2026-09-27); la modalidad no alimentaba el cálculo. `jornada-config` es clave muerta. No hay auto-conversión de exceso; las horas se ingresan explícitamente como entradas por fecha.
 - **Incentivos**: `IncentivosForm` con checkbox "Aplica descuentos de ley" default true. Los no gravados se suman al bruto total sin cotizar. Filas vacías (sin concepto y sin monto) no se envían al cálculo.
+- **Diseño visual vigente**: “Calculadora clara y calmada”, superficies sólidas, jerarquía de
+  contenido y tokens explícitos. Liquid Glass y Linear Instrument son decisiones históricas
+  supersedidas; no añadir `backdrop-filter`, `.glass-*`, auroras, grain o blur decorativo.
+- **Calidad frontend**: WCAG 2.2 AA como objetivo de accesibilidad, presupuestos de rendimiento
+  medidos en CI y pruebas de teclado/lector de pantalla. La spec visual vigente define tokens;
+  ninguna clase Tailwind puede usar un token que no exista en `@theme`.
 
 ## Recursos clave
 
@@ -94,3 +147,6 @@ Despliegue/endurecimiento del droplet: `docs/setup-droplet.sh` (despliegue versi
 - `specs/architecture.md` — ADRs, diagramas de componentes (ADR-011: sin autenticación).
 - `specs/requirements.md` — RF01–RF10 con criterios de aceptación.
 - `CHANGELOG.md` — decisiones y cambios con fecha.
+- `docs/ai-agents/README.md` — mapa de documentación, autoridad y límites para agentes.
+- `docs/ai-agents/review-checklist.md` — checklist de revisión y evidencia antes de entregar.
+- `docs/plan-frontend-calidad-sdd.md` — plan de corrección frontend, trazabilidad y gates.

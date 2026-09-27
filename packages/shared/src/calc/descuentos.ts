@@ -2,10 +2,19 @@ import type { TipoPago, DescuentosResponse } from '../types';
 import { ISSS, AFP, RENTA_TRAMOS_MENSUAL } from '../tasas.js';
 import { round2 } from './horasExtra.js';
 
+/**
+ * Descuentos de ley del trabajador sobre el bruto gravable del periodo
+ * (specs/tasas-legales.md): ISSS 3% con tope, AFP 7.25% con tope y renta
+ * (Art. 37 LISR, tabla progresiva). `tipoPago` quincenal divide a la mitad
+ * topes, tramos y cuotas fijas — nunca el descuento final.
+ */
+
+/** Tramos de renta aplicados al periodo (mensual o quincenal). */
 interface TramosRenta {
   tramo: number;
   desde: number;
   hasta: number;
+  excesoDesde: number;
   porcentajeExceso: number;
   cuotaFija: number;
 }
@@ -16,10 +25,11 @@ function getTramosRenta(tipoPago: TipoPago): TramosRenta[] {
       ...t,
       desde: round2(t.desde / 2),
       hasta: t.hasta === Infinity ? Infinity : round2(t.hasta / 2),
+      excesoDesde: round2(t.excesoDesde / 2),
       cuotaFija: round2(t.cuotaFija / 2),
     }));
   }
-  // Return a mutable copy for mensual
+  // Copia mutable para mensual (RENTA_TRAMOS_MENSUAL es `as const`)
   return RENTA_TRAMOS_MENSUAL.map((t) => ({ ...t }));
 }
 
@@ -64,10 +74,11 @@ function calcularRentaPeriodo(
   const bg = round2(baseGravable);
   for (const t of tramos) {
     if (bg >= t.desde && bg <= t.hasta) {
-      const excedente = bg - t.desde;
-      const descuento = round2(
-        round2(excedente * t.porcentajeExceso) + t.cuotaFija,
-      );
+      // specs/tasas-legales.md § Formula: el % aplica sobre el exceso del límite
+      // inferior del tramo anterior ("Sobre el exceso de" de la tabla del MH),
+      // no sobre `desde` del tramo propio.
+      const excedente = bg - t.excesoDesde;
+      const descuento = round2(round2(excedente * t.porcentajeExceso) + t.cuotaFija);
       return {
         baseGravable: bg,
         tramo: t.tramo,
@@ -86,6 +97,11 @@ function calcularRentaPeriodo(
   };
 }
 
+/**
+ * Calcula ISSS, AFP y renta del periodo y su total. La base gravable de renta
+ * es `brutoPeriodo − ISSS − AFP`; cada tramo aplica su % sobre el exceso
+ * respecto de `excesoDesde` (columna "Sobre el exceso de" de la tabla MH).
+ */
 export function calcularDescuentos(
   brutoPeriodo: number,
   tipoPago: TipoPago,
@@ -99,9 +115,7 @@ export function calcularDescuentos(
   const tramos = getTramosRenta(tipoPago);
   const renta = calcularRentaPeriodo(baseGravable, tramos);
 
-  const totalDescuentos = round2(
-    isss.descuento + afp.descuento + renta.descuento,
-  );
+  const totalDescuentos = round2(isss.descuento + afp.descuento + renta.descuento);
 
   return { isss, afp, renta, totalDescuentos };
 }

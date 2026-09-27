@@ -366,6 +366,50 @@ describe('POST /api/calcular', () => {
       expect(fields).toContain('request');
       expect(res.body.details[0].message).toContain('horasBaseNocturnas');
     });
+
+    // Contrato estricto recursivo (2026-09-20): también dentro de segmentos[]
+    // e incentivos[]; el mensaje nombra la clave y el path apunta al índice.
+    it('rechaza campo desconocido dentro de segmentos[]', async () => {
+      const res = await request(app)
+        .post('/api/calcular')
+        .send({
+          ...validRequest,
+          segmentos: [
+            { fecha: '2026-07-01', tipo: 'extra_diurna', horas: 2, nota: 'x' },
+          ],
+        })
+        .expect(400);
+
+      expect(res.body.error).toBe('VALIDATION_ERROR');
+      const fields = res.body.details.map((d: { field: string }) => d.field);
+      expect(fields).toContain('segmentos.0');
+      expect(
+        res.body.details.some((d: { message: string }) =>
+          d.message.includes('nota'),
+        ),
+      ).toBe(true);
+    });
+
+    it('rechaza campo desconocido dentro de incentivos[]', async () => {
+      const res = await request(app)
+        .post('/api/calcular')
+        .send({
+          ...validRequest,
+          incentivos: [
+            { id: 'i1', concepto: 'Bono', monto: 5, aplicaDescuentos: true, fuente: 'x' },
+          ],
+        })
+        .expect(400);
+
+      expect(res.body.error).toBe('VALIDATION_ERROR');
+      const fields = res.body.details.map((d: { field: string }) => d.field);
+      expect(fields).toContain('incentivos.0');
+      expect(
+        res.body.details.some((d: { message: string }) =>
+          d.message.includes('fuente'),
+        ),
+      ).toBe(true);
+    });
   });
 
   describe('CORS — un solo punto de control en Express (Regla 9)', () => {
@@ -473,15 +517,17 @@ describe('errorHandler', () => {
   it('500 no filtra detalles internos ni stack (Regla 10)', async () => {
     const testApp = express();
     testApp.use(express.json());
+    // Sentinel neutro: demuestra que el cuerpo del error interno no llega a la
+    // respuesta sin simular una credencial en el fixture.
     testApp.get('/error', () => {
-      throw new Error('secreto-interno: password=hunter2');
+      throw new Error('internal-error-sentinel: detalle-interno');
     });
     testApp.use(errorHandler);
 
     const res = await request(testApp).get('/error').expect(500);
     const body = JSON.stringify(res.body);
-    expect(body).not.toContain('secreto-interno');
-    expect(body).not.toContain('hunter2');
+    expect(body).not.toContain('internal-error-sentinel');
+    expect(body).not.toContain('detalle-interno');
     expect(body).not.toContain('stack');
   });
 

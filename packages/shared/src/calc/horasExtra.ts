@@ -1,17 +1,26 @@
 import type { SegmentoHorario, TipoJornada } from '../types';
-import { HORAS_EXTRA } from '../tasas.js';
+import { DIVISORES_SALARIO, HORAS_EXTRA } from '../tasas.js';
 
-const DIAS_LABORALES = 30;
-const HORAS_DIURNAS_AL_DIA = 8;
+/**
+ * Pago de horas extraordinarias y trabajo en día de descanso/asueto
+ * (Art. 168-173 CT). Los factores ya incluyen la compensación por
+ * nocturnidad (2.25×/1.75×); no existe recargo nocturno inferido
+ * (ver openspec/specs/dominio-calculo.md y ADR-010).
+ */
 
 interface SalarioHora {
   salarioDiario: number;
   salarioHoraDiurna: number;
 }
 
+/**
+ * Convierte salario mensual en diario y por hora diurna.
+ * `salarioDiario = mensual / 30` y `salarioHoraDiurna = diario / 8`
+ * (Art. 168 CT; divisores en `DIVISORES_SALARIO`).
+ */
 export function calcularSalarioHora(salarioMensual: number): SalarioHora {
-  const salarioDiario = salarioMensual / DIAS_LABORALES;
-  const salarioHoraDiurna = salarioDiario / HORAS_DIURNAS_AL_DIA;
+  const salarioDiario = salarioMensual / DIVISORES_SALARIO.DIAS_MES;
+  const salarioHoraDiurna = salarioDiario / DIVISORES_SALARIO.HORAS_JORNADA_DIURNA;
   return { salarioDiario, salarioHoraDiurna };
 }
 
@@ -34,6 +43,11 @@ export interface PagoSegmentos {
   totalHorasExtra: number;
 }
 
+/**
+ * Paga cada segmento según su factor legal y agrega los montos por categoría.
+ * Los segmentos `regular_*` pagan 0: el salario base no se deriva de horas
+ * ordinarias (Regla 7 de integridad; CONTEXT.md "Reglas no obvias").
+ */
 export function calcularPagoSegmentos(
   segmentos: SegmentoHorario[],
   salarioHoraDiurna: number,
@@ -83,6 +97,12 @@ export function calcularPagoSegmentos(
   };
 }
 
+/**
+ * Redondeo monetario a 2 decimales (half-up sobre el doble binario).
+ * Precaución: sobre floats no exactos (ej. 1.005) el resultado depende de la
+ * representación binaria; los valores legales de entrada tienen 2 decimales,
+ * así que la deriva solo puede aparecer en centavos de productos intermedios.
+ */
 export function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }

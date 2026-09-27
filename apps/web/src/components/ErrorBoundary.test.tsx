@@ -21,7 +21,7 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText('Todo bien')).toBeInTheDocument();
   });
 
-  it('muestra fallback cuando un hijo lanza error', () => {
+  it('muestra mensaje genérico con ID de soporte y NO filtra el error interno (FE-13)', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
     render(
@@ -31,7 +31,10 @@ describe('ErrorBoundary', () => {
     );
 
     expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(screen.getByText(/test error/)).toBeInTheDocument();
+    expect(screen.getByText(/Algo salió mal/)).toBeInTheDocument();
+    expect(screen.getByText(/ID de soporte:/)).toBeInTheDocument();
+    // Regla 10 (integridad) y FE-13: el mensaje interno no aparece en la UI.
+    expect(screen.queryByText(/test error/)).not.toBeInTheDocument();
 
     vi.mocked(console.error).mockRestore();
   });

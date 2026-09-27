@@ -15,13 +15,13 @@
 
 ## Factores de pago (Art. 168/169/173 CT)
 
-| Tipo de segmento | Factor |
-|---|---|
-| `extra_diurna` | 2.00 |
-| `extra_nocturna` | 2.25 |
-| `dia_libre_diurna` | 1.50 |
-| `dia_libre_nocturna` | 1.75 |
-| `asueto` | 2.00 |
+| Tipo de segmento     | Factor |
+| -------------------- | ------ |
+| `extra_diurna`       | 2.00   |
+| `extra_nocturna`     | 2.25   |
+| `dia_libre_diurna`   | 1.50   |
+| `dia_libre_nocturna` | 1.75   |
+| `asueto`             | 2.00   |
 
 - Segmentos `regular_diurna` / `regular_nocturna` pagan 0: el salario base sale de `salarioBase`, no de horas ordinarias.
 - Extras **sin mínimo**: 1 hora sola se calcula y paga; nunca se absorbe a la base ni se descarta.
@@ -32,9 +32,13 @@
 - **AFP**: 7.25% sobre `min(brutoPeriodo, $6,843.48)`.
 - **Renta** (Art. 37 LISR, tabla progresiva mensual):
   - `baseGravable = brutoPeriodo − ISSS − AFP`
-  - Tramos I–IV con cuota fija y % sobre exceso.
+  - Tramos I–IV con cuota fija y % sobre exceso; el % aplica sobre lo que excede
+    el límite inferior del tramo anterior (`excesoDesde`: 550.00 / 895.24 / 2038.10,
+    columna "Sobre el exceso de" de la tabla oficial del MH).
   - **Quincenal divide tramos y cuotas fijas entre 2** (spec legal; el `api-contract.md` viejo se equivocaba).
-  - `fechaInicio`/`fechaFin` se derivan de las fechas capturadas ∪ {hoy} (solo alimentan aguinaldo proporcional vía `fechaFin`).
+  - `fechaInicio`/`fechaFin` se derivan de las fechas de captura válidas. `hoy` solo se usa cuando
+    no existe ninguna fecha capturada; nunca se mezcla con un periodo histórico (FE-01 del plan
+    frontend). Esto alimenta el aguinaldo proporcional vía `fechaFin`.
 
 ## Bruto y neto
 

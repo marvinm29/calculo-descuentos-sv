@@ -1,10 +1,16 @@
-# Plan de Implementación por Sprints
+# Diario histórico de implementación por Sprints
+
+> **Estado:** histórico. El plan ejecutable vigente es
+> [`docs/plan-frontend-calidad-sdd.md`](../docs/plan-frontend-calidad-sdd.md); este diario no
+> autoriza iniciar sprints ni reintroducir Liquid Glass, Linear Instrument, Clerk, SQLite o skills
+> no instaladas. Los estados se conservan como registro de decisiones y entregas anteriores.
 
 > **Nota (2026-08-30)**: la **verdad actual congelada** del sistema vive en `openspec/specs/`
 > (deltas ADDED/MODIFIED/REMOVED, fuente de aquí en adelante) y los ADRs en `.agents/adr/`.
 > Los ADRs 001–005 que estaban dentro de `architecture.md` se movieron a `.agents/adr/`.
 > Este archivo sigue siendo el **diario de ejecución** por sprints.
-> Rediseño en curso: `specs/plan-rediseno-frontend.md` (Sprint 0 completado, Sprint 1 siguiente).
+> El rediseño descrito en planes antiguos está cerrado/supersedido; consultar ADRs y OpenSpecs
+> vigentes para cualquier trabajo nuevo.
 
 > Documenta el orden de construcción del monorepo desde cero (solo `specs/`
 > y configs existen al inicio). Cada sprint deja el proyecto verificable con
@@ -156,26 +162,26 @@ listo para GitHub Pages; `lint + check-types + test` y coverage > 80% en verde.
 
 ## Estado de ejecución
 
-| Sprint | Estado      | Notas |
-|--------|-------------|-------|
-| 1      | completado  | Monorepo + config + shared (tipos/Zod/tasas) |
-| 2      | completado  | Lógica de cálculo en shared (horasExtra, descuentos, prestaciones, calcular) |
-| 3      | completado  | apps/api Express (POST /api/calcular + errorHandler + tests Supertest) |
-| 4      | completado  | apps/web scaffold + ConfigInicial + useLocalStorage + ErrorBoundary |
-| 5      | completado  | RegistroSemanal: FilaDia, TotalesSemana, persistencia por semanaId |
-| 6      | completado  | ResultadoNeto, GraficoPastel, TablaTasas, useCalculos real |
-| 7      | completado  | HistorialPeriodos, ExportarPDF, CI/CD, ajustes finales |
-| 8      | completado  | Producción: DigitalOcean + Monitoreo + Hardening |
-| 9      | completado  | UI/UX: Dark/light mode, mejora visual, vista día por día |
-| 10a    | completado  | Rediseño: jornada, horas extra, incentivos (semana fija + SemanaExtrasCard) |
-| 10b    | completado  | Simplificación: EntradasPeriodo (fecha+horas+tipo), sin time-pickers ni semanas |
-| 11a    | completado  | Rediseño frontend Sprint 0: OpenSpec freeze + ADRs + docs + fix entorno Node 26 (ver abajo) |
-| 11b    | completado  | Rediseño frontend Sprint 1: jornada = solo modalidad + eliminar Clerk/SQLite + cálculo a la carta (ver abajo) |
-| 12     | completado  | Rediseño Sprint 2: DESIGN.md + index.css (tactile editorial + glass solo nav/neto) |
-| 13     | completado  | Rediseño Sprint 3: layout 2 columnas + header sticky glass + tokens/.amount |
-| 14     | completado  | Rediseño Sprint 4: motion (num-pop) + a11y (accent-color, print, touch) |
-| 15     | **en-progreso** | Rediseño Sprint 5: seguridad + cierre (ver abajo) |
-| 16     | completado  | Rediseño "Liquid Glass SV Independencia" (supercede Linear Instrument, ver abajo) |
+| Sprint | Estado          | Notas                                                                                                         |
+| ------ | --------------- | ------------------------------------------------------------------------------------------------------------- |
+| 1      | completado      | Monorepo + config + shared (tipos/Zod/tasas)                                                                  |
+| 2      | completado      | Lógica de cálculo en shared (horasExtra, descuentos, prestaciones, calcular)                                  |
+| 3      | completado      | apps/api Express (POST /api/calcular + errorHandler + tests Supertest)                                        |
+| 4      | completado      | apps/web scaffold + ConfigInicial + useLocalStorage + ErrorBoundary                                           |
+| 5      | completado      | RegistroSemanal: FilaDia, TotalesSemana, persistencia por semanaId                                            |
+| 6      | completado      | ResultadoNeto, GraficoPastel, TablaTasas, useCalculos real                                                    |
+| 7      | completado      | HistorialPeriodos, ExportarPDF, CI/CD, ajustes finales                                                        |
+| 8      | completado      | Producción: DigitalOcean + Monitoreo + Hardening                                                              |
+| 9      | completado      | UI/UX: Dark/light mode, mejora visual, vista día por día                                                      |
+| 10a    | completado      | Rediseño: jornada, horas extra, incentivos (semana fija + SemanaExtrasCard)                                   |
+| 10b    | completado      | Simplificación: EntradasPeriodo (fecha+horas+tipo), sin time-pickers ni semanas                               |
+| 11a    | completado      | Rediseño frontend Sprint 0: OpenSpec freeze + ADRs + docs + fix entorno Node 26 (ver abajo)                   |
+| 11b    | completado      | Rediseño frontend Sprint 1: jornada = solo modalidad + eliminar Clerk/SQLite + cálculo a la carta (ver abajo) |
+| 12     | completado      | Rediseño Sprint 2: DESIGN.md + index.css (tactile editorial + glass solo nav/neto)                            |
+| 13     | completado      | Rediseño Sprint 3: layout 2 columnas + header sticky glass + tokens/.amount                                   |
+| 14     | completado      | Rediseño Sprint 4: motion (num-pop) + a11y (accent-color, print, touch)                                       |
+| 15     | **en-progreso** | Rediseño Sprint 5: seguridad + cierre (ver abajo)                                                             |
+| 16     | completado      | Rediseño "Liquid Glass SV Independencia" (supercede Linear Instrument, ver abajo)                             |
 
 ---
 
@@ -192,7 +198,7 @@ listo para GitHub Pages; `lint + check-types + test` y coverage > 80% en verde.
   `eslint.config.js` (reexporta el de config), y en `src/`:
   - `tasas.ts` — copia exacta de `specs/tasas-legales.md` §238–287
     (ISSS/AFP/RENTA_TRAMOS_MENSUAL/HORAS_EXTRA/AGUINALDO_DIAS/VACACIONES/QUINCENA_25
-    + `DIAS_ASUETO_FIJOS` sin Semana Santa, que es fecha variable).
+    - `DIAS_ASUETO_FIJOS` sin Semana Santa, que es fecha variable).
   - `types.ts` — `CalcularRequest`, `CalcularResponse` y todas sus sub-interfaces,
     `SegmentoHorario`, unions `TipoPago`/`Antiguedad`/`TipoJornada`, `CalculoState`
     (discriminated union).
@@ -429,7 +435,7 @@ pnpm test --coverage (web) → 95.31% statements, 85.29% branches, 92% functions
 - Línea 34 de `ConfigInicial.tsx` (validación de fechaIngreso) no cubierta — el input
   type="date" produce valores ISO válidos en navegador, jsdom lo simula. Validación defensiva.
 - Sprint 5 (RegistroSemanal) es el siguiente paso — ya existe la base React + hooks
-  + localStorage.
+  - localStorage.
 
 ---
 
@@ -592,6 +598,7 @@ pnpm build --filter=api → apps/api/dist (Express build)
 ### Plan de hosting (ADR-003 sin DB, ADR-006 modo offline)
 
 **Frontend — GitHub Pages (gratis, SLA > 99.9%):**
+
 1. El repo ya tiene `.github/workflows/ci.yml`. Al pushear a `main`:
    - CI ejecuta lint + check-types + test
    - Si pasa, build `@calc/web` y deploy a GitHub Pages
@@ -599,6 +606,7 @@ pnpm build --filter=api → apps/api/dist (Express build)
 3. URL: `https://{usuario}.github.io/calculo-descuentos-sv`
 
 **Backend — Render.com (free tier):**
+
 1. Crear Web Service conectado a este repo en Render Dashboard
 2. Configuración:
    - **Root Directory**: `apps/api`
@@ -625,20 +633,20 @@ pnpm build --filter=api → apps/api/dist (Express build)
 
 ### Archivos modificados
 
-| Archivo | Cambio |
-|---------|--------|
+| Archivo                     | Cambio                                                    |
+| --------------------------- | --------------------------------------------------------- |
 | `apps/api/eslint.config.js` | no-unsafe-* off para routes + ignore ecosystem.config.cjs |
-| `apps/web/eslint.config.js` | no-unsafe-* off para src/ |
-| `turbo.json` | check-types dependsOn ^build |
-| `apps/web/.env` | pk_live_ + VITE_API_URL prod + VITE_SENTRY_DSN |
-| `apps/api/.env` | sk_live_ + SENTRY_DSN + DD_API_KEY + DD_SITE |
+| `apps/web/eslint.config.js` | no-unsafe-* off para src/                                 |
+| `turbo.json`                | check-types dependsOn ^build                              |
+| `apps/web/.env`             | pk_live_ + VITE_API_URL prod + VITE_SENTRY_DSN            |
+| `apps/api/.env`             | sk_live_ + SENTRY_DSN + DD_API_KEY + DD_SITE              |
 
 ### Servicios en producción
 
-| Servicio | URL | Estado |
-|----------|-----|--------|
-| API | `https://api.marvinmelendez.engineer` | ✅ Live |
-| Web | `https://marvinmelendez.engineer` | ✅ Live |
+| Servicio | URL                                   | Estado  |
+| -------- | ------------------------------------- | ------- |
+| API      | `https://api.marvinmelendez.engineer` | ✅ Live |
+| Web      | `https://marvinmelendez.engineer`     | ✅ Live |
 
 ### Gate: `pnpm lint && pnpm check-types && pnpm test` ✅ 157 tests
 
@@ -650,28 +658,28 @@ pnpm build --filter=api → apps/api/dist (Express build)
 
 ### Archivos creados/modificados
 
-| Archivo | Cambio |
-|---------|--------|
-| `apps/web/src/index.css` | `@custom-variant dark`, CSS custom properties para tema claro/oscuro, paleta `@theme` con colores adaptativos |
-| `apps/web/src/hooks/useTheme.ts` | Nuevo hook `useTheme()`: cicla light → dark → system, persiste en localStorage, escucha `prefers-color-scheme` |
-| `apps/web/src/App.tsx` | `ThemeToggle` con iconos SVG sol/luna en header, header refactorizado con `ThemeToggle` a la izquierda + auth a la derecha |
-| `apps/web/index.html` | Removidas clases `bg-gray-50 text-gray-900` (van en CSS ahora) |
-| `apps/web/src/components/ConfigInicial.tsx` | `bg-white` → `bg-surface`, `text-gray-*` → `text-text`, `border-gray-*` → `border-border` |
-| `apps/web/src/components/FilaDia.tsx` | Ídem |
-| `apps/web/src/components/TotalesSemana.tsx` | Ídem |
-| `apps/web/src/components/RegistroSemanal.tsx` | + toggle vista semanal/día por día, + date picker para día |
-| `apps/web/src/components/ResultadoNeto.tsx` | Tokens de color adaptativos |
-| `apps/web/src/components/ResumenBruto.tsx` | Ídem |
-| `apps/web/src/components/TablaDescuentos.tsx` | Ídem |
-| `apps/web/src/components/Prestaciones.tsx` | Ídem |
-| `apps/web/src/components/NetoLiquido.tsx` | Ídem |
-| `apps/web/src/components/GraficoPastel.tsx` | Ídem |
-| `apps/web/src/components/TablaTasas.tsx` | Ídem |
-| `apps/web/src/components/HistorialPeriodos.tsx` | Ídem |
-| `apps/web/src/components/ExportarPDF.tsx` | Ídem |
-| `apps/web/src/components/ErrorBoundary.tsx` | Ídem |
-| `apps/web/src/hooks/useRegistroSemanal.ts` | Exporta `setDias` (lo necesitaba vista día) |
-| (todos los .tsx) | HTML entities reemplazadas por UTF-8 plano (á, é, í, ó, ú, ñ, ü, —) |
+| Archivo                                         | Cambio                                                                                                                     |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src/index.css`                        | `@custom-variant dark`, CSS custom properties para tema claro/oscuro, paleta `@theme` con colores adaptativos              |
+| `apps/web/src/hooks/useTheme.ts`                | Nuevo hook `useTheme()`: cicla light → dark → system, persiste en localStorage, escucha `prefers-color-scheme`             |
+| `apps/web/src/App.tsx`                          | `ThemeToggle` con iconos SVG sol/luna en header, header refactorizado con `ThemeToggle` a la izquierda + auth a la derecha |
+| `apps/web/index.html`                           | Removidas clases `bg-gray-50 text-gray-900` (van en CSS ahora)                                                             |
+| `apps/web/src/components/ConfigInicial.tsx`     | `bg-white` → `bg-surface`, `text-gray-*` → `text-text`, `border-gray-*` → `border-border`                                  |
+| `apps/web/src/components/FilaDia.tsx`           | Ídem                                                                                                                       |
+| `apps/web/src/components/TotalesSemana.tsx`     | Ídem                                                                                                                       |
+| `apps/web/src/components/RegistroSemanal.tsx`   | + toggle vista semanal/día por día, + date picker para día                                                                 |
+| `apps/web/src/components/ResultadoNeto.tsx`     | Tokens de color adaptativos                                                                                                |
+| `apps/web/src/components/ResumenBruto.tsx`      | Ídem                                                                                                                       |
+| `apps/web/src/components/TablaDescuentos.tsx`   | Ídem                                                                                                                       |
+| `apps/web/src/components/Prestaciones.tsx`      | Ídem                                                                                                                       |
+| `apps/web/src/components/NetoLiquido.tsx`       | Ídem                                                                                                                       |
+| `apps/web/src/components/GraficoPastel.tsx`     | Ídem                                                                                                                       |
+| `apps/web/src/components/TablaTasas.tsx`        | Ídem                                                                                                                       |
+| `apps/web/src/components/HistorialPeriodos.tsx` | Ídem                                                                                                                       |
+| `apps/web/src/components/ExportarPDF.tsx`       | Ídem                                                                                                                       |
+| `apps/web/src/components/ErrorBoundary.tsx`     | Ídem                                                                                                                       |
+| `apps/web/src/hooks/useRegistroSemanal.ts`      | Exporta `setDias` (lo necesitaba vista día)                                                                                |
+| (todos los .tsx)                                | HTML entities reemplazadas por UTF-8 plano (á, é, í, ó, ú, ñ, ü, —)                                                        |
 
 ### Cambios principales
 
@@ -692,18 +700,18 @@ pnpm test          → 157 tests (86 shared + 25 api + 46 web), 0 failures
 
 ### Resumen final del proyecto (post Sprint 8)
 
-| RF | Estado | Componente |
-|----|--------|-----------|
-| RF01 | Hecho | `ConfigInicial.tsx` + `useLocalStorage` |
-| RF02 | Hecho | `RegistroSemanal.tsx` + `FilaDia.tsx` + `TotalesSemana.tsx` |
-| RF03 | Hecho | `horasExtra.ts` (`@calc/shared`) |
-| RF04 | Hecho | `descuentos.ts` (`@calc/shared`) |
-| RF05 | Hecho | `prestaciones.ts` (`@calc/shared`) |
-| RF06 | Hecho | `ResultadoNeto.tsx` + `ResumenBruto`/`TablaDescuentos`/`Prestaciones`/`NetoLiquido` |
-| RF07 | Hecho | `GraficoPastel.tsx` (Recharts, colores AA) |
-| RF08 | Hecho | `TablaTasas.tsx` (11 filas + links `.gob.sv`) |
-| RF09 | Hecho | `HistorialPeriodos.tsx` (guardar/eliminar periodos) |
-| RF10 | Hecho | `ExportarPDF.tsx` (`window.print()` + `@media print`) |
+| RF   | Estado | Componente                                                                          |
+| ---- | ------ | ----------------------------------------------------------------------------------- |
+| RF01 | Hecho  | `ConfigInicial.tsx` + `useLocalStorage`                                             |
+| RF02 | Hecho  | `RegistroSemanal.tsx` + `FilaDia.tsx` + `TotalesSemana.tsx`                         |
+| RF03 | Hecho  | `horasExtra.ts` (`@calc/shared`)                                                    |
+| RF04 | Hecho  | `descuentos.ts` (`@calc/shared`)                                                    |
+| RF05 | Hecho  | `prestaciones.ts` (`@calc/shared`)                                                  |
+| RF06 | Hecho  | `ResultadoNeto.tsx` + `ResumenBruto`/`TablaDescuentos`/`Prestaciones`/`NetoLiquido` |
+| RF07 | Hecho  | `GraficoPastel.tsx` (Recharts, colores AA)                                          |
+| RF08 | Hecho  | `TablaTasas.tsx` (11 filas + links `.gob.sv`)                                       |
+| RF09 | Hecho  | `HistorialPeriodos.tsx` (guardar/eliminar periodos)                                 |
+| RF10 | Hecho  | `ExportarPDF.tsx` (`window.print()` + `@media print`)                               |
 
 ---
 
@@ -714,11 +722,13 @@ pnpm test          → 157 tests (86 shared + 25 api + 46 web), 0 failures
 ### Problema resuelto
 
 El modelo anterior (`SemanaExtrasCard` + buckets semanales sin fecha) impedía:
+
 - Generar un gráfico/vista semanal real
 - Saber qué día se trabajaron las extras (relevante para asuetos/días libres)
 - Persistir fechas concretas
 
 El nuevo modelo es una **lista plana** de `EntradaPeriodo[]` donde cada entrada tiene:
+
 - `fecha: string` (YYYY-MM-DD)
 - `tipo: 'extra' | 'dia_libre' | 'asueto'`
 - `horasDiurnas: number`
@@ -836,6 +846,7 @@ pnpm test          → 195 tests (96 shared + 26 api + 73 web), 0 failures
 **`packages/shared/src/types.ts`**: `JornadaConfig` → `{ modalidad }`; `SemanaRegistro` eliminado.
 
 **`apps/web`**:
+
 - `context/AppContext.tsx` — `DEFAULT_JORNADA = { modalidad: 'diurna' }` (el valor viejo en
   localStorage conserva `modalidad`, compatible).
 - `components/JornadaSelector.tsx` — solo radio diurna/nocturna; sin select de tipo, sin input de
@@ -849,6 +860,7 @@ pnpm test          → 195 tests (96 shared + 26 api + 73 web), 0 failures
 - `package.json` — `@clerk/react` eliminado.
 
 **`apps/api`**:
+
 - `src/app.ts` — sin `clerkMiddleware` ni `historyRoutes`. Solo `POST /api/calcular`.
 - Eliminados: `src/db.ts`, `src/routes/history/` (3 archivos), `test/history.test.ts`,
   `apps/api/data/calculos.db*`.
@@ -878,7 +890,6 @@ pnpm test          → 188 tests (96 shared + 16 api + 76 web), 0 failures
 - **Sprint 12** (rediseño Sprint 2): design system — `DESIGN.md` + reescribir `index.css`
   (matar orbes/gradiente/shimmer/glass-total; base tactile editorial + glass en nav/modal/resultado).
   Ver `specs/plan-rediseno-frontend.md`.
-
 
 ---
 
@@ -989,14 +1000,14 @@ pnpm lint / check-types / test → 4 tasks OK, 188 tests
 ## Rediseño "Linear Instrument" — Sprints 1–5 (2026-08-30)
 
 > Plan fuente: `specs/plan-linear-instrument.md`. Supercede la estética "Tactile Editorial"
-> (S12–15) descartada por *"se ve muy básico"*. Branch: `feat/rediseno-tactile-editorial`.
+> (S12–15) descartada por _"se ve muy básico"_. Branch: `feat/rediseno-tactile-editorial`.
 
 ### Sprint 1 — Freeze visual ✅
 
 - ADDED `openspec/specs/diseno-visual.md` — spec del design system (tokens light/dark con
   contraste AA calculado, escala tipográfica, micro-estados, prohibiciones anti-slop).
 - ADDED `.agents/adr/012-diseno-linear-instrument.md` — dark-first tool-like, una familia sans
-  + mono, sin glass, acento SV Blue.
+  - mono, sin glass, acento SV Blue.
 - `DESIGN.md` reescrito (Linear Instrument); `index.html` — **eliminada Fraunces** (serif display).
 
 ### Sprint 2 — Tokens + base ✅
@@ -1038,7 +1049,7 @@ pnpm build → web dist OK
 ## Sprint 16 — Rediseño "Liquid Glass SV Independencia" ✅
 
 **Completado**: 2026-08-31. Supercede "Linear Instrument" (ADR-012) por decisión del usuario
-(*"no me gustó el diseño del último commit"*). Nueva dirección: liquid glass + identidad
+(_"no me gustó el diseño del último commit"_). Nueva dirección: liquid glass + identidad
 patriótica salvadoreña (septiembre, mes de independencia).
 
 ### Documentación (Fase 0 — SDD)
@@ -1101,8 +1112,8 @@ pnpm turbo run build --filter=@calc/web → dist OK (CSS 28.83 kB)
 
 ### Iteración v3 — material glass Apple + dark OLED (misma sesión)
 
-Feedback del usuario: *"quisiera que fuera más liquid glass, le falta algo; el modo oscuro
-debe ser oscuro (OLED en Pixel 8 Pro)"*. Research aplicado: webtricks.dev (frost/rim/sheen),
+Feedback del usuario: _"quisiera que fuera más liquid glass, le falta algo; el modo oscuro
+debe ser oscuro (OLED en Pixel 8 Pro)"_. Research aplicado: webtricks.dev (frost/rim/sheen),
 html-in-canvas.dev (5 ingredientes del material Apple), bird.marketing (OLED true black).
 
 - **Dark OLED**: `--bg: #000000` (píxeles apagados en AMOLED) con surfaces `#0D0F13+`.

@@ -1,4 +1,8 @@
-# Spec: Diseño Visual "Liquid Glass SV" (Independencia)
+# Spec histórica (supersedida): Diseño Visual "Liquid Glass SV" (Independencia)
+
+> **No es una guía vigente.** Fue supersedida por `diseno-calculadora-clara.md` y ADR-014 el
+> 2026-09-20. Se conserva únicamente para trazabilidad de decisiones; no copiar sus tokens,
+> clases o técnicas al código actual.
 
 > Verdad congelada del design system del frontend. Implementada en `apps/web/src/index.css`
 > y documentada en `apps/web/DESIGN.md`. Si el CSS discrepa de esta spec, se corrige el CSS
@@ -6,8 +10,8 @@
 
 ## Contexto
 
-El usuario descartó "Linear Instrument" (Sprints 11a–15 + Linear) por *"no me gustó el diseño
-del último commit"*. La nueva dirección es **"Liquid Glass + Independencia SV"**:
+El usuario descartó "Linear Instrument" (Sprints 11a–15 + Linear) por _"no me gustó el diseño
+del último commit"_. La nueva dirección es **"Liquid Glass + Independencia SV"**:
 glassmorphism moderna con criterio + identidad patriótica salvadoreña (septiembre, mes de
 independencia). La estética "Tactile Editorial" y "Linear Instrument" quedan como referencia
 de proceso, no de código a copiar.
@@ -40,63 +44,63 @@ de proceso, no de código a copiar.
 
 ### Light
 
-| Token | Valor | Uso | Contraste AA |
-|---|---|---|---|
-| `--bg` | `#F7F5F1` | fondo página (crema cálida) | — |
-| `--bg-grain` | `#EFEBE3` | tinte del grain | — |
-| `--surface` | `#FFFFFF` | cards sólidas | — |
-| `--glass` | `rgba(255, 255, 255, 0.65)` | glass (nav, panel neto) | — |
-| `--glass-border` | `rgba(255, 255, 255, 0.85)` | borde glass (luz interior) | — |
-| `--surface-raised` | `#FAF8F4` | hover/raised | — |
-| `--surface-2` | `#EDE9E1` | alt/inset | — |
-| `--border` | `#D8D2C7` | hairline cálido | — |
-| `--border-soft` | `#E4DFD5` | divisiones sutiles | — |
-| `--text` | `#141310` | principal | 16.2:1 ✓ |
-| `--text-secondary` | `#5C574E` | secundario | 6.8:1 ✓ |
-| `--text-muted` | `#8A857C` | metadatos | 4.7:1 ✓ |
-| `--accent` | `#003B6F` | azul bandera SV (links, foco) | 10.4:1 ✓ |
-| `--accent-hover` | `#002A52` | hover | 12.8:1 ✓ |
-| `--accent-soft` | `rgba(0, 59, 111, 0.10)` | foco/fondos suaves | — |
-| `--gold` | `#C8A951` | dorado independencia (decorativo) | 3.1:1 (solo decorativo) |
-| `--success` | `#1B7A3D` | neto / dinero | 5.4:1 ✓ |
-| `--danger` | `#B3261E` | descuentos / errores | 6.1:1 ✓ |
-| `--warning` | `#B5651D` | avisos | 5.0:1 ✓ |
-| `--selection` | `rgba(0, 59, 111, 0.18)` | selección | — |
+| Token              | Valor                       | Uso                               | Contraste AA            |
+| ------------------ | --------------------------- | --------------------------------- | ----------------------- |
+| `--bg`             | `#F7F5F1`                   | fondo página (crema cálida)       | —                       |
+| `--bg-grain`       | `#EFEBE3`                   | tinte del grain                   | —                       |
+| `--surface`        | `#FFFFFF`                   | cards sólidas                     | —                       |
+| `--glass`          | `rgba(255, 255, 255, 0.65)` | glass (nav, panel neto)           | —                       |
+| `--glass-border`   | `rgba(255, 255, 255, 0.85)` | borde glass (luz interior)        | —                       |
+| `--surface-raised` | `#FAF8F4`                   | hover/raised                      | —                       |
+| `--surface-2`      | `#EDE9E1`                   | alt/inset                         | —                       |
+| `--border`         | `#D8D2C7`                   | hairline cálido                   | —                       |
+| `--border-soft`    | `#E4DFD5`                   | divisiones sutiles                | —                       |
+| `--text`           | `#141310`                   | principal                         | 16.2:1 ✓                |
+| `--text-secondary` | `#5C574E`                   | secundario                        | 6.8:1 ✓                 |
+| `--text-muted`     | `#8A857C`                   | metadatos                         | 4.7:1 ✓                 |
+| `--accent`         | `#003B6F`                   | azul bandera SV (links, foco)     | 10.4:1 ✓                |
+| `--accent-hover`   | `#002A52`                   | hover                             | 12.8:1 ✓                |
+| `--accent-soft`    | `rgba(0, 59, 111, 0.10)`    | foco/fondos suaves                | —                       |
+| `--gold`           | `#C8A951`                   | dorado independencia (decorativo) | 3.1:1 (solo decorativo) |
+| `--success`        | `#1B7A3D`                   | neto / dinero                     | 5.4:1 ✓                 |
+| `--danger`         | `#B3261E`                   | descuentos / errores              | 6.1:1 ✓                 |
+| `--warning`        | `#B5651D`                   | avisos                            | 5.0:1 ✓                 |
+| `--selection`      | `rgba(0, 59, 111, 0.18)`    | selección                         | —                       |
 
 ### Dark (OLED — true black)
 
-| Token | Valor | Uso |
-|---|---|---|
-| `--bg` | `#000000` | fondo (negro puro, OLED/AMOLED — píxeles apagados) |
-| `--bg-grain` | `#000000` | tinte del grain |
-| `--surface` | `#0D0F13` | cards sólidas |
-| `--glass` | `rgba(16, 18, 24, 0.55)` | glass (nav, panel neto) |
-| `--glass-border` | `rgba(255, 255, 255, 0.14)` | borde glass (luz) |
-| `--surface-raised` | `#14161B` | hover/raised |
-| `--surface-2` | `#191C22` | alt/inset |
-| `--border` | `#262A33` | hairline |
-| `--border-soft` | `#1E2129` | divisiones sutiles |
-| `--text` | `#F2F4F6` | principal (>20:1 sobre negro ✓) |
-| `--text-secondary` | `#C3C9D2` | (>12:1 ✓) |
-| `--text-muted` | `#8A919C` | (>6:1 ✓) |
-| `--accent` | `#7AB2E0` | azul bandera (>10:1 ✓) |
-| `--accent-hover` | `#9BC4EC` | hover |
-| `--accent-soft` | `rgba(122, 178, 224, 0.14)` | foco/fondos suaves |
-| `--gold` | `#D9B860` | dorado decorativo |
-| `--success` | `#4ADE80` | (>9:1 ✓) |
-| `--danger` | `#F87171` | (>6:1 ✓) |
-| `--warning` | `#FBBF24` | (>8:1 ✓) |
-| `--selection` | `rgba(122, 178, 224, 0.28)` | — |
+| Token              | Valor                       | Uso                                                |
+| ------------------ | --------------------------- | -------------------------------------------------- |
+| `--bg`             | `#000000`                   | fondo (negro puro, OLED/AMOLED — píxeles apagados) |
+| `--bg-grain`       | `#000000`                   | tinte del grain                                    |
+| `--surface`        | `#0D0F13`                   | cards sólidas                                      |
+| `--glass`          | `rgba(16, 18, 24, 0.55)`    | glass (nav, panel neto)                            |
+| `--glass-border`   | `rgba(255, 255, 255, 0.14)` | borde glass (luz)                                  |
+| `--surface-raised` | `#14161B`                   | hover/raised                                       |
+| `--surface-2`      | `#191C22`                   | alt/inset                                          |
+| `--border`         | `#262A33`                   | hairline                                           |
+| `--border-soft`    | `#1E2129`                   | divisiones sutiles                                 |
+| `--text`           | `#F2F4F6`                   | principal (>20:1 sobre negro ✓)                    |
+| `--text-secondary` | `#C3C9D2`                   | (>12:1 ✓)                                          |
+| `--text-muted`     | `#8A919C`                   | (>6:1 ✓)                                           |
+| `--accent`         | `#7AB2E0`                   | azul bandera (>10:1 ✓)                             |
+| `--accent-hover`   | `#9BC4EC`                   | hover                                              |
+| `--accent-soft`    | `rgba(122, 178, 224, 0.14)` | foco/fondos suaves                                 |
+| `--gold`           | `#D9B860`                   | dorado decorativo                                  |
+| `--success`        | `#4ADE80`                   | (>9:1 ✓)                                           |
+| `--danger`         | `#F87171`                   | (>6:1 ✓)                                           |
+| `--warning`        | `#FBBF24`                   | (>8:1 ✓)                                           |
+| `--selection`      | `rgba(122, 178, 224, 0.28)` | —                                                  |
 
 ### Vars de material glass (por tema)
 
-| Var | Light | Dark | Uso |
-|---|---|---|---|
-| `--rim-top` | `rgba(255,255,255,0.6)` | `rgba(255,255,255,0.4)` | highlight especular superior |
-| `--rim-bottom` | `rgba(255,255,255,0.3)` | `rgba(255,255,255,0.18)` | rim inferior medio |
-| `--rim-side` | `rgba(255,255,255,0.18)` | `rgba(255,255,255,0.1)` | rims laterales suaves |
-| `--sheen-opacity` | `0.5` | `0.35` | opacidad del sheen diagonal |
-| `--aurora-1/2/3` | azul/oro/turquesa muy tenues | azul/oro/turquesa sobre negro | color de fondo que el glass muestrea |
+| Var               | Light                        | Dark                          | Uso                                  |
+| ----------------- | ---------------------------- | ----------------------------- | ------------------------------------ |
+| `--rim-top`       | `rgba(255,255,255,0.6)`      | `rgba(255,255,255,0.4)`       | highlight especular superior         |
+| `--rim-bottom`    | `rgba(255,255,255,0.3)`      | `rgba(255,255,255,0.18)`      | rim inferior medio                   |
+| `--rim-side`      | `rgba(255,255,255,0.18)`     | `rgba(255,255,255,0.1)`       | rims laterales suaves                |
+| `--sheen-opacity` | `0.5`                        | `0.35`                        | opacidad del sheen diagonal          |
+| `--aurora-1/2/3`  | azul/oro/turquesa muy tenues | azul/oro/turquesa sobre negro | color de fondo que el glass muestrea |
 
 ## Aurora backdrop
 
@@ -107,11 +111,11 @@ sobre `#000000` el aurora da los toques de color que "flotan" detrás del glass.
 
 ## Tipografía
 
-| Rol | Familia | Uso |
-|---|---|---|
-| UI | **Onest** (sans variable, 400–700) | labels, párrafos, botones |
-| Display | **Fraunces** (serif, 400–600) | **solo** título del header + H1 "Resultado del Periodo" |
-| Datos | **JetBrains Mono** (400–600) + `tabular-nums` | **todos los montos $** y números de datos |
+| Rol     | Familia                                       | Uso                                                     |
+| ------- | --------------------------------------------- | ------------------------------------------------------- |
+| UI      | **Onest** (sans variable, 400–700)            | labels, párrafos, botones                               |
+| Display | **Fraunces** (serif, 400–600)                 | **solo** título del header + H1 "Resultado del Periodo" |
+| Datos   | **JetBrains Mono** (400–600) + `tabular-nums` | **todos los montos $** y números de datos               |
 
 Escala: 11 / 12 / 13 / 14 / 16 / 18 / 24 / 32 / 48. Headings `letter-spacing: -0.02em`.
 Labels 13px. Cuerpo 14–16px. Display (Fraunces) solo en el título de marca.
@@ -149,7 +153,7 @@ SVG noise inline (8x8 o 16x16, `data:image/svg+xml`) como `background-image` en 
 
 ## Elementos SV (patrióticos, no kitsch)
 
-- **Torogoz** (Pájaro Nacional, *Eumomota superciliosa*): SVG inline en header, animación
+- **Torogoz** (Pájaro Nacional, _Eumomota superciliosa_): SVG inline en header, animación
   de vuelo sutil (`translateY` ±2px, 4s ease-in-out infinite). `prefers-reduced-motion` →
   estático. Colores: azul bandera + dorado (cola) — tonos del plumaje real.
 - **Monumento al Divino Salvador del Mundo**: SVG contorno (line art) como separador
@@ -174,14 +178,14 @@ SVG noise inline (8x8 o 16x16, `data:image/svg+xml`) como `background-image` en 
 
 ## Micro-estados (craft — checklist por elemento interactivo)
 
-| Estado | Implementación |
-|---|---|
-| default | `background: var(--surface)`, `border: 1px solid var(--border)` |
-| hover | glass cards: `brightness(1.06)` + borde dorado sutil; inputs: `border-color: var(--text-muted)` |
-| focus (keyboard) | `border-color: var(--accent)` + `box-shadow: 0 0 0 2px var(--accent-soft)` |
-| active (pressed) | `transform: scale(0.97)` |
-| disabled | `opacity: 0.5`, `cursor: not-allowed` |
-| loading | `opacity: 0.7` + `aria-busy` |
+| Estado           | Implementación                                                                                  |
+| ---------------- | ----------------------------------------------------------------------------------------------- |
+| default          | `background: var(--surface)`, `border: 1px solid var(--border)`                                 |
+| hover            | glass cards: `brightness(1.06)` + borde dorado sutil; inputs: `border-color: var(--text-muted)` |
+| focus (keyboard) | `border-color: var(--accent)` + `box-shadow: 0 0 0 2px var(--accent-soft)`                      |
+| active (pressed) | `transform: scale(0.97)`                                                                        |
+| disabled         | `opacity: 0.5`, `cursor: not-allowed`                                                           |
+| loading          | `opacity: 0.7` + `aria-busy`                                                                    |
 
 `prefers-reduced-motion`: `scale` y transiciones → 0.01ms.
 

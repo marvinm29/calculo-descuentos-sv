@@ -33,6 +33,13 @@ describe('packages/shared smoke', () => {
       expect(RENTA_TRAMOS_MENSUAL[3].hasta).toBe(Number.POSITIVE_INFINITY);
     });
 
+    it('Renta: columna "Sobre el exceso de" de la tabla oficial del MH', () => {
+      // El % de cada tramo aplica desde el límite inferior del tramo anterior,
+      // no desde el `desde` propio (specs/tasas-legales.md § Formula).
+      const exceso = RENTA_TRAMOS_MENSUAL.map((t) => t.excesoDesde);
+      expect(exceso).toEqual([0.0, 550.0, 895.24, 2038.1]);
+    });
+
     it('factores de horas extra coinciden con Art. 168-173 CT', () => {
       expect(HORAS_EXTRA.EXTRA_DIURNA).toBe(2.0);
       expect(HORAS_EXTRA.EXTRA_NOCTURNA).toBe(2.25);

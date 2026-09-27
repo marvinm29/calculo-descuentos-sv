@@ -1,7 +1,13 @@
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 import type { DescuentosResponse } from '@calc/shared';
 
-const COLORS = ['#1b7a3d', '#b3261e', '#b5651d', '#003b6f'];
+// FE-07: los colores provienen de tokens CSS (ningún hex hardcodeado).
+const COLORS = [
+  'var(--color-success)',
+  'var(--color-danger)',
+  'var(--color-warning)',
+  'var(--color-primary)',
+] as const;
 
 export interface GraficoPastelProps {
   neto: number;
@@ -17,12 +23,35 @@ export function GraficoPastel({ neto, descuentos }: GraficoPastelProps) {
   ].filter((d) => d.value > 0);
 
   return (
-    <div className="glass-card p-4">
+    <div className="panel p-4">
       <h3 className="text-sm font-bold text-text">
         Distribución del Salario Bruto
       </h3>
-      <div className="flex justify-center">
-        <PieChart width={280} height={250} role="img">
+      {/* FE-07: alternativa textual equivalente (lector, impresión,
+          reduced-transparency). El gráfico nunca es la única representación y
+          se marca `aria-hidden` para no exponer sectores sin nombre (axe
+          svg-img-alt): la tabla es la representación accesible. */}
+      <table className="mt-2 w-full text-xs text-text-secondary">
+        <caption className="sr-only">
+          Distribución del salario bruto por concepto
+        </caption>
+        <thead>
+          <tr className="border-b border-border text-left">
+            <th scope="col" className="py-1 pr-2 font-bold">Concepto</th>
+            <th scope="col" className="py-1 font-bold">Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((d) => (
+            <tr key={d.name} className="border-b border-border-soft">
+              <td className="py-1 pr-2">{d.name}</td>
+              <td className="amount py-1 font-semibold">${d.value.toFixed(2)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="mt-4 flex justify-center" aria-hidden="true">
+        <PieChart width={280} height={250} accessibilityLayer={false}>
           <text
             x={140}
             y={117}
@@ -40,6 +69,7 @@ export function GraficoPastel({ neto, descuentos }: GraficoPastelProps) {
             outerRadius={90}
             paddingAngle={2}
             dataKey="value"
+            rootTabIndex={-1}
           >
             {data.map((_entry, index) => (
               <Cell
@@ -48,13 +78,14 @@ export function GraficoPastel({ neto, descuentos }: GraficoPastelProps) {
               />
             ))}
           </Pie>
+          {/* FE-07: tooltip opaco (sin backdrop-filter/blur). */}
           <Tooltip
             formatter={(value: number) => `$${value.toFixed(2)}`}
             contentStyle={{
               background: 'var(--surface)',
               border: '1px solid var(--border)',
               borderRadius: '12px',
-              backdropFilter: 'blur(12px)',
+              color: 'var(--text)',
             }}
           />
           <Legend

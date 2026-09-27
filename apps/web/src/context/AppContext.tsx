@@ -1,8 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import type { JornadaConfig, Incentivo, EntradaPeriodo } from '@calc/shared';
+import type { Incentivo, EntradaPeriodo } from '@calc/shared';
 import {
   configInicialPersistenciaSchema,
-  jornadaConfigSchema,
   entradasPeriodoSchema,
   incentivosGuardadosSchema,
 } from '@calc/shared';
@@ -14,21 +13,17 @@ import {
   tomarClavesDescartadas,
 } from '../lib/storage';
 
-const DEFAULT_JORNADA: JornadaConfig = {
-  modalidad: 'diurna',
-};
-
 interface AppContextValue {
   config: ConfigInicialData;
   setConfig: (value: ConfigInicialData | ((prev: ConfigInicialData) => ConfigInicialData)) => void;
-  jornada: JornadaConfig;
-  setJornada: (value: JornadaConfig | ((prev: JornadaConfig) => JornadaConfig)) => void;
   entradas: EntradaPeriodo[];
   setEntradas: (value: EntradaPeriodo[] | ((prev: EntradaPeriodo[]) => EntradaPeriodo[])) => void;
   incentivos: Incentivo[];
   setIncentivos: (value: Incentivo[] | ((prev: Incentivo[]) => Incentivo[])) => void;
   /** Claves de localStorage descartadas por corrupción (Regla 8, integridad). */
   clavesDescartadas: string[];
+  /** FE-15: true si alguna clave de dominio falló al escribir (cuota/privado). */
+  errorPersistencia: boolean;
 }
 
 const DEFAULT_CONFIG: ConfigInicialData = {
@@ -41,25 +36,27 @@ const DEFAULT_CONFIG: ConfigInicialData = {
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [config, setConfig] = useLocalStorage<ConfigInicialData>(
+  const [config, setConfig, persistenciaConfig] = useLocalStorage<ConfigInicialData>(
     'config-inicial',
     DEFAULT_CONFIG,
     parseador(configInicialPersistenciaSchema, DEFAULT_CONFIG, 'config-inicial'),
   );
-  const [jornada, setJornada] = useLocalStorage<JornadaConfig>(
-    'jornada-config',
-    DEFAULT_JORNADA,
-    parseador(jornadaConfigSchema, DEFAULT_JORNADA, 'jornada-config'),
-  );
-  const [entradas, setEntradas] = useLocalStorage<EntradaPeriodo[]>(
+  const [entradas, setEntradas, persistenciaEntradas] = useLocalStorage<EntradaPeriodo[]>(
     'entradas-periodo',
     [],
     parseador(entradasPeriodoSchema, [], 'entradas-periodo'),
   );
-  const [incentivos, setIncentivos] = useLocalStorage<Incentivo[]>(
+  const [incentivos, setIncentivos, persistenciaIncentivos] = useLocalStorage<Incentivo[]>(
     'incentivos',
     [],
     parseador(incentivosGuardadosSchema, [], 'incentivos'),
+  );
+
+  // FE-15: si cualquier clave de dominio falla al escribir, la UI avisa.
+  const errorPersistencia = !(
+    persistenciaConfig.ok &&
+    persistenciaEntradas.ok &&
+    persistenciaIncentivos.ok
   );
 
   // Drena los descartes registrados por los parsers durante la inicialización
@@ -74,13 +71,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         config,
         setConfig,
-        jornada,
-        setJornada,
         entradas,
         setEntradas,
         incentivos,
         setIncentivos,
         clavesDescartadas,
+        errorPersistencia,
       }}
     >
       {children}

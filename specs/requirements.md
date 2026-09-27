@@ -19,22 +19,21 @@ El usuario debe poder configurar:
 - [ ] La antiguedad seleccionada determina los dias de aguinaldo
 - [ ] Los datos de configuracion persisten en localStorage
 
-### RF02 - Jornada Laboral y Horas Extra
+### RF02 - Horas Extra y Captura sin Jornada
 
 El usuario debe poder configurar:
-- Modalidad: diurna o nocturna (solo afecta el recargo de nocturnidad derivado)
 - Horas extra/día libre/asueto por fecha: diurna (2.00x), nocturna (2.25x), día libre diurna (1.50x),
   día libre nocturna (1.75x), asueto (2.00x)
 - Incentivos (bonos, comisiones) con monto y checkbox "aplica descuentos de ley"
 - **Cálculo a la carta**: se puede calcular N horas extra sin declarar jornada semanal
   (cero entradas + salario → solo salario base)
 
+> La modalidad de jornada (diurna/nocturna) se retiró el 2026-09-27: no alimentaba el cálculo.
+
 **Criterios de aceptacion:**
-- [ ] Selector de modalidad (diurna/nocturna)
-- [ ] Recargo de nocturnidad visible como línea separada en el resumen
 - [ ] Las extras no tienen mínimo — 1 hora se calcula y paga
 - [ ] Incentivos: default checkbox "sujeto a descuentos" (true)
-- [ ] Datos persisten en localStorage (keys `jornada-config`, `entradas-periodo`, `incentivos`)
+- [ ] Datos persisten en localStorage (keys `entradas-periodo`, `incentivos`)
 - [ ] Con salario > 0 y cero entradas, se muestra el resultado con solo el salario base
 
 ### RF03 - Calculo de Pago de Horas Extra
@@ -51,8 +50,7 @@ El sistema debe calcular automaticamente el pago segun el Codigo de Trabajo:
 
 **Criterios de aceptacion:**
 - [ ] El salario por hora se calcula como `salarioBase / 30 / 8`
-- [ ] Cada tipo de hora usa su factor correcto
-- [ ] La jornada nocturna base incluye 25% de nocturnidad (Art. 168)
+- [ ] Cada tipo de hora usa su factor correcto (sin recargo nocturno inferido; Regla 7)
 - [ ] Los calculos coinciden con los de `misalariosv.com/horas-extra`
 
 ### RF04 - Calculo de Descuentos de Ley
@@ -202,7 +200,7 @@ Permitir exportar el resumen del periodo como PDF o imprimir.
 | Requerimiento | Prioridad | Componente | Criterio de Verificacion |
 |---------------|-----------|------------|--------------------------|
 | RF01 | Alta | ConfigInicial.tsx | Formulario valida y persiste |
-| RF02 | Alta | JornadaSelector.tsx + EntradasPeriodo.tsx | CRUD de entradas con localStorage |
+| RF02 | Alta | EntradasPeriodo.tsx + IncentivosForm.tsx | CRUD de entradas con localStorage |
 | RF03 | Alta | horasExtra.ts (shared) | Tests unitarios con valores conocidos |
 | RF04 | Alta | descuentos.ts (shared) | Tests vs misalariosv.com |
 | RF05 | Media | prestaciones.ts (shared) | Tests con casos borde |

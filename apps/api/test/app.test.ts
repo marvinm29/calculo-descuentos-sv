@@ -57,8 +57,7 @@ describe('createApp — configuración (Regla 9)', () => {
   });
 
   it('CORS_ORIGIN con varias origenes configura allowlist', async () => {
-    process.env['CORS_ORIGIN'] =
-      'http://localhost:5173, https://marvinmelendez.engineer';
+    process.env['CORS_ORIGIN'] = 'http://localhost:5173, https://marvinmelendez.engineer';
     const testApp = createApp({ rateLimitMax: 1000 });
     const res = await request(testApp)
       .post('/api/calcular')
@@ -71,28 +70,23 @@ describe('createApp — configuración (Regla 9)', () => {
   });
 });
 
-describe('errorHandler — ramas de rate limit y no-Error', () => {
+describe('errorHandler — errores no-Zod', () => {
   function appQueFalla(err: unknown) {
     const testApp = express();
-    testApp.use((_req: Request, _res: Response, next: NextFunction) =>
-      next(err),
-    );
+    testApp.use((_req: Request, _res: Response, next: NextFunction) => next(err));
     testApp.use(errorHandler);
     return testApp;
   }
 
-  it('RateLimitError se mapea a 429 RATE_LIMIT_EXCEEDED', async () => {
-    const err = new Error('ERL');
-    err.name = 'RateLimitError';
-    const res = await request(appQueFalla(err)).get('/').expect(429);
-    expect(res.body.error).toBe('RATE_LIMIT_EXCEEDED');
-    expect(res.body.message).toContain('Demasiadas solicitudes');
+  it('errores no-Zod responden 500 INTERNAL_ERROR sin filtrar detalles', async () => {
+    const err = new Error('detalle interno sensible');
+    const res = await request(appQueFalla(err)).get('/').expect(500);
+    expect(res.body.error).toBe('INTERNAL_ERROR');
+    expect(JSON.stringify(res.body)).not.toContain('detalle interno sensible');
   });
 
   it('valores no-Error (string) también responden 500 sin filtrar', async () => {
-    const res = await request(appQueFalla('fallo-primitivo'))
-      .get('/')
-      .expect(500);
+    const res = await request(appQueFalla('fallo-primitivo')).get('/').expect(500);
     expect(res.body.error).toBe('INTERNAL_ERROR');
     expect(JSON.stringify(res.body)).not.toContain('fallo-primitivo');
   });
