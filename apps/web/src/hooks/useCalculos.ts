@@ -30,13 +30,11 @@ function filaCumpleReglaNumerica(e: EntradaPeriodo): boolean {
   );
 }
 
-// Convierte EntradaPeriodo[] en SegmentoHorario[].
-// Sin heurísticas: cada segmento proviene de horas explícitamente capturadas
-// (openspec/specs/integridad-calculo.md, Regla 7). Las filas con fecha
-// inválida o horas que violan la Regla 4 se descartan (no alimentan el cálculo).
-export function entradasASegmentos(
-  entradas: EntradaPeriodo[],
-): SegmentoHorario[] {
+// Proyección entrada → segmentos. Sin heurísticas: cada segmento proviene de
+// horas explícitamente capturadas (openspec/specs/integridad-calculo.md,
+// Regla 7). Las filas con fecha inválida o horas que violan la Regla 4 se
+// descartan (no alimentan el cálculo).
+export function entradasASegmentos(entradas: EntradaPeriodo[]): SegmentoHorario[] {
   const segmentos: SegmentoHorario[] = [];
 
   for (const e of entradas) {
@@ -49,14 +47,26 @@ export function entradasASegmentos(
         segmentos.push({ fecha: e.fecha, tipo: 'extra_diurna', horas: e.horasDiurnas });
       }
       if (e.horasNocturnas > 0) {
-        segmentos.push({ fecha: e.fecha, tipo: 'extra_nocturna', horas: e.horasNocturnas });
+        segmentos.push({
+          fecha: e.fecha,
+          tipo: 'extra_nocturna',
+          horas: e.horasNocturnas,
+        });
       }
     } else if (e.tipo === 'dia_libre') {
       if (e.horasDiurnas > 0) {
-        segmentos.push({ fecha: e.fecha, tipo: 'dia_libre_diurna', horas: e.horasDiurnas });
+        segmentos.push({
+          fecha: e.fecha,
+          tipo: 'dia_libre_diurna',
+          horas: e.horasDiurnas,
+        });
       }
       if (e.horasNocturnas > 0) {
-        segmentos.push({ fecha: e.fecha, tipo: 'dia_libre_nocturna', horas: e.horasNocturnas });
+        segmentos.push({
+          fecha: e.fecha,
+          tipo: 'dia_libre_nocturna',
+          horas: e.horasNocturnas,
+        });
       }
     } else if (e.tipo === 'asueto') {
       const total = e.horasDiurnas + e.horasNocturnas;

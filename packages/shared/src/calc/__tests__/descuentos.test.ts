@@ -33,9 +33,7 @@ describe('calcularDescuentos', () => {
     it('AFP: aplica tope mensual de $6,843.48', () => {
       const r = calcularDescuentos(10000, 'mensual');
       expect(r.afp.salarioCotizable).toBe(AFP.TOPE_MENSUAL);
-      expect(r.afp.descuento).toBe(
-        round2(AFP.TOPE_MENSUAL * AFP.PORCENTAJE_TRABAJADOR),
-      );
+      expect(r.afp.descuento).toBe(round2(AFP.TOPE_MENSUAL * AFP.PORCENTAJE_TRABAJADOR));
     });
 
     it('Renta: base gravable = bruto - ISSS - AFP', () => {
@@ -58,6 +56,17 @@ describe('calcularDescuentos', () => {
       // Renta = ($718.00 - $550.00) * 0.10 + $17.67 = $34.47
       const r = calcularDescuentos(800, 'mensual');
       expect(r.renta.descuento).toBe(34.47);
+    });
+
+    it('Renta: el exceso se mide desde el límite del tramo anterior, no desde $550.01', () => {
+      // La tabla oficial del MH ("Sobre el exceso de") mide el 10% desde
+      // $550.00. Regresión: el motor usaba bg - 550.01 y en bg = $563.45
+      // redondeaba a $19.01 en vez del $19.02 de la spec (tasas-legales.md).
+      // bruto $627.80 → ISSS $18.83, AFP $45.52 → bg = $563.45
+      // Renta = (563.45 - 550.00) * 0.10 + 17.67 = 19.015 → $19.02
+      const r = calcularDescuentos(627.8, 'mensual');
+      expect(r.renta.baseGravable).toBe(563.45);
+      expect(r.renta.descuento).toBe(19.02);
     });
 
     it('Renta: tramo I (exento) para salario $500', () => {
@@ -125,9 +134,7 @@ describe('calcularDescuentos', () => {
       const rMensual = calcularDescuentos(800, 'mensual');
       const rQuincenal = calcularDescuentos(400, 'quincenal');
       // Quincenal debe tener descuentos aproximadamente la mitad
-      expect(rQuincenal.totalDescuentos).toBeLessThan(
-        rMensual.totalDescuentos,
-      );
+      expect(rQuincenal.totalDescuentos).toBeLessThan(rMensual.totalDescuentos);
     });
   });
 

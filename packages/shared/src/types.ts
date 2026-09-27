@@ -61,20 +61,20 @@ export interface BrutoResponse {
 }
 
 export interface IsssResponse {
-  porcentaje: number; // 3.00
+  porcentaje: number; // puntos porcentuales, no fracción (10 = 10%)
   salarioAsegurable: number;
   descuento: number;
 }
 
 export interface AfpResponse {
-  porcentaje: number; // 7.25
+  porcentaje: number; // puntos porcentuales, no fracción
   salarioCotizable: number;
   descuento: number;
 }
 
 export interface RentaResponse {
   baseGravable: number;
-  tramo: number; // 1, 2, 3, 4
+  tramo: number; // 1–4, índice de RENTA_TRAMOS_MENSUAL
   porcentajeExceso: number;
   cuotaFija: number;
   descuento: number;
@@ -94,12 +94,12 @@ export interface AguinaldoResponse {
 }
 
 export interface VacacionesResponse {
-  porcentaje: number; // 30.00
+  porcentaje: number; // puntos porcentuales del bono
   monto: number;
 }
 
 export interface Quincena25Response {
-  porcentaje: number; // 50.00
+  porcentaje: number; // puntos porcentuales, no fracción
   monto: number;
 }
 

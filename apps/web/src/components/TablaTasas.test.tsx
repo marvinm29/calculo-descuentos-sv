@@ -14,12 +14,8 @@ import {
 describe('TablaTasas', () => {
   it('muestra el encabezado y la fecha de actualizacion', () => {
     render(<TablaTasas />);
-    expect(
-      screen.getByText(/Tasas de Referencia/),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(new RegExp(FECHA_ACTUALIZACION_TASAS)),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Tasas de Referencia/)).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(FECHA_ACTUALIZACION_TASAS))).toBeInTheDocument();
   });
 
   it('incluye enlaces a fuentes oficiales .gob.sv', () => {
@@ -27,9 +23,7 @@ describe('TablaTasas', () => {
 
     const links = screen.getAllByRole('link');
     expect(links.length).toBeGreaterThan(0);
-    expect(links.some((l) => l.getAttribute('href')?.includes('.gob.sv'))).toBe(
-      true,
-    );
+    expect(links.some((l) => l.getAttribute('href')?.includes('.gob.sv'))).toBe(true);
   });
 
   it('muestra ISSS, AFP, Renta y Aguinaldo', () => {
@@ -43,7 +37,7 @@ describe('TablaTasas', () => {
   });
 
   // ─── FE-09: la tabla no duplica tasas; se deriva de la fuente única ───
-  it('muestra exactamente los porcentajes y topes de @calc/shared/tasas', () => {
+  it('muestra exactamente los porcentajes y topes de la fuente única de tasas', () => {
     render(<TablaTasas />);
 
     expect(

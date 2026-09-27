@@ -32,7 +32,9 @@
 - **AFP**: 7.25% sobre `min(brutoPeriodo, $6,843.48)`.
 - **Renta** (Art. 37 LISR, tabla progresiva mensual):
   - `baseGravable = brutoPeriodo − ISSS − AFP`
-  - Tramos I–IV con cuota fija y % sobre exceso.
+  - Tramos I–IV con cuota fija y % sobre exceso; el % aplica sobre lo que excede
+    el límite inferior del tramo anterior (`excesoDesde`: 550.00 / 895.24 / 2038.10,
+    columna "Sobre el exceso de" de la tabla oficial del MH).
   - **Quincenal divide tramos y cuotas fijas entre 2** (spec legal; el `api-contract.md` viejo se equivocaba).
   - `fechaInicio`/`fechaFin` se derivan de las fechas de captura válidas. `hoy` solo se usa cuando
     no existe ninguna fecha capturada; nunca se mezcla con un periodo histórico (FE-01 del plan

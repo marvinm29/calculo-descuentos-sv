@@ -27,9 +27,9 @@ jobs:
       - run: pnpm audit --prod --audit-level high
 
   check:
-    name: Lint + Types + Tests
+    name: Lint + Types + Coverage + Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -47,7 +47,9 @@ jobs:
 
       - run: pnpm check-types
 
-      - run: pnpm test
+      # Cobertura con thresholds 80% (vitest.config por paquete). Antes solo
+      # aplicaba en local (scripts/check.sh): CI no exigía los umbrales.
+      - run: pnpm coverage
 
   deploy-web:
     name: Deploy Web to GitHub Pages

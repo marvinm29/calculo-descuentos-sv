@@ -2,6 +2,73 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/); versionado por fecha de corte.
 
+## 2026-09-27 — Depuración de mantenimiento: fórmula de renta fiel a la tabla oficial, JSDoc del motor y limpieza de residuos
+
+Auditoría de limpieza (codebase hygiene) sobre el checkpoint del rediseño táctil-editorial.
+Clasificación: mantenimiento + bug de contenido. Documentación comentada alineada con las
+prácticas seleccionadas de `docs/plan-frontend-calidad-sdd.md` (trazabilidad y comentarios que
+explican el porqué; sin declaración de certificación ISO/IEEE).
+
+### Fixed
+
+- **Fórmula de renta fiel a la tabla oficial del MH (Art. 37 LISR)**: el motor calculaba el
+  porcentaje sobre el exceso de `desde` del tramo propio (550.01/895.25/2038.11); la spec
+  (`specs/tasas-legales.md` § Formula) y la columna "Sobre el exceso de" de la tabla oficial
+  miden desde el límite del tramo anterior (550.00/895.24/2038.10). `RENTA_TRAMOS_MENSUAL`
+  ahora codifica `excesoDesde` explícitamente (también se divide entre 2 para quincenal) y
+  `calcularRentaPeriodo` usa esa columna. Fixtures canónicos sin cambio ($800 mensual →
+  $34.47; quincenal del api-contract intactos); caso borde `bg = $563.45` corrige $19.01 →
+  $19.02 con regresión (`descuentos.test.ts`). La guía (`GuiaCalculos`) muestra la base
+  correcta y sus ejemplos ahora provienen de invocar `calcularDescuentos` — la divergencia
+  guía↔motor queda estructuralmente imposible.
+- **Copy de `TablaDescuentos`**: decía "{pct}% sobre exceso de ${cuotaFija}", confundiendo la
+  cuota fija con la base del exceso. Ahora: "tramo 2, cuota fija $17.67 + 10% sobre el
+  exceso". Con test de regresión y test co-ubicado nuevo (único componente sin test).
+- **Divisores 30/8 a la fuente única**: `DIVISORES_SALARIO` en `tasas.ts` (Art. 168 CT) reemplaza
+  los literales de `horasExtra.ts` y `GuiaCalculos`. Sync de `specs/tasas-legales.md` en el
+  mismo cambio.
+- **Límite $100,000 a `LIMITES_CONTRATO.MAX_SALARIO_BASE`**: schema y `validarConfig` ya no
+  duplican el literal.
+
+### Removed
+
+- **Rama `RateLimitError` de `errorHandler`**: inalcanzable en producción — express-rate-limit v7
+  no lanza ese error (responde con su `handler` configurado en `app.ts`); solo un test
+  sintético la ejercitaba. Reemplazada por un test honesto (error no-Zod → 500 sin filtrar).
+  El 429 tiene mensaje único (`MENSAJE_RATE_LIMIT`), antes triplicado en tres archivos.
+- **Residuos de Clerk (ADR-011)**: mock `VITE_CLERK_PUBLISHABLE_KEY` en `apps/web/vitest.config.ts`
+  (ningún código lo leía) y entrada `clerk-react/` en `.gitignore`.
+- **Directorio `tests/` vacío** en la raíz (sin referencias en package.json/turbo/CI) y no-op
+  `tee /dev/null` en `scripts/check.sh`.
+- **Subpaths sin consumidor** en `packages/shared/package.json` (`./tasas`, `./types`,
+  `./schemas`): todo el monorepo importa desde la raíz `@calc/shared`.
+
+### Changed
+
+- **JSDoc del motor (`packages/shared/src/calc/`)**: `calcular`, `calcularDescuentos`,
+  `calcularSalarioHora`, `calcularPagoSegmentos`, `round2` (caveat de flotantes),
+  aguinaldo/vacaciones/quincena25/prestaciones, con base legal (Art. 168-173, 177, 198-200 CT;
+  Art. 37 LISR; Ley Quincena 25) y refs a specs. Justificación documentada del parseo UTC de
+  fechas en `calcularAguinaldo` (inmune a zona horaria por diferencia de ms; FE-14 no aplica).
+- **Comentarios**: eliminados los que duplicaban valores de tasas en `types.ts` (riesgo de rot);
+  documentadas las unidades ("puntos porcentuales"). Comentario en inglés de `descuentos.ts`
+  unificado al español. `app.ts:environment` documentado. `useTheme` estrecha lectura de
+  localStorage sin cast (valor corrupto → default). `useLocalStorage` documenta el contrato
+  obligatorio de `parse` para claves de dominio. Factores de horas extra en labels de
+  `EntradasPeriodo` derivados de `HORAS_EXTRA` (antes strings literales).
+- **CI ejecuta `pnpm coverage`**: los thresholds 80% solo aplicaban en local; el job `check`
+  de CI ahora los exige (timeout 15 min).
+- CONTEXT.md corregido: `salarioHoraDiurna` ya no se describe como base del recargo de
+  nocturnidad retirado. CHANGELOG: corregida la contradicción interna del retiro de
+  `JornadaConfig`.
+
+### Tests
+
+- `@calc/shared`: +2 (regresión de exceso de renta en $563.45; columna `excesoDesde` en smoke).
+- `@calc/web`: +3 (`TablaDescuentos.test` — único componente sin test co-ubicado, ahora 21/21).
+- `@calc/api`: misma cuenta (41); la rama muerta se reemplazó por un test honesto de 500.
+- Gate local: `pnpm lint && pnpm check-types && pnpm test && pnpm coverage` ✅ (131+41+168).
+
 ## 2026-09-27 — Limpieza de identidad "15 de septiembre" y retiro de Jornada
 
 ### Removed
@@ -37,8 +104,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/); versionado po
   `integridad-calculo.md` (Regla 7), `diseno-calculadora-clara.md` (sin `gold`),
   `apps/web/DESIGN.md`, `CONTEXT.md`, `AGENTS.md`, `specs/requirements.md`,
   `specs/architecture.md` y trazabilidad (`FR-FE-17`).
-- `JornadaConfig`/`modalidadJornadaSchema` permanecen exportados en `@calc/shared` sin consumidor
-  en web (retirarlos requiere decisión explícita por ser interfaz pública).
+- `JornadaConfig`/`modalidadJornadaSchema` fueron eliminados de `@calc/shared` en este mismo
+  cambio (ver *Removed*); las constantes legales `JORNADA` y `RECARGO_NOCTURNIDAD` sí se
+  conservan como referencia documentada en `specs/tasas-legales.md`.
 
 ### Tests
 

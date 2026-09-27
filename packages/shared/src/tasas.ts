@@ -18,11 +18,43 @@ export const AFP = {
   TOPE_MENSUAL: 6843.48,
 } as const;
 
+// `excesoDesde` es la columna "Sobre el exceso de" de la tabla oficial del MH
+// (specs/tasas-legales.md § Formula): el porcentaje aplica sobre lo que excede
+// el límite inferior del tramo anterior, no sobre `desde`. Para quincenal la
+// tabla completa se divide entre 2 (excesoDesde incluido).
 export const RENTA_TRAMOS_MENSUAL = [
-  { tramo: 1, desde: 0.01, hasta: 550.0, porcentajeExceso: 0.0, cuotaFija: 0.0 },
-  { tramo: 2, desde: 550.01, hasta: 895.24, porcentajeExceso: 0.1, cuotaFija: 17.67 },
-  { tramo: 3, desde: 895.25, hasta: 2038.1, porcentajeExceso: 0.2, cuotaFija: 60.0 },
-  { tramo: 4, desde: 2038.11, hasta: Number.POSITIVE_INFINITY, porcentajeExceso: 0.3, cuotaFija: 288.57 },
+  {
+    tramo: 1,
+    desde: 0.01,
+    hasta: 550.0,
+    excesoDesde: 0.0,
+    porcentajeExceso: 0.0,
+    cuotaFija: 0.0,
+  },
+  {
+    tramo: 2,
+    desde: 550.01,
+    hasta: 895.24,
+    excesoDesde: 550.0,
+    porcentajeExceso: 0.1,
+    cuotaFija: 17.67,
+  },
+  {
+    tramo: 3,
+    desde: 895.25,
+    hasta: 2038.1,
+    excesoDesde: 895.24,
+    porcentajeExceso: 0.2,
+    cuotaFija: 60.0,
+  },
+  {
+    tramo: 4,
+    desde: 2038.11,
+    hasta: Number.POSITIVE_INFINITY,
+    excesoDesde: 2038.1,
+    porcentajeExceso: 0.3,
+    cuotaFija: 288.57,
+  },
 ] as const;
 
 export const HORAS_EXTRA = {
@@ -31,6 +63,13 @@ export const HORAS_EXTRA = {
   DIA_LIBRE_DIURNA: 1.5,
   DIA_LIBRE_NOCTURNA: 1.75,
   ASUETO: 2.0,
+} as const;
+
+// Divisores del salario base para obtener salario diario y por hora
+// (Art. 168 CT: jornada diurna de 8 horas; mes comercial de 30 días).
+export const DIVISORES_SALARIO = {
+  DIAS_MES: 30,
+  HORAS_JORNADA_DIURNA: 8,
 } as const;
 
 export const RECARGO_NOCTURNIDAD = 0.25 as const;

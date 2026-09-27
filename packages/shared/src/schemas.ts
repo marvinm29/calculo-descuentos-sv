@@ -17,7 +17,9 @@ export const tipoJornadaSchema = z.enum([
 ]);
 
 // Límites del contrato (ver openspec/specs/integridad-calculo.md, Regla 6).
+// La UI debe aplicar los mismos valores (validarConfig, validarFila, etc.).
 export const LIMITES_CONTRATO = {
+  MAX_SALARIO_BASE: 100000,
   MAX_SEGMENTOS: 100,
   MAX_INCENTIVOS: 50,
   MAX_HORAS_DIARIAS: 24,
@@ -44,9 +46,7 @@ const isoDate = z
   .refine(esFechaCalendarioValida, 'Fecha de calendario inválida (mes o día imposible)');
 
 // Regla 4 — números finitos (rechaza NaN, Infinity, -Infinity).
-const numeroFinito = z
-  .number()
-  .refine(Number.isFinite, 'Debe ser un número finito');
+const numeroFinito = z.number().refine(Number.isFinite, 'Debe ser un número finito');
 
 // Regla 6/contrato estricto recursivo (2026-09-20): los sub-objetos del request
 // también son strictObject — los campos desconocidos se rechazan (400), no se
@@ -73,7 +73,7 @@ export const calcularRequestSchema = z
   .strictObject({
     salarioBase: numeroFinito
       .positive('Salario base debe ser positivo')
-      .max(100000, 'Salario base debe ser menor a $100,000'),
+      .max(LIMITES_CONTRATO.MAX_SALARIO_BASE, 'Salario base debe ser menor a $100,000'),
     tipoPago: tipoPagoSchema,
     fechaInicio: isoDate,
     fechaFin: isoDate,
@@ -81,10 +81,16 @@ export const calcularRequestSchema = z
     fechaIngreso: isoDate,
     segmentos: z
       .array(segmentoHorarioSchema)
-      .max(LIMITES_CONTRATO.MAX_SEGMENTOS, `Máximo ${LIMITES_CONTRATO.MAX_SEGMENTOS} segmentos`),
+      .max(
+        LIMITES_CONTRATO.MAX_SEGMENTOS,
+        `Máximo ${LIMITES_CONTRATO.MAX_SEGMENTOS} segmentos`,
+      ),
     incentivos: z
       .array(incentivoSchema)
-      .max(LIMITES_CONTRATO.MAX_INCENTIVOS, `Máximo ${LIMITES_CONTRATO.MAX_INCENTIVOS} incentivos`)
+      .max(
+        LIMITES_CONTRATO.MAX_INCENTIVOS,
+        `Máximo ${LIMITES_CONTRATO.MAX_INCENTIVOS} incentivos`,
+      )
       .optional(),
   })
   .refine((d) => d.fechaInicio <= d.fechaFin, {

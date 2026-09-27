@@ -287,10 +287,13 @@ export const AFP = {
 } as const;
 
 export const RENTA_TRAMOS_MENSUAL = [
-  { tramo: 1, desde: 0.01, hasta: 550.00, porcentajeExceso: 0.00, cuotaFija: 0.00 },
-  { tramo: 2, desde: 550.01, hasta: 895.24, porcentajeExceso: 0.10, cuotaFija: 17.67 },
-  { tramo: 3, desde: 895.25, hasta: 2038.10, porcentajeExceso: 0.20, cuotaFija: 60.00 },
-  { tramo: 4, desde: 2038.11, hasta: Infinity, porcentajeExceso: 0.30, cuotaFija: 288.57 },
+  // `excesoDesde` = columna "Sobre el exceso de" de la tabla oficial del MH:
+  // el limite inferior del tramo anterior. Para quincenal la tabla completa
+  // (excesoDesde incluido) se divide entre 2.
+  { tramo: 1, desde: 0.01, hasta: 550.00, excesoDesde: 0.00, porcentajeExceso: 0.00, cuotaFija: 0.00 },
+  { tramo: 2, desde: 550.01, hasta: 895.24, excesoDesde: 550.00, porcentajeExceso: 0.10, cuotaFija: 17.67 },
+  { tramo: 3, desde: 895.25, hasta: 2038.10, excesoDesde: 895.24, porcentajeExceso: 0.20, cuotaFija: 60.00 },
+  { tramo: 4, desde: 2038.11, hasta: Infinity, excesoDesde: 2038.10, porcentajeExceso: 0.30, cuotaFija: 288.57 },
 ] as const;
 
 export const HORAS_EXTRA = {
@@ -299,6 +302,13 @@ export const HORAS_EXTRA = {
   DIA_LIBRE_DIURNA: 1.50,
   DIA_LIBRE_NOCTURNA: 1.75,
   ASUETO: 2.00,
+} as const;
+
+// Divisores del salario base (Art. 168 CT: jornada diurna de 8 horas; mes
+// comercial de 30 días).
+export const DIVISORES_SALARIO = {
+  DIAS_MES: 30,
+  HORAS_JORNADA_DIURNA: 8,
 } as const;
 
 // Recargo puro de nocturnidad (Art. 168 CT). El multiplicador de pago es 1 + RECARGO_NOCTURNIDAD.

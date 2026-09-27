@@ -1,8 +1,9 @@
 import type { ZodType, output } from 'zod';
 
-// Claves del modelo muerto (Sprint 10a), del historial remoto retirado
-// (ver ADR-011 en specs/architecture.md) y de la modalidad de jornada retirada
-// (2026-09-27; la clave no se consume y se elimina del navegador).
+// Claves muertas: del modelo semanal previo a la captura día por día (ver
+// specs/architecture.md, ADR-010), del historial remoto retirado (ADR-011) y
+// de la modalidad de jornada retirada (2026-09-27). No se consumen: se
+// eliminan del navegador al cargar (limpiarClavesMuertas).
 export const CLAVES_MUERTAS = [
   'registro-periodo',
   'registro-semanal',

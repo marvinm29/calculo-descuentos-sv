@@ -1,28 +1,32 @@
 import type { CalcularRequest, CalcularResponse, Incentivo } from '../types';
-import {
-  calcularSalarioHora,
-  calcularPagoSegmentos,
-  round2,
-} from './horasExtra.js';
+import { calcularSalarioHora, calcularPagoSegmentos, round2 } from './horasExtra.js';
 import { calcularDescuentos } from './descuentos.js';
 import { calcularPrestaciones } from './prestaciones.js';
 
 function sumIncentivosGravados(incentivos: Incentivo[]): number {
   return round2(
-    incentivos
-      .filter((i) => i.aplicaDescuentos)
-      .reduce((sum, i) => sum + i.monto, 0),
+    incentivos.filter((i) => i.aplicaDescuentos).reduce((sum, i) => sum + i.monto, 0),
   );
 }
 
 function sumIncentivosNoGravados(incentivos: Incentivo[]): number {
   return round2(
-    incentivos
-      .filter((i) => !i.aplicaDescuentos)
-      .reduce((sum, i) => sum + i.monto, 0),
+    incentivos.filter((i) => !i.aplicaDescuentos).reduce((sum, i) => sum + i.monto, 0),
   );
 }
 
+/**
+ * Motor de cálculo del producto (ADR-001: única implementación, usada por la
+ * web offline y por el API validador). Orquesta: pago de segmentos (Art.
+ * 168-173 CT) + incentivos → bruto; ISSS/AFP/renta → descuentos; prestaciones
+ * informativas aparte; `neto = brutoTotal − totalDescuentos`.
+ *
+ * Invariantes (openspec/specs/dominio-calculo.md):
+ * - Los segmentos `regular_*` pagan 0 (el salario base no se deriva de horas
+ *   ordinarias).
+ * - Los incentivos no gravados suman al bruto total sin cotizar.
+ * - Las prestaciones son informativas y no tocan el líquido.
+ */
 export function calcular(request: CalcularRequest): CalcularResponse {
   const {
     salarioBase,

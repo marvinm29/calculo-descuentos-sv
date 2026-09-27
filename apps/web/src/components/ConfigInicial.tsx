@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { TipoPago, Antiguedad } from '@calc/shared';
-import { esFechaCalendarioValida } from '@calc/shared';
+import { esFechaCalendarioValida, LIMITES_CONTRATO } from '@calc/shared';
 import { useAppContext } from '../context/AppContext';
 
 export interface ConfigInicialData {
@@ -27,13 +27,10 @@ export function validarConfig(config: ConfigInicialData): ErrorMap {
     errors.salarioBase = 'El salario base debe ser un número finito';
   } else if (config.salarioBase <= 0) {
     errors.salarioBase = 'El salario base debe ser un número positivo';
-  } else if (config.salarioBase > 100000) {
+  } else if (config.salarioBase > LIMITES_CONTRATO.MAX_SALARIO_BASE) {
     errors.salarioBase = 'El salario base debe ser menor a $100,000';
   }
-  if (
-    config.fechaIngreso &&
-    !/^\d{4}-\d{2}-\d{2}$/.test(config.fechaIngreso)
-  ) {
+  if (config.fechaIngreso && !/^\d{4}-\d{2}-\d{2}$/.test(config.fechaIngreso)) {
     errors.fechaIngreso = 'La fecha debe estar en formato ISO 8601 (YYYY-MM-DD)';
   }
   // FE-05 (Regla 1 de integridad): además del formato, la fecha debe ser un
@@ -112,9 +109,7 @@ export function ConfigInicial() {
       noValidate
       className="panel mx-auto max-w-lg space-y-5 p-6"
     >
-      <h2 className="text-lg font-bold text-text">
-        Configuración Inicial
-      </h2>
+      <h2 className="text-lg font-bold text-text">Configuración Inicial</h2>
 
       <div>
         <label
@@ -210,9 +205,7 @@ export function ConfigInicial() {
             handleFechaIngresoChange(e.target.value);
           }}
           className="tool-input mt-1 block w-full rounded-md px-3 py-2 text-sm"
-          aria-describedby={
-            errors.fechaIngreso ? 'fechaIngreso-error' : undefined
-          }
+          aria-describedby={errors.fechaIngreso ? 'fechaIngreso-error' : undefined}
           aria-invalid={!!errors.fechaIngreso}
         />
         {errors.fechaIngreso && (
@@ -222,10 +215,7 @@ export function ConfigInicial() {
         )}
       </div>
 
-      <button
-        type="submit"
-        className="btn-accent w-full rounded-md px-4 py-2.5 text-sm"
-      >
+      <button type="submit" className="btn-accent w-full rounded-md px-4 py-2.5 text-sm">
         Guardar configuración
       </button>
 

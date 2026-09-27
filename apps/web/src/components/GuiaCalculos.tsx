@@ -2,43 +2,37 @@ import type { ReactNode } from 'react';
 import {
   AFP,
   AGUINALDO_DIAS,
+  DIVISORES_SALARIO,
   FECHA_ACTUALIZACION_TASAS,
   HORAS_EXTRA,
   ISSS,
   QUINCENA_25,
   RENTA_TRAMOS_MENSUAL,
   VACACIONES,
+  calcularDescuentos,
   round2,
 } from '@calc/shared';
 
 // FE-19: fórmulas, factores y ejemplos se derivan de la fuente única
-// (packages/shared/src/tasas.ts). Este componente no hardcodea tasas; los
-// ejemplos se computan con la misma aritmética redondeada del motor (round2).
+// (packages/shared/src/tasas.ts). Este componente no hardcodea tasas ni
+// reimplementa aritmética: los ejemplos numéricos provienen de invocar el
+// motor real (`calcularDescuentos`), garantizando guía y cálculo sincronizados.
 
 const usd = (n: number): string =>
   n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const pct = (n: number): string => `${(n * 100).toFixed(2).replace(/\.?0+$/, '')}%`;
 
-// Ejemplo base de la guía: salario mensual de $800.
+// Ejemplo base de la guía: salario mensual de $800. Los montos salen del motor.
 const EJEMPLO_SALARIO = 800;
-const salarioDiario = round2(EJEMPLO_SALARIO / 30);
-const salarioHora = round2(salarioDiario / 8);
-const ejemploIsss = round2(
-  Math.min(EJEMPLO_SALARIO, ISSS.TOPE_MENSUAL) * ISSS.PORCENTAJE_TRABAJADOR,
-);
-const ejemploAfp = round2(
-  Math.min(EJEMPLO_SALARIO, AFP.TOPE_MENSUAL) * AFP.PORCENTAJE_TRABAJADOR,
-);
-const baseGravableEjemplo = round2(EJEMPLO_SALARIO - ejemploIsss - ejemploAfp);
-const tramoEjemplo =
-  RENTA_TRAMOS_MENSUAL.find(
-    (t) => baseGravableEjemplo >= t.desde && baseGravableEjemplo <= t.hasta,
-  ) ?? RENTA_TRAMOS_MENSUAL[0];
-const rentaEjemplo = round2(
-  (baseGravableEjemplo - (tramoEjemplo.desde - 0.01)) * tramoEjemplo.porcentajeExceso +
-    tramoEjemplo.cuotaFija,
-);
+const salarioDiario = round2(EJEMPLO_SALARIO / DIVISORES_SALARIO.DIAS_MES);
+const salarioHora = round2(salarioDiario / DIVISORES_SALARIO.HORAS_JORNADA_DIURNA);
+const descuentosEjemplo = calcularDescuentos(EJEMPLO_SALARIO, 'mensual');
+const ejemploIsss = descuentosEjemplo.isss.descuento;
+const ejemploAfp = descuentosEjemplo.afp.descuento;
+const baseGravableEjemplo = descuentosEjemplo.renta.baseGravable;
+const tramoEjemplo = descuentosEjemplo.renta.tramo;
+const rentaEjemplo = descuentosEjemplo.renta.descuento;
 const vacacionesMonto = round2(salarioDiario * VACACIONES.DIAS_POR_ANO);
 const vacacionesBono = round2(vacacionesMonto * VACACIONES.BONO_PORCENTAJE);
 
@@ -65,12 +59,12 @@ const SECTIONS: Seccion[] = [
   {
     id: 'salario-hora',
     title: 'Salario por Hora',
-    formula: 'salarioDiario = salarioMensual / 30',
-    formula2: 'salarioHora = salarioDiario / 8',
+    formula: `salarioDiario = salarioMensual / ${DIVISORES_SALARIO.DIAS_MES}`,
+    formula2: `salarioHora = salarioDiario / ${DIVISORES_SALARIO.HORAS_JORNADA_DIURNA}`,
     example: {
       texto: `Salario $${EJEMPLO_SALARIO}/mes → salario diario = $${usd(salarioDiario)} → salario/hora = $${usd(salarioHora)}`,
     },
-    desc: 'Se divide el salario mensual entre 30 días para obtener el salario diario, luego entre 8 horas para obtener el salario por hora (Art. 168 CT).',
+    desc: `Se divide el salario mensual entre ${DIVISORES_SALARIO.DIAS_MES} días para obtener el salario diario, luego entre ${DIVISORES_SALARIO.HORAS_JORNADA_DIURNA} horas para obtener el salario por hora (Art. 168 CT).`,
   },
   {
     id: 'incentivos',
@@ -121,11 +115,11 @@ const SECTIONS: Seccion[] = [
       RENTA_TRAMOS_MENSUAL.filter((t) => t.porcentajeExceso > 0)
         .map(
           (t) =>
-            `Tramo ${t.tramo}: (base - $${usd(t.desde - 0.01)}) × ${pct(t.porcentajeExceso)} + $${usd(t.cuotaFija)}`,
+            `Tramo ${t.tramo}: (base - $${usd(t.excesoDesde)}) × ${pct(t.porcentajeExceso)} + $${usd(t.cuotaFija)}`,
         )
         .join('\n'),
     example: {
-      texto: `Salario $${EJEMPLO_SALARIO} − ISSS $${usd(ejemploIsss)} − AFP $${usd(ejemploAfp)} = base $${usd(baseGravableEjemplo)} (Tramo ${tramoEjemplo.tramo}) → Renta = $${usd(rentaEjemplo)}`,
+      texto: `Salario $${EJEMPLO_SALARIO} − ISSS $${usd(ejemploIsss)} − AFP $${usd(ejemploAfp)} = base $${usd(baseGravableEjemplo)} (Tramo ${tramoEjemplo}) → Renta = $${usd(rentaEjemplo)}`,
     },
   },
   {
@@ -133,10 +127,26 @@ const SECTIONS: Seccion[] = [
     title: 'Aguinaldo',
     desc: 'Según Art. 198-200 CT. Se calcula con días de salario según antigüedad, sobre el salario base (sin extras).',
     table: [
-      { tipo: 'Menos de 1 año', factor: 'Proporcional', formula: '(días / 365) × 15 × salarioDiario' },
-      { tipo: '1 a 3 años', factor: `${AGUINALDO_DIAS.DE_1_A_3} días`, formula: `${AGUINALDO_DIAS.DE_1_A_3} × salarioDiario` },
-      { tipo: '3 a 9 años', factor: `${AGUINALDO_DIAS.DE_3_A_9} días`, formula: `${AGUINALDO_DIAS.DE_3_A_9} × salarioDiario` },
-      { tipo: '10+ años', factor: `${AGUINALDO_DIAS.DE_10_O_MAS} días`, formula: `${AGUINALDO_DIAS.DE_10_O_MAS} × salarioDiario` },
+      {
+        tipo: 'Menos de 1 año',
+        factor: 'Proporcional',
+        formula: '(días / 365) × 15 × salarioDiario',
+      },
+      {
+        tipo: '1 a 3 años',
+        factor: `${AGUINALDO_DIAS.DE_1_A_3} días`,
+        formula: `${AGUINALDO_DIAS.DE_1_A_3} × salarioDiario`,
+      },
+      {
+        tipo: '3 a 9 años',
+        factor: `${AGUINALDO_DIAS.DE_3_A_9} días`,
+        formula: `${AGUINALDO_DIAS.DE_3_A_9} × salarioDiario`,
+      },
+      {
+        tipo: '10+ años',
+        factor: `${AGUINALDO_DIAS.DE_10_O_MAS} días`,
+        formula: `${AGUINALDO_DIAS.DE_10_O_MAS} × salarioDiario`,
+      },
     ],
   },
   {
@@ -213,8 +223,20 @@ function FlowNodeGroupExt({ label, items }: { label: string; items: string[] }) 
 function FlowArrow() {
   return (
     <div className="flex items-center mt-2.5 px-1">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-text-muted shrink-0">
-        <path d="M3 10h12M11 6l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        fill="none"
+        className="text-text-muted shrink-0"
+      >
+        <path
+          d="M3 10h12M11 6l4 4-4 4"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     </div>
   );
@@ -234,13 +256,14 @@ function FlowSplit({ left, right }: { left: ReactNode; right: ReactNode }) {
 function FlowDiagram() {
   return (
     <div className="tool-card p-4 mb-6 overflow-x-auto">
-      <h3 className="text-sm font-bold text-text mb-4">
-        Diagrama del Cálculo
-      </h3>
+      <h3 className="text-sm font-bold text-text mb-4">Diagrama del Cálculo</h3>
       <div className="flex items-start gap-0 min-w-[600px]">
         <FlowNode label="Salario Base" top />
         <FlowArrow />
-        <FlowNodeGroup label="Extras" items={['HE Diurna', 'HE Nocturna', 'Incentivos']} />
+        <FlowNodeGroup
+          label="Extras"
+          items={['HE Diurna', 'HE Nocturna', 'Incentivos']}
+        />
         <FlowArrow />
         <FlowNode label="Salario Bruto" top />
         <FlowArrow />
@@ -253,10 +276,7 @@ function FlowDiagram() {
         <FlowArrow />
         <FlowNode label="Renta" top />
         <FlowArrow />
-        <FlowNodeGroupExt
-          label="Neto Líquido"
-          items={['Bruto − ISSS − AFP − Renta']}
-        />
+        <FlowNodeGroupExt label="Neto Líquido" items={['Bruto − ISSS − AFP − Renta']} />
         <FlowArrow />
         <FlowNodeGroupExt
           label="Prestaciones"
@@ -270,14 +290,12 @@ function FlowDiagram() {
 export function GuiaCalculos() {
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-bold text-text">
-        Guía de Cálculos
-      </h2>
+      <h2 className="text-lg font-bold text-text">Guía de Cálculos</h2>
 
       <p className="text-xs text-text-secondary leading-relaxed">
-        Esta calculadora aplica las tasas vigentes de ISSS, AFP y Renta según la legislación
-        salvadoreña actualizada a {FECHA_ACTUALIZACION_TASAS}. A continuación se explica cada
-        cálculo con fórmulas y ejemplos.
+        Esta calculadora aplica las tasas vigentes de ISSS, AFP y Renta según la
+        legislación salvadoreña actualizada a {FECHA_ACTUALIZACION_TASAS}. A continuación
+        se explica cada cálculo con fórmulas y ejemplos.
       </p>
 
       <FlowDiagram />
@@ -293,7 +311,9 @@ export function GuiaCalculos() {
 
             {s.formula && (
               <div className="mb-2">
-                <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wide">Fórmula</span>
+                <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wide">
+                  Fórmula
+                </span>
                 <pre className="mt-1 tool-card rounded-md px-3 py-2 text-xs font-mono text-primary leading-relaxed">
                   {s.formula}
                 </pre>
@@ -310,7 +330,9 @@ export function GuiaCalculos() {
 
             {s.formulaRenta && (
               <div className="mb-2">
-                <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wide">Fórmula</span>
+                <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wide">
+                  Fórmula
+                </span>
                 <pre className="mt-1 tool-card rounded-md px-3 py-2 text-xs font-mono text-primary leading-relaxed whitespace-pre-line">
                   {s.formulaRenta}
                 </pre>
@@ -319,7 +341,9 @@ export function GuiaCalculos() {
 
             {s.example && (
               <div className="mb-3">
-                <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wide">Ejemplo</span>
+                <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wide">
+                  Ejemplo
+                </span>
                 <div className="mt-1 tool-card rounded-md px-3 py-2 text-xs text-text-secondary leading-relaxed">
                   {s.example.texto}
                 </div>
@@ -332,8 +356,25 @@ export function GuiaCalculos() {
                   <thead>
                     <tr className="border-b border-border text-left">
                       {Object.keys(s.table[0]!).map((key) => (
-                        <th key={key} className="py-1 pr-2 font-bold text-text-muted uppercase tracking-wide text-[10px]">
-                          {key === 'tipo' ? 'Tipo' : key === 'desde' ? 'Desde' : key === 'hasta' ? 'Hasta' : key === 'cuota' ? 'Cuota Fija' : key === 'exceso' ? '% Exceso' : key === 'factor' ? 'Factor' : key === 'formula' ? 'Fórmula' : key}
+                        <th
+                          key={key}
+                          className="py-1 pr-2 font-bold text-text-muted uppercase tracking-wide text-[10px]"
+                        >
+                          {key === 'tipo'
+                            ? 'Tipo'
+                            : key === 'desde'
+                              ? 'Desde'
+                              : key === 'hasta'
+                                ? 'Hasta'
+                                : key === 'cuota'
+                                  ? 'Cuota Fija'
+                                  : key === 'exceso'
+                                    ? '% Exceso'
+                                    : key === 'factor'
+                                      ? 'Factor'
+                                      : key === 'formula'
+                                        ? 'Fórmula'
+                                        : key}
                         </th>
                       ))}
                     </tr>
@@ -342,7 +383,10 @@ export function GuiaCalculos() {
                     {s.table.map((row, i) => (
                       <tr key={i} className="border-b border-border-soft">
                         {Object.values(row).map((val, j) => (
-                          <td key={j} className={`py-1 pr-2 ${j === 0 ? 'font-semibold text-text' : ''}`}>
+                          <td
+                            key={j}
+                            className={`py-1 pr-2 ${j === 0 ? 'font-semibold text-text' : ''}`}
+                          >
                             {j === Object.keys(row).indexOf('formula') ? (
                               <code className="text-primary text-[10px]">{val}</code>
                             ) : (
@@ -361,7 +405,8 @@ export function GuiaCalculos() {
       </div>
 
       <p className="text-[10px] text-text-muted text-center pt-2">
-        Tasas actualizadas a {FECHA_ACTUALIZACION_TASAS}. Verificar vigencia en fuentes oficiales.
+        Tasas actualizadas a {FECHA_ACTUALIZACION_TASAS}. Verificar vigencia en fuentes
+        oficiales.
       </p>
     </section>
   );

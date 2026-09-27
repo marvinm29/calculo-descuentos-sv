@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { EntradaPeriodo, TipoEntrada } from '@calc/shared';
-import { esFechaCalendarioValida, LIMITES_CONTRATO } from '@calc/shared';
+import { esFechaCalendarioValida, HORAS_EXTRA, LIMITES_CONTRATO } from '@calc/shared';
 import { hoyLocal } from '../lib/fecha';
 
 export interface EntradasPeriodoProps {
@@ -8,10 +8,29 @@ export interface EntradasPeriodoProps {
   onChange: (entradas: EntradaPeriodo[]) => void;
 }
 
+// Factores en el label derivados de la fuente única (tasas.ts): si una tasa
+// cambia, el texto nunca queda mintiendo. Diurna / nocturna por tipo.
+const factor = (diurna: number, nocturna: number | null): string =>
+  nocturna === null
+    ? `${diurna.toFixed(2)}x`
+    : `${diurna.toFixed(2)}x / ${nocturna.toFixed(2)}x`;
+
 const TIPOS: { value: TipoEntrada; label: string; factor: string }[] = [
-  { value: 'extra', label: 'Horas extra regulares', factor: '2.00x / 2.25x' },
-  { value: 'dia_libre', label: 'Día libre trabajado', factor: '1.50x / 1.75x' },
-  { value: 'asueto', label: 'Asueto trabajado', factor: '2.00x' },
+  {
+    value: 'extra',
+    label: 'Horas extra regulares',
+    factor: factor(HORAS_EXTRA.EXTRA_DIURNA, HORAS_EXTRA.EXTRA_NOCTURNA),
+  },
+  {
+    value: 'dia_libre',
+    label: 'Día libre trabajado',
+    factor: factor(HORAS_EXTRA.DIA_LIBRE_DIURNA, HORAS_EXTRA.DIA_LIBRE_NOCTURNA),
+  },
+  {
+    value: 'asueto',
+    label: 'Asueto trabajado',
+    factor: factor(HORAS_EXTRA.ASUETO, null),
+  },
 ];
 
 let idCounter = 0;
@@ -109,9 +128,7 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
   function update(index: number, partial: Partial<EntradaPeriodo>) {
     const candidata = entradas[index];
     if (!candidata) return;
-    const nuevas = entradas.map((e, i) =>
-      i === index ? { ...e, ...partial } : e,
-    );
+    const nuevas = entradas.map((e, i) => (i === index ? { ...e, ...partial } : e));
     if (segmentosProyectados(nuevas) > LIMITES_CONTRATO.MAX_SEGMENTOS) {
       setAvisoLimite(
         `La edición superaría el límite de ${LIMITES_CONTRATO.MAX_SEGMENTOS} segmentos proyectados. Reducí horas, cambiá el tipo o eliminá filas.`,
@@ -168,113 +185,118 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
           const errorEnFecha = error?.campos.includes('fecha') ?? false;
           const errorEnHoras = error?.campos.includes('horas') ?? false;
           return (
-          <div
-            key={e.id}
-            className="tool-card rounded-md p-3 flex flex-wrap items-end gap-2"
-          >
-            <div className="w-36">
-              <label
-                htmlFor={`fecha-${e.id}`}
-                className="block text-[10px] font-medium text-text-secondary mb-0.5"
-              >
-                Fecha
-              </label>
-              <input
-                id={`fecha-${e.id}`}
-                type="date"
-                value={e.fecha}
-                onChange={(ev) => update(i, { fecha: ev.target.value })}
-                aria-invalid={errorEnFecha}
-                aria-describedby={errorEnFecha ? errorId : undefined}
-                className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
-              />
-            </div>
-
-            <div className="w-28">
-              <label
-                htmlFor={`diurnas-${e.id}`}
-                className="block text-[10px] font-medium text-text-secondary mb-0.5"
-              >
-                Horas diurnas
-              </label>
-              <input
-                id={`diurnas-${e.id}`}
-                type="number"
-                min={0}
-                max={24}
-                step={0.5}
-                value={e.horasDiurnas || ''}
-                onChange={(ev) =>
-                  update(i, { horasDiurnas: ev.target.value === '' ? 0 : Number(ev.target.value) })
-                }
-                aria-invalid={errorEnHoras}
-                aria-describedby={errorEnHoras ? errorId : undefined}
-                className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
-              />
-            </div>
-
-            <div className="w-28">
-              <label
-                htmlFor={`nocturnas-${e.id}`}
-                className="block text-[10px] font-medium text-text-secondary mb-0.5"
-              >
-                Horas nocturnas
-              </label>
-              <input
-                id={`nocturnas-${e.id}`}
-                type="number"
-                min={0}
-                max={24}
-                step={0.5}
-                value={e.horasNocturnas || ''}
-                onChange={(ev) =>
-                  update(i, { horasNocturnas: ev.target.value === '' ? 0 : Number(ev.target.value) })
-                }
-                aria-invalid={errorEnHoras}
-                aria-describedby={errorEnHoras ? errorId : undefined}
-                className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
-              />
-            </div>
-
-            <div className="w-40">
-              <label
-                htmlFor={`tipo-${e.id}`}
-                className="block text-[10px] font-medium text-text-secondary mb-0.5"
-              >
-                Tipo
-              </label>
-              <select
-                id={`tipo-${e.id}`}
-                value={e.tipo}
-                onChange={(ev) => update(i, { tipo: ev.target.value as TipoEntrada })}
-                className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
-              >
-                {TIPOS.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => eliminar(i)}
-              className="text-xs text-danger hover:text-danger pb-0.5"
+            <div
+              key={e.id}
+              className="tool-card rounded-md p-3 flex flex-wrap items-end gap-2"
             >
-              Eliminar
-            </button>
+              <div className="w-36">
+                <label
+                  htmlFor={`fecha-${e.id}`}
+                  className="block text-[10px] font-medium text-text-secondary mb-0.5"
+                >
+                  Fecha
+                </label>
+                <input
+                  id={`fecha-${e.id}`}
+                  type="date"
+                  value={e.fecha}
+                  onChange={(ev) => update(i, { fecha: ev.target.value })}
+                  aria-invalid={errorEnFecha}
+                  aria-describedby={errorEnFecha ? errorId : undefined}
+                  className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
+                />
+              </div>
 
-            {error && (
-              <p
-                id={errorId}
-                className="w-full text-[10px] font-medium text-danger"
-                role="alert"
+              <div className="w-28">
+                <label
+                  htmlFor={`diurnas-${e.id}`}
+                  className="block text-[10px] font-medium text-text-secondary mb-0.5"
+                >
+                  Horas diurnas
+                </label>
+                <input
+                  id={`diurnas-${e.id}`}
+                  type="number"
+                  min={0}
+                  max={24}
+                  step={0.5}
+                  value={e.horasDiurnas || ''}
+                  onChange={(ev) =>
+                    update(i, {
+                      horasDiurnas: ev.target.value === '' ? 0 : Number(ev.target.value),
+                    })
+                  }
+                  aria-invalid={errorEnHoras}
+                  aria-describedby={errorEnHoras ? errorId : undefined}
+                  className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
+                />
+              </div>
+
+              <div className="w-28">
+                <label
+                  htmlFor={`nocturnas-${e.id}`}
+                  className="block text-[10px] font-medium text-text-secondary mb-0.5"
+                >
+                  Horas nocturnas
+                </label>
+                <input
+                  id={`nocturnas-${e.id}`}
+                  type="number"
+                  min={0}
+                  max={24}
+                  step={0.5}
+                  value={e.horasNocturnas || ''}
+                  onChange={(ev) =>
+                    update(i, {
+                      horasNocturnas:
+                        ev.target.value === '' ? 0 : Number(ev.target.value),
+                    })
+                  }
+                  aria-invalid={errorEnHoras}
+                  aria-describedby={errorEnHoras ? errorId : undefined}
+                  className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
+                />
+              </div>
+
+              <div className="w-40">
+                <label
+                  htmlFor={`tipo-${e.id}`}
+                  className="block text-[10px] font-medium text-text-secondary mb-0.5"
+                >
+                  Tipo
+                </label>
+                <select
+                  id={`tipo-${e.id}`}
+                  value={e.tipo}
+                  onChange={(ev) => update(i, { tipo: ev.target.value as TipoEntrada })}
+                  className="tool-input block w-full rounded-md px-2 py-1.5 text-xs"
+                >
+                  {TIPOS.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => eliminar(i)}
+                className="text-xs text-danger hover:text-danger pb-0.5"
               >
-                {error.mensaje}
-              </p>
-            )}
-          </div>
+                Eliminar
+              </button>
+
+              {error && (
+                <p
+                  id={errorId}
+                  className="w-full text-[10px] font-medium text-danger"
+                  role="alert"
+                >
+                  {error.mensaje}
+                </p>
+              )}
+            </div>
           );
         })}
       </div>
@@ -282,7 +304,10 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
       {entradas.length > 0 && (
         <p className="mt-2 text-[10px] text-text-muted text-right">
           {TIPOS.find((t) => t.value === entradas[entradas.length - 1]?.tipo)?.factor && (
-            <>Factor: {TIPOS.find((t) => t.value === entradas[entradas.length - 1]?.tipo)!.factor}</>
+            <>
+              Factor:{' '}
+              {TIPOS.find((t) => t.value === entradas[entradas.length - 1]?.tipo)!.factor}
+            </>
           )}
         </p>
       )}

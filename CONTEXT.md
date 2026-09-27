@@ -10,7 +10,7 @@ Salario mensual bruto declarado por el usuario; punto de partida de todos los c�
 _Avoid_: salario, sueldo
 
 **salarioHoraDiurna**:
-`salarioBase / 30 / 8`. Unidad sobre la que se aplican los factores de horas extra y el recargo de nocturnidad.
+`salarioBase / 30 / 8`. Unidad sobre la que se aplican los factores de horas extra; la nocturnidad ya viene incorporada en los factores 2.25×/1.75× (el recargo inferido de nocturnidad se retiró 2026-09-15).
 _Avoid_: salario por hora
 
 **segmento** (`SegmentoHorario`):

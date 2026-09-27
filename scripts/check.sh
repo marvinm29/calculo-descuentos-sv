@@ -45,5 +45,5 @@ if [ "$FAIL" -gt 0 ]; then
   echo "⚠️  Algunas verificaciones fallaron. Revisá los logs arriba."
   exit 1
 else
-  echo "✅ Todo en orden." | tee /dev/null
+  echo "✅ Todo en orden."
 fi

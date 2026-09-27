@@ -16,6 +16,19 @@ export interface EstadoPersistencia {
   ok: boolean;
 }
 
+/**
+ * Persistencia local con estado de escritura observable (FE-15).
+ *
+ * Contrato del tercer parámetro `parse`:
+ * - OBLIGATORIO para claves de dominio (AGENTS.md): debe validar con un schema
+ *   Zod (usar `parseador()` de `lib/storage.ts`). Datos corruptos → clave
+ *   eliminada + fallback + registro de descarte para el aviso en UI (Regla 8).
+ * - Si se omite, la lectura usa `JSON.parse` sin validar el shape: reserva ese
+ *   camino para valores no críticos escritos por este mismo hook.
+ *
+ * @returns `[valor, setValor, persistencia]` — `persistencia.ok === false`
+ *   cuando la última escritura de la clave falló.
+ */
 export function useLocalStorage<T>(
   key: string,
   initialValue: T | (() => T),
