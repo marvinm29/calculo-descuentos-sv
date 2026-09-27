@@ -1,13 +1,12 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CalculoState } from '@calc/shared';
+import { historialPeriodosSchema, LIMITES_CONTRATO } from '@calc/shared';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { parseador } from '../lib/storage';
 
-interface PeriodoGuardado {
-  id: string;
-  fecha: string;
-  neto: number;
-  brutoTotal: number;
-}
+// La forma del historial se valida SIEMPRE contra historialPeriodosSchema
+// (Regla 8 de integridad; FE-02). No se consume por cast directo.
+export type PeriodoGuardado = typeof historialPeriodosSchema._output[number];
 
 const STORAGE_KEY = 'historial-periodos';
 
@@ -22,10 +21,22 @@ export interface HistorialPeriodosProps {
 }
 
 export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
+  // El parser corre durante el primer render (inicializador del hook), así
+  // que el ref debe existir antes para capturar el descarte sin tocar estado
+  // en fase de render; el aviso se publica tras el mount (FE-02/FE-16).
+  const descartoCorrupto = useRef(false);
+  const [avisoCorrupto, setAvisoCorrupto] = useState(false);
   const [periodos, setPeriodos] = useLocalStorage<PeriodoGuardado[]>(
     STORAGE_KEY,
     [],
+    parseador(historialPeriodosSchema, [], STORAGE_KEY, () => {
+      descartoCorrupto.current = true;
+    }),
   );
+
+  useEffect(() => {
+    if (descartoCorrupto.current) setAvisoCorrupto(true);
+  }, []);
 
   const guardar = useCallback(() => {
     if (calculoState.status !== 'success') return;
@@ -37,7 +48,11 @@ export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
       brutoTotal: calculoState.data.bruto.brutoTotal,
     };
 
-    setPeriodos((prev) => [...prev, nuevo]);
+    // FE-16: retención máxima documentada; el más antiguo se recorta (FIFO)
+    // para no agotar la cuota de localStorage.
+    setPeriodos((prev) =>
+      [...prev, nuevo].slice(-LIMITES_CONTRATO.MAX_HISTORIAL),
+    );
   }, [calculoState, setPeriodos]);
 
   const eliminar = useCallback(
@@ -48,7 +63,7 @@ export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
   );
 
   return (
-    <div className="glass-card p-4">
+    <div className="panel p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-bold text-text">
           Historial de Periodos
@@ -60,6 +75,12 @@ export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
           Guardar periodo actual
         </button>
       </div>
+
+      {avisoCorrupto && (
+        <p role="alert" className="mt-2 text-xs text-danger">
+          El historial guardado estaba corrupto y se restableció a vacío.
+        </p>
+      )}
 
       {periodos.length === 0 && (
         <p className="mt-2 text-xs text-text-muted">
@@ -75,7 +96,7 @@ export function HistorialPeriodos({ calculoState }: HistorialPeriodosProps) {
               className="flex items-center justify-between py-2"
             >
               <div className="text-xs text-text-secondary">
-                <span className="font-semibold text-glow-success">
+                <span className="font-semibold text-success">
                   ${p.neto.toFixed(2)}
                 </span>
                 <span className="ml-2 text-text-muted">

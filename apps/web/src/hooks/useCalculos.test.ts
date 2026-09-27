@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { entradasASegmentos } from './useCalculos';
-import type { EntradaPeriodo } from '@calc/shared';
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import { renderHook } from '@testing-library/react';
+import { entradasASegmentos, incentivosValidos, useCalculos } from './useCalculos';
+import { AppProvider } from '../context/AppContext';
+import type { EntradaPeriodo, Incentivo } from '@calc/shared';
 
 describe('entradasASegmentos', () => {
   it('retorna array vacio cuando no hay entradas', () => {
@@ -114,5 +116,160 @@ describe('entradasASegmentos', () => {
     expect(tipos).not.toContain('regular_diurna');
     expect(tipos).not.toContain('regular_nocturna');
     expect(tipos).toEqual(['extra_diurna', 'extra_nocturna']);
+  });
+
+  // ─── Regla 4 en cliente (2026-09-20): horas no finitas/negativas/fuera de
+  // rango no alimentan el cálculo (mismo criterio que fecha inválida). ───
+  describe('filas con horas inválidas no alimentan el cálculo (Regla 4 en cliente)', () => {
+    it('descarta NaN, Infinity, -Infinity y negativos', () => {
+      const entradas: EntradaPeriodo[] = [
+        { id: '1', fecha: '2026-07-01', tipo: 'extra', horasDiurnas: NaN, horasNocturnas: 0 },
+        { id: '2', fecha: '2026-07-02', tipo: 'extra', horasDiurnas: Infinity, horasNocturnas: 0 },
+        { id: '3', fecha: '2026-07-03', tipo: 'extra', horasDiurnas: -1, horasNocturnas: 0 },
+        { id: '4', fecha: '2026-07-04', tipo: 'extra', horasDiurnas: 25, horasNocturnas: 0 },
+        { id: '5', fecha: '2026-07-05', tipo: 'extra', horasDiurnas: 2, horasNocturnas: 0 },
+      ];
+      expect(entradasASegmentos(entradas)).toEqual([
+        { fecha: '2026-07-05', tipo: 'extra_diurna', horas: 2 },
+      ]);
+    });
+  });
+});
+
+// ─── Derivación del periodo (FE-01) ───
+// La zona se fija para que `hoy` no dependa del TZ del host.
+const TZ_ORIGINAL = process.env.TZ;
+
+describe('useCalculos: derivación del periodo (FE-01)', () => {
+  beforeAll(() => {
+    process.env.TZ = 'America/El_Salvador';
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-20T12:00:00-06:00'));
+  });
+
+  afterAll(() => {
+    if (TZ_ORIGINAL === undefined) delete process.env.TZ;
+    else process.env.TZ = TZ_ORIGINAL;
+    vi.useRealTimers();
+  });
+
+  function seedStorage(
+    entradas: unknown[],
+    fechaIngreso = '2026-08-01',
+  ): void {
+    localStorage.setItem(
+      'config-inicial',
+      JSON.stringify({
+        salarioBase: 800,
+        tipoPago: 'mensual',
+        antiguedad: '1_a_3',
+        fechaIngreso,
+      }),
+    );
+    localStorage.setItem('entradas-periodo', JSON.stringify(entradas));
+  }
+
+  function calcularPeriodo() {
+    const { result } = renderHook(() => useCalculos(), {
+      wrapper: AppProvider,
+    });
+    return result.current;
+  }
+
+  it('no mezcla `hoy` con una fecha histórica', () => {
+    seedStorage([
+      { id: 'e1', fecha: '2026-09-01', tipo: 'extra', horasDiurnas: 2, horasNocturnas: 0 },
+    ]);
+    const estado = calcularPeriodo();
+    if (estado.status !== 'success') {
+      throw new Error(`se esperaba success, fue: ${estado.status}`);
+    }
+    expect(estado.request.fechaInicio).toBe('2026-09-01');
+    expect(estado.request.fechaFin).toBe('2026-09-01'); // NO 2026-09-20 (hoy)
+  });
+
+  it('deriva min..max exclusivamente de las fechas capturadas', () => {
+    seedStorage([
+      { id: 'e1', fecha: '2026-09-01', tipo: 'extra', horasDiurnas: 2, horasNocturnas: 0 },
+      { id: 'e2', fecha: '2026-09-15', tipo: 'extra', horasDiurnas: 1, horasNocturnas: 0 },
+    ]);
+    const estado = calcularPeriodo();
+    if (estado.status !== 'success') {
+      throw new Error(`se esperaba success, fue: ${estado.status}`);
+    }
+    expect(estado.request.fechaInicio).toBe('2026-09-01');
+    expect(estado.request.fechaFin).toBe('2026-09-15');
+  });
+
+  it('sin fechas capturadas usa hoy local en ambos extremos', () => {
+    seedStorage([]);
+    const estado = calcularPeriodo();
+    if (estado.status !== 'success') {
+      throw new Error(`se esperaba success, fue: ${estado.status}`);
+    }
+    expect(estado.request.fechaInicio).toBe('2026-09-20');
+    expect(estado.request.fechaFin).toBe('2026-09-20');
+  });
+
+  it('descarta fechas imposibles y usa hoy local como periodo', () => {
+    seedStorage([
+      { id: 'e1', fecha: '2026-02-30', tipo: 'extra', horasDiurnas: 2, horasNocturnas: 0 },
+    ]);
+    const estado = calcularPeriodo();
+    if (estado.status !== 'success') {
+      throw new Error(`se esperaba success, fue: ${estado.status}`);
+    }
+    expect(estado.request.fechaInicio).toBe('2026-09-20');
+    expect(estado.request.fechaFin).toBe('2026-09-20');
+    expect(estado.request.segmentos).toEqual([]);
+  });
+
+  // ─── Periodo histórico exige fecha de ingreso (2026-09-20) ───
+  it('periodo histórico sin fechaIngreso produce error accionable, no sustituye por hoy', () => {
+    seedStorage(
+      [
+        { id: 'e1', fecha: '2026-09-01', tipo: 'extra', horasDiurnas: 2, horasNocturnas: 0 },
+      ],
+      '', // fechaIngreso vacía
+    );
+    const estado = calcularPeriodo();
+    expect(estado.status).toBe('error');
+    if (estado.status === 'error') {
+      // Mensaje accionable que nombra el campo y la sección, no el genérico
+      // del schema ("Fecha de ingreso no puede ser posterior al periodo").
+      expect(estado.error).toMatch(/fecha de ingreso/i);
+      expect(estado.error).toMatch(/configuración/i);
+      expect(estado.error).not.toMatch(/posterior al periodo/);
+    }
+  });
+
+  it('periodo actual (hoy) sin fechaIngreso sigue calculando', () => {
+    seedStorage([], '');
+    const estado = calcularPeriodo();
+    expect(estado.status).toBe('success');
+  });
+
+  it('incentivos con monto no finito o negativo no alimentan el cálculo', () => {
+    // Nota: JSON no puede serializar Infinity (queda null y el parser de
+    // localStorage descarta la clave completa, Regla 8). El camino real de un
+    // monto no finito es el estado en memoria durante la sesión (el usuario
+    // escribe '1e999'), así que se verifica sobre incentivosValidos.
+    const fila = (over: Partial<Incentivo>): Incentivo => ({
+      id: 'i',
+      concepto: 'Bono',
+      monto: 10,
+      aplicaDescuentos: true,
+      ...over,
+    });
+    expect(
+      incentivosValidos([
+        fila({ id: 'a', monto: Infinity }),
+        fila({ id: 'b', monto: -Infinity }),
+        fila({ id: 'c', monto: NaN }),
+        fila({ id: 'd', monto: -5 }),
+        fila({ id: 'e', concepto: 'x'.repeat(101) }),
+        fila({ id: 'f', monto: 50 }),
+      ]).map((i) => i.id),
+    ).toEqual(['f']);
   });
 });

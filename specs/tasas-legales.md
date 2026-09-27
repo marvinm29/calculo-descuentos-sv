@@ -25,6 +25,26 @@
 
 ---
 
+## Estado de verificación de fuentes (2026-09-20)
+
+La revisión contra fuentes primarias (`.gob.sv`) alcanzó cobertura **parcial**. Esta
+nota es trazabilidad para la calculadora; **no** constituye conformidad ni certificación
+legal, que requeriría una auditoría formal.
+
+| Tasa / prestación | Estado | Evidencia |
+|-------------------|--------|-----------|
+| Quincena 25: 50%, tope $1,500.00, pago 15–25 de enero, sin ISSS/AFP/Renta; obligatoria sector público 2026 y privado desde 2027 | ✅ Verificada en fuente primaria | MTPS (`mtps.gob.sv`, enero 2026) |
+| Hora extra diurna **2.00×** | ✅ Verificada en fuente primaria | Art. 169 CT; FAQ MTPS 2025-11-24 |
+| ISSS **3.00%** / tope **$1,000.00** | ⚠️ Pendiente de confirmación primaria | Coincidencia en fuentes secundarias |
+| AFP **7.25%** / tope **$6,843.48** | ⚠️ Pendiente de confirmación primaria | Coincidencia en fuentes secundarias |
+| Tabla de renta (Decreto 293, Tomo 447) | ⚠️ Pendiente de confirmación primaria | Coincidencia en fuentes secundarias |
+| Hora extra nocturna **2.25×** | ⚠️ Ambigua — sin cambios | El ejemplo aritmético publicado por MTPS no es concluyente entre 2.25× y 2.50×; se mantiene 2.25× (Art. 168+169 CT) a la espera de confirmación primaria |
+
+`FECHA_ACTUALIZACION_TASAS` refleja la última vigencia documental (`Julio 2026`), **no**
+la fecha de esta auditoría: no se modifica mientras no cambien los valores legales.
+
+---
+
 ## ISSS - Instituto Salvadoreno del Seguro Social
 
 ### Cotizacion Laboral (Descuento al Trabajador)
@@ -250,6 +270,9 @@ cotizar.
 
 ```typescript
 // packages/shared/src/tasas.ts
+
+// Vigencia documental compartida (la UI muestra esta fecha, nunca una copia).
+export const FECHA_ACTUALIZACION_TASAS = 'Julio 2026' as const;
 
 export const ISSS = {
   PORCENTAJE_TRABAJADOR: 0.03,

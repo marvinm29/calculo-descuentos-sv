@@ -1,6 +1,8 @@
 # Spec: Integridad de Cálculo y API
 
-> Estado: **VIGENTE** (2026-09-15). Especificación normativa — precede a la implementación.
+> Estado: **VIGENTE** (revisión 2026-09-20). Especificación normativa — precede a la
+> implementación. La derivación de periodo de la UI es objetivo FE-01 y se implementará con su
+> prueba de regresión antes de cerrar el plan frontend.
 > Complementa `contrato-calcular.md` (request/response) y `captura-horas.md` (modelo de captura).
 > Cualquier cambio posterior requiere editar esta spec y las pruebas de aceptación en el mismo cambio.
 
@@ -54,7 +56,14 @@ Bordes de aceptación: diferencia 29 (30 inclusivos) y 30 (31 inclusivos). Difer
 - `incentivos[].concepto`: 1–100 caracteres. `incentivos[].id`: 1–64 caracteres.
 
 Los máximos son parte del contrato documentado (`api-contract.md`); la UI aplica los mismos
-límites y nunca puede enviar una carga inválida.
+límites y nunca puede enviar una carga inválida. En la UI el límite de segmentos se aplica sobre
+la **proyección** de segmentos que una captura produciría (una fila mixta diurna+nocturna de tipo
+`extra` o `dia_libre` proyecta dos segmentos), no sobre el número de filas (FE-03); el límite
+también cubre la **edición** de filas existentes validando el estado candidato antes de
+`onChange`. El límite de incentivos se aplica al agregar filas y su validación de concepto es
+inline (FE-04). El objeto request es estricto **de forma recursiva**: `segmentoHorarioSchema` e
+`incentivoSchema` rechazan campos desconocidos (2026-09-20; decisión y rollback en
+`contrato-calcular.md`).
 
 ## Regla 7 — Eliminación del recargo nocturno regular inferido
 
@@ -64,8 +73,9 @@ límites y nunca puede enviar una carga inválida.
 - Los factores de horas extra nocturnas (2.25×) y día libre nocturno (1.75×) **permanecen**
   (`HORAS_EXTRA` en `tasas.ts`): son recargos sobre horas explícitamente capturadas; no hay
   doble recargo sobre las mismas horas.
-- `JornadaConfig.modalidad` se conserva con propósito informativo en la UI; ya no alimenta
-  ninguna heurística del motor.
+- `JornadaConfig.modalidad` no alimentaba ninguna heurística del motor; se mantuvo como nota
+  informativa desde 2026-09-15 y se **retiró de la UI y de `AppContext` el 2026-09-27**
+  (`captura-horas.md` § `JornadaConfig (retirado)`).
 - La reintroducción de recargo nocturno regular requiere captura explícita de horas regulares
   y una nueva spec jurídicamente validada.
 
@@ -95,6 +105,22 @@ límites y nunca puede enviar una carga inválida.
 
 Los errores no controlados responden `500 INTERNAL_ERROR` con mensaje fijo, sin stack, sin
 detalles internos; los detalles van sólo al log del servidor.
+
+## Derivación de periodo en la UI
+
+La UI debe enviar un periodo coherente con las fechas capturadas: `fechaInicio` y `fechaFin` son
+el mínimo y máximo de las fechas válidas que producen segmentos. Si no hay segmentos, ambos usan
+la fecha local actual. `hoy` no se añade a un conjunto histórico; hacerlo puede fabricar días y
+rechazar o alterar un cálculo válido (FE-01). `hoy` se calcula con un helper de fecha local
+(componentes Y/M/D); `toISOString()` es UTC y no puede usarse para fechas de negocio (FE-14).
+Esta regla se verificará en web y API con el mismo fixture.
+
+**Fecha de ingreso en periodos históricos (2026-09-20)**: si `fechaFin < hoy` y `fechaIngreso`
+está vacío, la UI no lo sustituye por `hoy` (fabricaría `fechaIngreso > fechaFin`); entra en
+estado de error con mensaje accionable que exige definir la fecha de ingreso. No se inventa una
+derivación legal (p. ej. usar la primera fecha del periodo): sin fuente normativa, fuera de
+alcance. La marca de guardado del historial local es la única fecha UTC permitida
+(timestamp ISO, ver `persistencia.md`).
 
 ## Aceptación
 

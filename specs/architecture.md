@@ -14,10 +14,10 @@
 │  │              React 19 SPA (Vite 8)                  │  │
 │  │  ┌────────────┐ ┌────────────┐ ┌───────────────┐   │  │
 │  │  │ ConfigInicial│ │ Captura      │ │ Resultados   │   │  │
-│  │  │ Jornada/     │ │ Entradas     │ │ + Gráficos   │   │  │
-│  │  │ Entradas/    │ │ (período)    │ │ + PDF        │   │  │
-│  │  │ Incentivos   │ │              │ │ + Historial  │   │  │
-│  │  └──────────────┘ └──────────────┘ └───────────────┘   │  │
+│  │  │ Entradas/    │ │ Entradas     │ │ + Gráficos   │   │  │
+│  │  │ Incentivos   │ │ (período)    │ │ + PDF        │   │  │
+│  │  └──────────────┘ └──────────────┘ │ + Historial  │   │  │
+│  │                                    └──────────────┘   │  │
 │  │         │              │               │               │  │
 │  │         ▼              ▼               ▼               │  │
 │  │  ┌────────────────────────────────────────────────┐   │  │
@@ -54,11 +54,10 @@ Los ADRs actuales viven en [`.agents/adr/`](../.agents/adr/):
 ```
 App.tsx
 ├── ConfigInicial.tsx           ← salario base, tipoPago, antigüedad, fechaIngreso
-├── JornadaSelector.tsx         ← modalidad diurna/nocturna (+ tipo/horas residuales, a simplificar)
 ├── EntradasPeriodo.tsx         ← lista plana: fecha + tipo + horas diurnas/nocturnas (10b)
 ├── IncentivosForm.tsx          ← concepto + monto + checkbox "aplica descuentos"
 ├── ResultadoNeto.tsx
-│   ├── ResumenBruto.tsx        ← desglose + recargo nocturnidad + incentivos
+│   ├── ResumenBruto.tsx        ← desglose + incentivos
 │   ├── TablaDescuentos.tsx     ← ISSS, AFP, Renta detallados
 │   ├── Prestaciones.tsx        ← aguinaldo, vacaciones, Q25 (informativas)
 │   └── NetoLiquido.tsx         ← total neto destacado
@@ -88,10 +87,9 @@ index.ts → app.ts
 ## Estrategia de Estado en Frontend
 
 - **Config**: un solo objeto, persiste en localStorage (`config-inicial`).
-- **Jornada**: `JornadaConfig` — solo `modalidad` alimenta el motor.
 - **Entradas**: `EntradaPeriodo[]` — lista plana por fecha, sin semanas.
 - **Incentivos**: `Incentivo[]` — cada ítem con `aplicaDescuentos`.
-- **Cálculos**: derivados de config + jornada + entradas + incentivos, memorizados con `useMemo`.
+- **Cálculos**: derivados de config + entradas + incentivos, memorizados con `useMemo`.
 - **Historial**: guarda el `CalcularRequest` real + response en localStorage.
 
 ## Estado de producción

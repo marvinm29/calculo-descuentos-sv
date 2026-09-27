@@ -3,6 +3,9 @@
 // Ver specs/tasas-legales.md § "Resumen de Formato en Codigo".
 // Última actualización: Julio 2026.
 
+// Vigencia documental compartida (la UI muestra esta fecha, nunca una copia).
+export const FECHA_ACTUALIZACION_TASAS = 'Julio 2026' as const;
+
 export const ISSS = {
   PORCENTAJE_TRABAJADOR: 0.03,
   PORCENTAJE_PATRONAL: 0.075,

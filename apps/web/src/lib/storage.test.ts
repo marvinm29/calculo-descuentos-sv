@@ -61,13 +61,15 @@ describe('limpiarClavesMuertas (migración de limpieza)', () => {
     tomarClavesDescartadas();
   });
 
-  it('elimina las claves muertas del modelo semanal viejo', () => {
+  it('elimina las claves muertas del modelo semanal viejo y la jornada retirada', () => {
     localStorage.setItem('registro-periodo', '[1,2,3]');
     localStorage.setItem('registro-semanal', '[]');
+    localStorage.setItem('jornada-config', '{"modalidad":"diurna"}');
     localStorage.setItem('entradas-periodo', '[]');
     limpiarClavesMuertas();
     expect(localStorage.getItem('registro-periodo')).toBeNull();
     expect(localStorage.getItem('registro-semanal')).toBeNull();
+    expect(localStorage.getItem('jornada-config')).toBeNull();
     expect(localStorage.getItem('entradas-periodo')).toBe('[]');
   });
 
@@ -76,7 +78,11 @@ describe('limpiarClavesMuertas (migración de limpieza)', () => {
   });
 
   it('CLAVES_MUERTAS contiene exactamente las claves del modelo muerto', () => {
-    expect(CLAVES_MUERTAS).toEqual(['registro-periodo', 'registro-semanal']);
+    expect(CLAVES_MUERTAS).toEqual([
+      'registro-periodo',
+      'registro-semanal',
+      'jornada-config',
+    ]);
   });
 });
 

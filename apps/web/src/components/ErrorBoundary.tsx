@@ -8,7 +8,15 @@ export interface ErrorBoundaryProps {
 
 interface ErrorBoundaryState {
   hasError: boolean;
-  error: Error | null;
+  /** FE-13: ID de soporte, no el mensaje del error (puede filtrar internos). */
+  idSoporte: string;
+}
+
+function generarIdSoporte(): string {
+  return `ERR-${Date.now().toString(36).toUpperCase()}-${Math.random()
+    .toString(36)
+    .slice(2, 6)
+    .toUpperCase()}`;
 }
 
 export class ErrorBoundary extends Component<
@@ -17,11 +25,17 @@ export class ErrorBoundary extends Component<
 > {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, idSoporte: '' };
   }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error };
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { hasError: true, idSoporte: generarIdSoporte() };
+  }
+
+  override componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    // Detalle técnico SOLO en consola del navegador (FE-13); la UI muestra
+    // un mensaje genérico con ID de soporte, sin stack ni message interno.
+    console.error('[ErrorBoundary]', info.componentStack, error);
   }
 
   override render(): ReactNode {
@@ -35,13 +49,17 @@ export class ErrorBoundary extends Component<
             <h2 className="text-lg font-bold text-danger">
               Algo salió mal
             </h2>
-            <p className="mt-2 text-sm text-danger">
-              {this.state.error?.message ??
-                'Ocurrió un error inesperado.'}
+            <p className="mt-2 text-sm text-text-secondary">
+              Ocurrió un error inesperado. Tus datos guardados en este
+              navegador no fueron afectados.
+            </p>
+            <p className="mt-2 text-xs text-text-muted">
+              ID de soporte:{' '}
+              <span className="amount font-mono">{this.state.idSoporte}</span>
             </p>
             <button
               onClick={() => {
-                this.setState({ hasError: false, error: null });
+                this.setState({ hasError: false, idSoporte: '' });
               }}
               className="btn-accent mt-4 rounded-md px-4 py-2 text-sm"
             >

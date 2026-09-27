@@ -69,6 +69,17 @@ openspec/         # Specs ejecutables (contrato API, integridad, captura, diseñ
 docs/             # Scripts de despliegue y documentacion historica de sesiones
 ```
 
+## Gobierno de cambios y calidad
+
+- [`AGENTS.md`](AGENTS.md) es el contrato operativo para agentes de IA y colaboradores.
+- [`docs/ai-agents/README.md`](docs/ai-agents/README.md) define autoridad documental, SDD,
+  seguridad y evidencia de revisión.
+- [`docs/plan-frontend-calidad-sdd.md`](docs/plan-frontend-calidad-sdd.md) contiene la auditoría
+  frontend, trazabilidad y gates basados en ISO/IEC/IEEE, SWEBOK y WCAG.
+- La dirección visual vigente es **Calculadora clara y calmada**; Liquid Glass y Linear Instrument
+  son decisiones históricas supersedidas. Ver [`apps/web/DESIGN.md`](apps/web/DESIGN.md).
+- Las sesiones en `docs/sesion-*.md` son histórico y no sustituyen specs ni ADRs vigentes.
+
 ## Fuentes Oficiales
 
 Todas las tasas estan verificadas contra fuentes .gob.sv:

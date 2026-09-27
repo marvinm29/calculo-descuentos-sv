@@ -5,12 +5,6 @@ export type TipoPago = 'mensual' | 'quincenal';
 
 export type Antiguedad = 'menos_1' | '1_a_3' | '3_a_9' | '10_o_mas';
 
-export type ModalidadJornada = 'diurna' | 'nocturna';
-
-export interface JornadaConfig {
-  modalidad: ModalidadJornada;
-}
-
 export interface Incentivo {
   id: string;
   concepto: string;

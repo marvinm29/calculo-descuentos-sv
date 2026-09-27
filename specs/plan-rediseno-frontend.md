@@ -1,7 +1,10 @@
-# Plan: Rediseño Frontend "Tactile Editorial + toque Liquid Glass"
+# Plan histórico (supersedido): Rediseño Frontend "Tactile Editorial + toque Liquid Glass"
 
-> Fuente de la sesión de planificación (2026-08-30). Este documento **es** el plan:
-> las sesiones futuras lo toman como origen antes de tocar código.
+> **No usar como plan vigente.** Este documento describe una exploración del 2026-08-30 y quedó
+> supersedido por `docs/plan-frontend-calidad-sdd.md` y ADR-014 el 2026-09-20. Se conserva para
+> trazabilidad; sus decisiones de Liquid Glass, tendencias y skills no autorizan cambios actuales.
+
+> Fuente histórica de la sesión de planificación (2026-08-30). No es una instrucción operativa.
 > Último estado de referencia: `main @ 15a9bd5` (Sprint 10b).
 
 ---
@@ -28,24 +31,24 @@
 
 ## 2. Research aplicado (fuentes)
 
-| Fuente | Hallazgo clave | Uso |
-|---|---|---|
-| [AIToolPick — 30-point AI-look checklist](https://aitoolpick.org/blog/ai-generated-website-checklist/) | Tells de diseño IA: gradiente púrpura→azul, Inter/Roboto, 3 cards idénticas, shadow en todo, >3 colores | **Checklist de auditoría** antes de dar por terminado cada sprint de UI |
-| [Superdesign — 5 fixes](https://superdesign.dev/blog/how-to-make-ai-ui-look-less-generic) | Separar creativo de implementación; extraer design system ANTES de generar pantallas; specs explícitas; motion con propósito | Estructura del Sprint 2 (DESIGN.md primero, UI después) |
-| [Fireart — Tactile Brutalism 2026](https://fireart.studio/blog/the-best-web-design-trends/) | El trend anti-IA: geometría dura, borders 1px, **cero sombras difusas**, tipografía como arquitectura, números mono/tabular, profundidad vía CSS no blur | Base estética del rediseño |
-| [Figma — Web Design Trends 2026](https://www.figma.com/resource-library/web-design-trends/) | 3D, nav experimental, bold typography, sustainable/accessible web | Contexto de tendencias |
-| [Identiti — Liquid Glass sin romper usabilidad](https://www.identitidesign.com/blog/liquid-glass-adaptive-transparency/) | El blur mal usado **destruye contraste** (problema de accesibilidad, no de gusto). Reglas: glass en chrome, no en contenido; contraste garantizado; respetar reduced-motion/transparency | Cómo aplicar liquid glass sin romper WCAG |
-| [DesignMonks — Liquid Glass UI](https://www.designmonks.co/blog/liquid-glass-ui) | Apple reserva el glass para overlays/modales/nav; sobre las tarjetas de contenido es bevel-emboss 2000s | Dónde aplicar glass (3 lugares) |
+| Fuente                                                                                                                   | Hallazgo clave                                                                                                                                                                           | Uso                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| [AIToolPick — 30-point AI-look checklist](https://aitoolpick.org/blog/ai-generated-website-checklist/)                   | Tells de diseño IA: gradiente púrpura→azul, Inter/Roboto, 3 cards idénticas, shadow en todo, >3 colores                                                                                  | **Checklist de auditoría** antes de dar por terminado cada sprint de UI |
+| [Superdesign — 5 fixes](https://superdesign.dev/blog/how-to-make-ai-ui-look-less-generic)                                | Separar creativo de implementación; extraer design system ANTES de generar pantallas; specs explícitas; motion con propósito                                                             | Estructura del Sprint 2 (DESIGN.md primero, UI después)                 |
+| [Fireart — Tactile Brutalism 2026](https://fireart.studio/blog/the-best-web-design-trends/)                              | El trend anti-IA: geometría dura, borders 1px, **cero sombras difusas**, tipografía como arquitectura, números mono/tabular, profundidad vía CSS no blur                                 | Base estética del rediseño                                              |
+| [Figma — Web Design Trends 2026](https://www.figma.com/resource-library/web-design-trends/)                              | 3D, nav experimental, bold typography, sustainable/accessible web                                                                                                                        | Contexto de tendencias                                                  |
+| [Identiti — Liquid Glass sin romper usabilidad](https://www.identitidesign.com/blog/liquid-glass-adaptive-transparency/) | El blur mal usado **destruye contraste** (problema de accesibilidad, no de gusto). Reglas: glass en chrome, no en contenido; contraste garantizado; respetar reduced-motion/transparency | Cómo aplicar liquid glass sin romper WCAG                               |
+| [DesignMonks — Liquid Glass UI](https://www.designmonks.co/blog/liquid-glass-ui)                                         | Apple reserva el glass para overlays/modales/nav; sobre las tarjetas de contenido es bevel-emboss 2000s                                                                                  | Dónde aplicar glass (3 lugares)                                         |
 
 ### Referentes de criterio (estudios elite — se copia criterio, no píxel)
 
-| Estudio | Qué copiar |
-|---|---|
-| Locomotive | Scroll + editorial con peso |
-| Awwwards Studio | Tipografía bold + motion medido |
-| Digital Elegance | WCAG 2.2 AAA sin sacrificar belleza |
+| Estudio          | Qué copiar                                   |
+| ---------------- | -------------------------------------------- |
+| Locomotive       | Scroll + editorial con peso                  |
+| Awwwards Studio  | Tipografía bold + motion medido              |
+| Digital Elegance | WCAG 2.2 AAA sin sacrificar belleza          |
 | Narrative Design | White space + micro-copy; "lento por diseño" |
-| DesignCode | Dashboards fintech simples y exactos |
+| DesignCode       | Dashboards fintech simples y exactos         |
 
 ---
 
@@ -53,16 +56,16 @@
 
 **"Tactile Editorial + toque Liquid Glass"** — lo trending de 2026 aplicado con criterio.
 
-| Elemento | Decisión | Por qué |
-|---|---|---|
-| Base | Tactile Editorial: borders 1px, sin sombras difusas, radio pequeño (2px) | Trend anti-IA (Fireart); contraste AA nativo |
-| Liquid glass | **Solo 3 lugares**: nav sticky, diálogos/modales, y el resumen del resultado (panel cristal) | Apple lo reserva para overlays; un solo panel glass = "cuidado", no "template" |
-| Light/Dark | Tokens para ambos; contraste AA chequeado en ambos. Dark-first opcional | Requisito explícito |
-| Números | Monospace (`tabular-nums`) en **todos** los montos | Detalle "engineered": columnas alineadas, exactitud |
-| Acento | **Un solo** color — SV Blue `#003b6f` (light) / `#7ab2e0` (dark) | La bandera; "de marca", no "de plantilla" |
-| Tipografía | Display: *Fraunces* (serif editorial). Body: *Onest* (ya en repo). Montos: *JetBrains Mono* | Serif + mono = sello awwwards; nadie usa serif en SaaS genérico → no parece IA |
-| Motion | framer-motion (ya en deps), solo micro-interacciones: números que se animan al recalcular, hover sutil | "Engineered", no "slop" |
-| Iconos | lucide-react (ya en deps), SVG — sin emoji | Checklist anti-IA |
+| Elemento     | Decisión                                                                                               | Por qué                                                                        |
+| ------------ | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| Base         | Tactile Editorial: borders 1px, sin sombras difusas, radio pequeño (2px)                               | Trend anti-IA (Fireart); contraste AA nativo                                   |
+| Liquid glass | **Solo 3 lugares**: nav sticky, diálogos/modales, y el resumen del resultado (panel cristal)           | Apple lo reserva para overlays; un solo panel glass = "cuidado", no "template" |
+| Light/Dark   | Tokens para ambos; contraste AA chequeado en ambos. Dark-first opcional                                | Requisito explícito                                                            |
+| Números      | Monospace (`tabular-nums`) en **todos** los montos                                                     | Detalle "engineered": columnas alineadas, exactitud                            |
+| Acento       | **Un solo** color — SV Blue `#003b6f` (light) / `#7ab2e0` (dark)                                       | La bandera; "de marca", no "de plantilla"                                      |
+| Tipografía   | Display: _Fraunces_ (serif editorial). Body: _Onest_ (ya en repo). Montos: _JetBrains Mono_            | Serif + mono = sello awwwards; nadie usa serif en SaaS genérico → no parece IA |
+| Motion       | framer-motion (ya en deps), solo micro-interacciones: números que se animan al recalcular, hover sutil | "Engineered", no "slop"                                                        |
+| Iconos       | lucide-react (ya en deps), SVG — sin emoji                                                             | Checklist anti-IA                                                              |
 
 ### Prohibiciones (slop starter pack — para cada sprint de UI)
 
@@ -80,30 +83,30 @@
 
 ## 4. Mapa SWEBOK v4 (aplicado, no ceremonial)
 
-| KA (SWEBOK v4) | Dónde vive en el plan |
-|---|---|
-| Software Requirements | `specs/requirements.md` RF02 reescrito + proposals OpenSpec (deltas ADDED/MODIFIED/REMOVED) |
-| Software Architecture | ADRs en `.agents/adr/` (001 shared único, 003 persistencia híbrida, 006 offline, 010 día-por-día, 011 design system) |
-| Software Construction | skill `tdd` en cada delta; `react-vite-tailwind4` para componentes |
-| Software Testing | `vitest-rtl-supertest`; gate `lint && check-types && test` + coverage >80% |
-| Software Security | Sprint 5 + §8 |
-| Software Engineering Management | Sprints documentados en `specs/sprints.md` (skill `sprint-workflow`) |
-| Software Quality | Gate por sprint + auditoría anti-AI + lighthouse a11y |
-| SE Models & Methods | OpenSpec delta tracking como modelo de cambio |
+| KA (SWEBOK v4)                  | Dónde vive en el plan                                                                                                |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Software Requirements           | `specs/requirements.md` RF02 reescrito + proposals OpenSpec (deltas ADDED/MODIFIED/REMOVED)                          |
+| Software Architecture           | ADRs en `.agents/adr/` (001 shared único, 003 persistencia híbrida, 006 offline, 010 día-por-día, 011 design system) |
+| Software Construction           | skill `tdd` en cada delta; `react-vite-tailwind4` para componentes                                                   |
+| Software Testing                | `vitest-rtl-supertest`; gate `lint && check-types && test` + coverage >80%                                           |
+| Software Security               | Sprint 5 + §8                                                                                                        |
+| Software Engineering Management | Sprints documentados en `specs/sprints.md` (skill `sprint-workflow`)                                                 |
+| Software Quality                | Gate por sprint + auditoría anti-AI + lighthouse a11y                                                                |
+| SE Models & Methods             | OpenSpec delta tracking como modelo de cambio                                                                        |
 
 ---
 
 ## 5. Stack de skills + agentes/subagentes
 
-| Fase | Skill | Subagente |
-|---|---|---|
-| Descubrir/entender | `improve-codebase-architecture`, `research` | `explore` (deep dive código/docs) |
-| Congelar dominio | `domain-modeling`, `grill-with-docs` | — |
-| Proponer | `to-spec` → `to-tickets` | `general` (proposals en paralelo) |
-| Ejecutar | `implement` + `tdd` | — |
-| Revisar | `code-review` (eje Standards + Spec) | 2 subagentes **en paralelo** |
-| QA visual | `customize-opencode` para crear subagente "visual-auditor" (chrome-devtools + checklist anti-AI) | `general` |
-| Cerrar | `sprint-workflow`, `retro` | — |
+| Fase               | Skill                                                                                            | Subagente                         |
+| ------------------ | ------------------------------------------------------------------------------------------------ | --------------------------------- |
+| Descubrir/entender | `improve-codebase-architecture`, `research`                                                      | `explore` (deep dive código/docs) |
+| Congelar dominio   | `domain-modeling`, `grill-with-docs`                                                             | —                                 |
+| Proponer           | `to-spec` → `to-tickets`                                                                         | `general` (proposals en paralelo) |
+| Ejecutar           | `implement` + `tdd`                                                                              | —                                 |
+| Revisar            | `code-review` (eje Standards + Spec)                                                             | 2 subagentes **en paralelo**      |
+| QA visual          | `customize-opencode` para crear subagente "visual-auditor" (chrome-devtools + checklist anti-AI) | `general`                         |
+| Cerrar             | `sprint-workflow`, `retro`                                                                       | —                                 |
 
 ---
 
@@ -120,14 +123,14 @@
 
 ## 7. Sprints
 
-| # | Sprint | Contenido | Salida verificable |
-|---|---|---|---|
-| 0 | **Foundation** | Gate del estado limpio (`main` nuevo) → OpenSpec init + freeze + ADRs + docs | `pnpm lint && check-types && test` verde, cero diffs runtime |
-| 1 | **Dominio: jornada simplificada + sin Clerk** | Quitar `horasSemanales`/`tipo` de `JornadaConfig` → solo `modalidad`; JornadaSelector sin input de horas ni promesa de exceso; RF02 reescrito; **cálculo a la carta** (entrar extras sin declarar semana) probado; recargo nocturnidad desacoplado y testeado; **eliminar Clerk + SQLite + `clerk-react/` + `routes/history/`**; API → solo `POST /api/calcular` | TDD: tests rojos→verde + gate |
-| 2 | **Design system** | `DESIGN.md` (tokens, escala tipográfica, spacing, radius, elevación) → reescribir `index.css`: matar orbes/gradiente/shimmer/glass-total; base editorial + glass solo en nav/modal/resultado; paleta SV Blue; tabular figures | Screenshot baseline + gate |
-| 3 | **Componentes + layout** | Reutilizar piezas buenas del WIP (`ui/` Radix, `useToast`, zod cliente); layout 2 columnas, header sticky glass, resumen cristal; light/dark | Screenshots + gate |
-| 4 | **Motion + accesibilidad** | Micro-interacciones con propósito, focus rings, `prefers-reduced-motion`, print, touch ≥44px, responsive | Lighthouse a11y + gate |
-| 5 | **Seguridad + cierre** | Dependabot, `npm audit` en CI, CORS restringido, CSP via Vite, `calculos.db`/`.env` gitignored, docs finales, `retro` | Gate + checklist anti-AI sobre screenshots |
+| #   | Sprint                                        | Contenido                                                                                                                                                                                                                                                                                                                                                        | Salida verificable                                           |
+| --- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| 0   | **Foundation**                                | Gate del estado limpio (`main` nuevo) → OpenSpec init + freeze + ADRs + docs                                                                                                                                                                                                                                                                                     | `pnpm lint && check-types && test` verde, cero diffs runtime |
+| 1   | **Dominio: jornada simplificada + sin Clerk** | Quitar `horasSemanales`/`tipo` de `JornadaConfig` → solo `modalidad`; JornadaSelector sin input de horas ni promesa de exceso; RF02 reescrito; **cálculo a la carta** (entrar extras sin declarar semana) probado; recargo nocturnidad desacoplado y testeado; **eliminar Clerk + SQLite + `clerk-react/` + `routes/history/`**; API → solo `POST /api/calcular` | TDD: tests rojos→verde + gate                                |
+| 2   | **Design system**                             | `DESIGN.md` (tokens, escala tipográfica, spacing, radius, elevación) → reescribir `index.css`: matar orbes/gradiente/shimmer/glass-total; base editorial + glass solo en nav/modal/resultado; paleta SV Blue; tabular figures                                                                                                                                    | Screenshot baseline + gate                                   |
+| 3   | **Componentes + layout**                      | Reutilizar piezas buenas del WIP (`ui/` Radix, `useToast`, zod cliente); layout 2 columnas, header sticky glass, resumen cristal; light/dark                                                                                                                                                                                                                     | Screenshots + gate                                           |
+| 4   | **Motion + accesibilidad**                    | Micro-interacciones con propósito, focus rings, `prefers-reduced-motion`, print, touch ≥44px, responsive                                                                                                                                                                                                                                                         | Lighthouse a11y + gate                                       |
+| 5   | **Seguridad + cierre**                        | Dependabot, `npm audit` en CI, CORS restringido, CSP via Vite, `calculos.db`/`.env` gitignored, docs finales, `retro`                                                                                                                                                                                                                                            | Gate + checklist anti-AI sobre screenshots                   |
 
 ### Qué se reutiliza del WIP (`feat/modern-frontend-2026@602e93b`)
 
@@ -152,6 +155,7 @@
 ## 8. Ciberseguridad (SWEBOK Security KA)
 
 React/Zod dan base segura. Sprint 5 cierra lo barato:
+
 - Secrets solo en `.env` (gitignored). Verificar que no haya `.env` trackeado.
 - CORS whitelist real (solo origin del frontend).
 - CSP via Vite (o headers en API).
@@ -171,6 +175,7 @@ pnpm lint && pnpm check-types && pnpm test
 ```
 
 Además:
+
 - [ ] `openspec/specs/` describe el código que acaba de aterrizar.
 - [ ] `CONTEXT.md` usa los mismos nombres que `types.ts`.
 - [ ] Ninguna UI afirma un cálculo que `useCalculos` / `calcular()` no ejecuten.
@@ -190,15 +195,16 @@ Además:
 
 ## 11. Ejecución (actualización 2026-08-30)
 
-| Sprint | Estado | Resumen |
-|---|---|---|
-| 0 (11a) | ✅ | Freeze OpenSpec + ADRs + docs + fix entorno Node 26 |
-| 1 (11b) | ✅ | Jornada = solo modalidad; sin Clerk/SQLite/clerk-react; cálculo a la carta con tests |
-| 2 (12) | ✅ | `DESIGN.md` + `index.css` reescrito (tactile editorial + glass nav/panel) |
-| 3 (13) | ✅ | Layout 2 columnas + header glass sticky + tokens/`.amount`; **sin Radix del WIP** |
-| 4 (14) | ✅ | `num-pop`, `accent-color`, print sólido, touch ≥44px |
-| 5 (15) | 🔶 | CORS restringido + Dependabot + audit CI + auditoría anti-AI hechas; falta revisión visual |
+| Sprint  | Estado | Resumen                                                                                    |
+| ------- | ------ | ------------------------------------------------------------------------------------------ |
+| 0 (11a) | ✅     | Freeze OpenSpec + ADRs + docs + fix entorno Node 26                                        |
+| 1 (11b) | ✅     | Jornada = solo modalidad; sin Clerk/SQLite/clerk-react; cálculo a la carta con tests       |
+| 2 (12)  | ✅     | `DESIGN.md` + `index.css` reescrito (tactile editorial + glass nav/panel)                  |
+| 3 (13)  | ✅     | Layout 2 columnas + header glass sticky + tokens/`.amount`; **sin Radix del WIP**          |
+| 4 (14)  | ✅     | `num-pop`, `accent-color`, print sólido, touch ≥44px                                       |
+| 5 (15)  | 🔶     | CORS restringido + Dependabot + audit CI + auditoría anti-AI hechas; falta revisión visual |
 
 **Decisiones tomadas durante ejecución:**
+
 - No reintroducir Radix/TanStack/framer/lucide del WIP (deps mínimas; componentes nativos restilizados).
 - El `index.css` del WIP (orbes, gradiente, glass-total, shimmer) se **eliminó** por completo.

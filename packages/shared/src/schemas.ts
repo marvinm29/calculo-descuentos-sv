@@ -24,6 +24,7 @@ export const LIMITES_CONTRATO = {
   MAX_DIAS_PERIODO: 31, // días inclusivos
   MAX_CONCEPTO: 100,
   MAX_ID: 64,
+  MAX_HISTORIAL: 50, // periodos guardados en localStorage (FE-16)
 } as const;
 
 // Regla 1 — fecha de calendario real (YYYY-MM-DD, agnóstica de zona horaria).
@@ -47,7 +48,10 @@ const numeroFinito = z
   .number()
   .refine(Number.isFinite, 'Debe ser un número finito');
 
-export const segmentoHorarioSchema = z.object({
+// Regla 6/contrato estricto recursivo (2026-09-20): los sub-objetos del request
+// también son strictObject — los campos desconocidos se rechazan (400), no se
+// recortan. Ver contrato-calcular.md § Request.
+export const segmentoHorarioSchema = z.strictObject({
   fecha: isoDate,
   tipo: tipoJornadaSchema,
   horas: numeroFinito
@@ -55,7 +59,7 @@ export const segmentoHorarioSchema = z.object({
     .max(24, 'Las horas por día deben estar entre 0 y 24'),
 });
 
-export const incentivoSchema = z.object({
+export const incentivoSchema = z.strictObject({
   id: z.string().min(1).max(LIMITES_CONTRATO.MAX_ID),
   concepto: z
     .string()
@@ -123,7 +127,6 @@ export type CalcularRequestParsed = z.infer<typeof calcularRequestSchema>;
 // ─── Schemas de persistencia local (Regla 8, openspec/specs/integridad-calculo.md) ───
 
 export const tipoEntradaSchema = z.enum(['extra', 'dia_libre', 'asueto']);
-export const modalidadJornadaSchema = z.enum(['diurna', 'nocturna']);
 
 export const entradaPeriodoSchema = z.object({
   id: z.string().min(1).max(LIMITES_CONTRATO.MAX_ID),
@@ -137,10 +140,6 @@ export const entradasPeriodoSchema = z
   .array(entradaPeriodoSchema)
   .max(LIMITES_CONTRATO.MAX_SEGMENTOS);
 
-export const jornadaConfigSchema = z.object({
-  modalidad: modalidadJornadaSchema,
-});
-
 export const incentivosGuardadosSchema = z
   .array(incentivoSchema)
   .max(LIMITES_CONTRATO.MAX_INCENTIVOS);
@@ -152,6 +151,33 @@ export const configInicialPersistenciaSchema = z.object({
   antiguedad: antiguedadSchema,
   fechaIngreso: z.union([z.literal(''), isoDate]),
 });
+
+// Historial local de periodos guardados (key 'historial-periodos', FE-02/FE-16).
+// La UI lo consume solo a través de este schema (Regla 8 de integridad);
+// `fecha` es la marca de guardado (timestamp ISO) y no una fecha de negocio.
+// strictObject: campos desconocidos se consideran corrupción, no se recortan.
+export function esTimestampIsoValido(valor: string): boolean {
+  // Forma canónica que produce `new Date(...).toISOString()`: YYYY-MM-DDTHH:MM:SS.mmmZ
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(valor)) return false;
+  const fecha = new Date(valor);
+  // Roundtrip: fecha imposible (2026-13-01) o desplazada no reproduce el mismo string.
+  return !Number.isNaN(fecha.getTime()) && fecha.toISOString() === valor;
+}
+
+export const periodoGuardadoSchema = z.strictObject({
+  id: z.string().min(1).max(LIMITES_CONTRATO.MAX_ID),
+  fecha: z
+    .string()
+    .min(1)
+    .max(40)
+    .refine(esTimestampIsoValido, 'Debe ser un timestamp ISO 8601 UTC válido'),
+  neto: numeroFinito.min(0),
+  brutoTotal: numeroFinito.min(0),
+});
+
+export const historialPeriodosSchema = z
+  .array(periodoGuardadoSchema)
+  .max(LIMITES_CONTRATO.MAX_HISTORIAL);
 
 // Validaciones de negocio que el controlador reporta como 400 (ver api-contract.md §Validaciones de Negocio).
 export const validarNegocio = (

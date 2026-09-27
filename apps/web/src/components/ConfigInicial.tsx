@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { TipoPago, Antiguedad } from '@calc/shared';
+import { esFechaCalendarioValida } from '@calc/shared';
 import { useAppContext } from '../context/AppContext';
 
 export interface ConfigInicialData {
@@ -15,18 +16,49 @@ interface ErrorMap {
   fechaIngreso?: string;
 }
 
-function validarConfig(config: ConfigInicialData): ErrorMap {
+// Exportada para pruebas de regresión (FE-05): jsdom sanitiza fechas
+// imposibles en inputs type="date", así que la validación se prueba a nivel
+// de función con las mismas reglas que aplica el submit.
+export function validarConfig(config: ConfigInicialData): ErrorMap {
   const errors: ErrorMap = {};
-  if (config.salarioBase <= 0) {
+  // Regla 4 en cliente (2026-09-20): NaN/±Infinity se detectan inline, no
+  // delegados al schema compartido para un error genérico posterior.
+  if (!Number.isFinite(config.salarioBase)) {
+    errors.salarioBase = 'El salario base debe ser un número finito';
+  } else if (config.salarioBase <= 0) {
     errors.salarioBase = 'El salario base debe ser un número positivo';
-  }
-  if (config.salarioBase > 100000) {
+  } else if (config.salarioBase > 100000) {
     errors.salarioBase = 'El salario base debe ser menor a $100,000';
   }
-  if (config.fechaIngreso && !/^\d{4}-\d{2}-\d{2}$/.test(config.fechaIngreso)) {
+  if (
+    config.fechaIngreso &&
+    !/^\d{4}-\d{2}-\d{2}$/.test(config.fechaIngreso)
+  ) {
     errors.fechaIngreso = 'La fecha debe estar en formato ISO 8601 (YYYY-MM-DD)';
   }
+  // FE-05 (Regla 1 de integridad): además del formato, la fecha debe ser un
+  // día de calendario real (bisiesto, 30/31). Se reutiliza la validación del
+  // contrato compartido; no se duplica.
+  if (
+    config.fechaIngreso &&
+    /^\d{4}-\d{2}-\d{2}$/.test(config.fechaIngreso) &&
+    !esFechaCalendarioValida(config.fechaIngreso)
+  ) {
+    errors.fechaIngreso = 'La fecha no es un día de calendario válido';
+  }
   return errors;
+}
+
+// FE-06: el primer error del envío recibe el foco, en el mismo orden que el
+// render (diseno-calculadora-clara.md § Anuncios, gráficos y estados
+// dinámicos). Exportado para probar el orden sin depender de fechas
+// imposibles que jsdom sanitiza en inputs type="date".
+export function primerErrorConfig(
+  errors: ErrorMap,
+): 'salarioBase' | 'fechaIngreso' | null {
+  if (errors.salarioBase) return 'salarioBase';
+  if (errors.fechaIngreso) return 'fechaIngreso';
+  return null;
 }
 
 export function ConfigInicial() {
@@ -34,6 +66,9 @@ export function ConfigInicial() {
   const [draft, setDraft] = useState<ConfigInicialData>(config);
   const [errors, setErrors] = useState<ErrorMap>({});
   const [saved, setSaved] = useState(false);
+  // FE-06: refs de los campos invalidables para enfocar el primer error.
+  const salarioRef = useRef<HTMLInputElement>(null);
+  const fechaIngresoRef = useRef<HTMLInputElement>(null);
 
   function handleSalarioChange(value: string) {
     const num = value === '' ? 0 : Number(value);
@@ -59,6 +94,11 @@ export function ConfigInicial() {
     const validationErrors = validarConfig(draft);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
+      // FE-06: el primer error del envío recibe el foco (mismo orden que el
+      // render: salarioBase → fechaIngreso).
+      const primero = primerErrorConfig(validationErrors);
+      if (primero === 'salarioBase') salarioRef.current?.focus();
+      else if (primero === 'fechaIngreso') fechaIngresoRef.current?.focus();
       return;
     }
     setConfig(draft);
@@ -70,7 +110,7 @@ export function ConfigInicial() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="glass-card mx-auto max-w-lg space-y-5 p-6"
+      className="panel mx-auto max-w-lg space-y-5 p-6"
     >
       <h2 className="text-lg font-bold text-text">
         Configuración Inicial
@@ -85,6 +125,7 @@ export function ConfigInicial() {
         </label>
         <input
           id="salarioBase"
+          ref={salarioRef}
           type="number"
           min={0}
           step="0.01"
@@ -162,6 +203,7 @@ export function ConfigInicial() {
         </label>
         <input
           id="fechaIngreso"
+          ref={fechaIngresoRef}
           type="date"
           value={draft.fechaIngreso}
           onChange={(e) => {
