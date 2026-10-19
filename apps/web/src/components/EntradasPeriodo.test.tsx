@@ -119,7 +119,9 @@ describe('EntradasPeriodo', () => {
   });
 
   // ─── FE-03: límite sobre segmentos proyectados, no filas ───
-  describe('segmentosProyectados (FE-03)', () => {
+  // Con cobertura v8 los harness de 98–100 segmentos superan el timeout por
+  // defecto (5 s en describe, 20 s en algunos tests). Solo cambia el margen.
+  describe('segmentosProyectados (FE-03)', { timeout: 60000 }, () => {
     it('cuenta 2 segmentos para una fila mixta extra', () => {
       expect(segmentosProyectados([entry])).toBe(2); // diurna 2h + nocturna 1h
     });
@@ -171,7 +173,7 @@ describe('EntradasPeriodo', () => {
   });
 
   // ─── FE-03 (2026-09-20): el límite cubre la EDICIÓN de filas existentes ───
-  describe('límite al editar el estado candidato (FE-03)', () => {
+  describe('límite al editar el estado candidato (FE-03)', { timeout: 60000 }, () => {
     function filaSimple(i: number): EntradaPeriodo {
       return {
         id: `s${i}`,
