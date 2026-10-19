@@ -31,6 +31,18 @@ describe('ConfigInicial', () => {
     ).toBeInTheDocument();
   });
 
+  it('muestra 0.00 como placeholder del salario base (UX-02)', () => {
+    renderWithContext(<ConfigInicial />);
+
+    expect(screen.getByLabelText(/salario base/i)).toHaveAttribute('placeholder', '0.00');
+  });
+
+  it('declara formato de fecha salvadoreño en el campo de ingreso (UX-03)', () => {
+    renderWithContext(<ConfigInicial />);
+
+    expect(screen.getByLabelText(/fecha de ingreso/i)).toHaveAttribute('lang', 'es-SV');
+  });
+
   it('muestra error cuando salarioBase es 0', async () => {
     const user = userEvent.setup();
     renderWithContext(<ConfigInicial />);

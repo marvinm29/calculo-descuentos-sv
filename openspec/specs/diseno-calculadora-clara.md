@@ -52,6 +52,18 @@ y loading. Ningún componente puede inventar un color o clase no declarada.
   regresión: orden DOM (posición relativa en el árbol), colocación de grid en escritorio y
   navegación por teclado (el primer control de `<main>` pertenece a la captura).
   Supersede la versión de 2026-09-20 que ponía el resultado primero en el DOM.
+- **UX-01 Encabezados sin duplicar (2026-10-18)**: cada sección tiene un único encabezado
+  (`SectionHeading`, nivel h2). El formulario de configuración y la lista de horas no repiten el
+  título dentro de la tarjeta. Criterio: el texto "Configuración Inicial" y "Horas del Periodo"
+  no aparece como encabezado; la sección se identifica por "Configuración" y "Horas del periodo".
+  Prueba: `App.test.tsx` (renderiza configuración inicial / entradas del periodo).
+- **UX-02 Salario móvil (2026-10-18)**: el campo de salario muestra el placeholder `0.00`
+  para indicar el formato decimal esperado. El tipo `number` y la validación no cambian.
+  Prueba: `ConfigInicial.test.tsx`.
+- **UX-03 Fecha en formato local (2026-10-18)**: el campo de fecha de ingreso declara
+  `lang="es-SV"`, para que el navegador muestre el orden día/mes/año cuando lo soporte. El valor
+  guardado sigue en ISO `AAAA-MM-DD`. Es una mejora progresiva: sin soporte, el navegador usa su
+  idioma. Prueba: `ConfigInicial.test.tsx` (atributo presente).
 - Ancho mínimo probado: 320 px; zoom 200 % sin pérdida de información o desplazamiento horizontal
   accidental.
 - Objetivos táctiles y controles de icono: preferir 44×44 CSS px, nunca texto diminuto como única

@@ -2,6 +2,27 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/); versionado por fecha de corte.
 
+## 2026-10-18 — Mejoras de UX de bajo riesgo y CI en verde
+
+Clasificación: UX + mantenimiento. Requisitos UX-01..UX-03 en `openspec/specs/diseno-calculadora-clara.md`.
+
+### Changed
+
+- **UX-01**: se quitó el encabezado repetido dentro de la tarjeta de configuración ("Configuración
+  Inicial") y de la lista de horas ("Horas del Periodo"). Cada sección tiene un solo título.
+- **UX-02**: el campo de salario muestra el placeholder `0.00`.
+- **UX-03**: la fecha de ingreso declara `lang="es-SV"` (formato día/mes/año donde el navegador lo soporte).
+
+### Fixed (CI)
+
+- `package.json` overrides: `brace-expansion` a 5.0.12 y `proxy-addr` a 2.0.8. `pnpm audit --prod`
+  quedó sin vulnerabilidades.
+- Timeout explícito en el test de 100 segmentos de `EntradasPeriodo` (falla solo con cobertura v8).
+
+### Rollback
+
+Revertir el commit de UX; los cambios de CI son independientes (commits `c0836dc` y `141de5b`).
+
 ## 2026-10-18 — FE-08 revisado: la captura precede al resultado en móvil
 
 Clasificación: bug de UX (móvil). Reporte: en teléfono, al abrir la app aparecía el resultado

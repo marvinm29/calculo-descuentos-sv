@@ -25,13 +25,21 @@ describe('App', () => {
   it('renderiza configuracion inicial', () => {
     render(<App />);
     expect(
-      screen.getByText('Configuración Inicial'),
+      screen.getByLabelText('Salario base mensual (USD)'),
     ).toBeInTheDocument();
   });
 
   it('renderiza entradas del periodo', () => {
     render(<App />);
-    expect(screen.getByText('Horas del Periodo')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Agregar entrada' })).toBeInTheDocument();
+  });
+
+  it('no repite el título de sección dentro de la tarjeta (UX-01)', () => {
+    render(<App />);
+    expect(screen.queryByText('Configuración Inicial')).not.toBeInTheDocument();
+    expect(screen.queryByText('Horas del Periodo')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Configuración' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Horas del periodo' })).toBeInTheDocument();
   });
 
   it('renderiza seccion de incentivos', () => {
@@ -149,7 +157,7 @@ describe('App', () => {
     function columnas() {
       const main = screen.getByRole('main');
       const resultado = screen.getByText('Resultado del Periodo');
-      const config = screen.getByText('Configuración Inicial');
+      const config = screen.getByLabelText('Salario base mensual (USD)');
       const colResultado = resultado.closest('main > div');
       const colFormulario = config.closest('main > div');
       expect(colResultado).not.toBeNull();

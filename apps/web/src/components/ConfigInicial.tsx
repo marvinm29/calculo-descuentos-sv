@@ -109,8 +109,6 @@ export function ConfigInicial() {
       noValidate
       className="panel mx-auto max-w-lg space-y-5 p-6"
     >
-      <h2 className="text-lg font-bold text-text">Configuración Inicial</h2>
-
       <div>
         <label
           htmlFor="salarioBase"
@@ -124,6 +122,7 @@ export function ConfigInicial() {
           type="number"
           min={0}
           step="0.01"
+          placeholder="0.00"
           value={draft.salarioBase || ''}
           onChange={(e) => {
             handleSalarioChange(e.target.value);
@@ -200,6 +199,7 @@ export function ConfigInicial() {
           id="fechaIngreso"
           ref={fechaIngresoRef}
           type="date"
+          lang="es-SV"
           value={draft.fechaIngreso}
           onChange={(e) => {
             handleFechaIngresoChange(e.target.value);
