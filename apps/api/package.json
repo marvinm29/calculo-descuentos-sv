@@ -18,7 +18,7 @@
     "@calc/shared": "workspace:*",
     "@sentry/node": "^10.74.0",
     "cors": "2.8.5",
-    "dd-trace": "^5.127.0",
+    "dd-trace": "^6.16.0",
     "express": "5.2.1",
     "express-rate-limit": "7.5.0",
     "morgan": "^1.12.1",
