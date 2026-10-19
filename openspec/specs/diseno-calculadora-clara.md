@@ -56,6 +56,8 @@ y loading. Ningún componente puede inventar un color o clase no declarada.
   (`SectionHeading`, nivel h2). El formulario de configuración y la lista de horas no repiten el
   título dentro de la tarjeta. Criterio: el texto "Configuración Inicial" y "Horas del Periodo"
   no aparece como encabezado; la sección se identifica por "Configuración" y "Horas del periodo".
+  En la lista de horas, la fila superior reúne el contador de segmentos (a la izquierda, texto
+  legible) y el botón "Agregar entrada" (a la derecha), para no dejar un hueco donde estaba el título.
   Prueba: `App.test.tsx` (renderiza configuración inicial / entradas del periodo).
 - **UX-02 Salario móvil (2026-10-18)**: el campo de salario muestra el placeholder `0.00`
   para indicar el formato decimal esperado. El tipo `number` y la validación no cambian.

@@ -145,7 +145,10 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
 
   return (
     <div className="panel p-4">
-      <div className="flex items-center justify-end mb-3">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p className="text-xs text-text-muted" aria-live="polite">
+          Segmentos proyectados: {proyectados} / {LIMITES_CONTRATO.MAX_SEGMENTOS}
+        </p>
         <button
           type="button"
           onClick={() => onChange([...entradas, entradaVacia()])}
@@ -160,10 +163,6 @@ export function EntradasPeriodo({ entradas, onChange }: EntradasPeriodoProps) {
           Agregar entrada
         </button>
       </div>
-
-      <p className="mb-2 text-[10px] text-text-muted" aria-live="polite">
-        Segmentos proyectados: {proyectados} / {LIMITES_CONTRATO.MAX_SEGMENTOS}
-      </p>
 
       {avisoLimite && (
         <p className="mb-2 text-[10px] font-medium text-danger" role="alert">
