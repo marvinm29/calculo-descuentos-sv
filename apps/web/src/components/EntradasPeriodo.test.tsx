@@ -309,7 +309,9 @@ describe('EntradasPeriodo', () => {
       expect(
         screen.getByText(/Segmentos proyectados: 100 \/ 100/),
       ).toBeInTheDocument();
-    }, 20000);
+      // Con cobertura v8 el harness de 100 segmentos supera 20 s; el margen
+      // evita falsos fallos de timeout sin cambiar la aserción.
+    }, 60000);
 
     it('editar fechas a inválidas muestra error y reduce la proyección (onChange aplicado)', () => {
       // Harness controlado: el componente real recibe el estado que emite.
