@@ -145,7 +145,7 @@ describe('App', () => {
   });
 
   // ─── FE-08: orden DOM y foco, no trucos de CSS order ───
-  describe('orden del resultado (FE-08)', () => {
+  describe('orden de captura y resultado (FE-08)', () => {
     function columnas() {
       const main = screen.getByRole('main');
       const resultado = screen.getByText('Resultado del Periodo');
@@ -157,17 +157,16 @@ describe('App', () => {
       return { main, resultado, config, colResultado: colResultado!, colFormulario: colFormulario! };
     }
 
-    it('el resultado precede a la captura en el DOM (móvil y foco)', () => {
+    it('la captura precede al resultado en el DOM (móvil y foco)', () => {
       localStorage.setItem('config-inicial', JSON.stringify(CONFIG_VALIDA));
       render(<App />);
 
       const { main, colResultado, colFormulario } = columnas();
-      // Hijos de main en orden DOM: resultado primero, formulario después.
-      expect(main.children[0]).toBe(colResultado);
-      expect(main.children[1]).toBe(colFormulario);
+      // Hijos de main en orden DOM: formulario primero, resultado después.
+      expect(main.children[0]).toBe(colFormulario);
+      expect(main.children[1]).toBe(colResultado);
       // Orden DOM verificado de forma relativa (independiente del CSS):
-      const posicion =
-        colResultado.compareDocumentPosition(colFormulario);
+      const posicion = colFormulario.compareDocumentPosition(colResultado);
       expect(posicion & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
@@ -183,7 +182,7 @@ describe('App', () => {
       expect(colFormulario.className).not.toMatch(/\border-\d\b/);
     });
 
-    it('el primer elemento enfocable de main pertenece al resultado (teclado)', async () => {
+    it('el primer elemento enfocable de main pertenece a la captura (teclado)', async () => {
       const user = userEvent.setup();
       localStorage.setItem('config-inicial', JSON.stringify(CONFIG_VALIDA));
       render(<App />);
@@ -192,9 +191,9 @@ describe('App', () => {
       await user.tab();
       await user.tab();
 
-      const { colResultado } = columnas();
+      const { colFormulario } = columnas();
       expect(document.activeElement).not.toBeNull();
-      expect(colResultado.contains(document.activeElement)).toBe(true);
+      expect(colFormulario.contains(document.activeElement)).toBe(true);
     });
   });
 

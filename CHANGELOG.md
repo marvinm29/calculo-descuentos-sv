@@ -2,6 +2,30 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/); versionado por fecha de corte.
 
+## 2026-10-18 — FE-08 revisado: la captura precede al resultado en móvil
+
+Clasificación: bug de UX (móvil). Reporte: en teléfono, al abrir la app aparecía el resultado
+(o su tarjeta vacía) en lugar del formulario.
+
+### Fixed
+
+- **Orden móvil**: `App.tsx` ponía el bloque de resultado antes de la captura en el DOM. En móvil
+  el resultado (y su tarjeta de estado vacío) quedaba arriba y empujaba el formulario fuera de
+  pantalla. Ahora la captura (configuración → horas → incentivos) precede al resultado en el DOM.
+  El escritorio conserva dos columnas por colocación de grid (`lg:col-start-1` / `lg:col-start-2`).
+
+### Changed
+
+- `openspec/specs/diseno-calculadora-clara.md` (FE-08): supersede la versión de 2026-09-20 que
+  exigía resultado primero. El orden de foco ahora es captura → resultado → detalles.
+- Tests de FE-08 en `apps/web/src/__tests__/App.test.tsx` actualizados al nuevo orden (orden DOM,
+  colocación de grid y primer control enfocable de `<main>`).
+
+### Rollback
+
+Revertir el commit que mueve el bloque `lg:col-start-2` antes de la captura en `App.tsx`, y restaurar
+FE-08 en la spec y sus tests.
+
 ## 2026-09-27 — Depuración de mantenimiento: fórmula de renta fiel a la tabla oficial, JSDoc del motor y limpieza de residuos
 
 Auditoría de limpieza (codebase hygiene) sobre el checkpoint del rediseño táctil-editorial.

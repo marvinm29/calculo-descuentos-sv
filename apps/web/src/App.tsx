@@ -123,22 +123,9 @@ function AppContent() {
         <hr className="mb-8 print:hidden" />
 
         <main className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] print:block">
-          {/* FE-08 (2026-09-20): el resultado precede a la captura EN EL DOM,
-              no solo visualmente — el orden de teclado y lector sigue el DOM.
-              Prohibido `order-*` para invertir columnas (engaña al ojo). En
-              escritorio la inversión visual usa colocación explícita de grid
-              (col-start/row-start): formulario a la izquierda (col 1),
-              resultado a la derecha (col 2). El orden de foco es constante:
-              resultado → captura → detalles. */}
-          <div className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-24">
-            <ResultadoNeto state={calculosState} />
-            {calculosState.status === 'success' && (
-              <div className="print:hidden">
-                <ExportarPDF />
-              </div>
-            )}
-          </div>
-
+          {/* FE-08: la captura precede al resultado EN EL DOM, igual que en
+              móvil. Prohibido `order-*`: en escritorio la disposición en dos
+              columnas usa colocación explícita de grid (col-start/row-start). */}
           <div className="space-y-5 lg:col-start-1 lg:row-start-1 print:hidden">
             <section className="space-y-3">
               <SectionHeading n="01" title="Configuración" description="Salario base y frecuencia de pago" />
@@ -152,6 +139,15 @@ function AppContent() {
               <SectionHeading n="03" title="Incentivos" description="Bonos y comisiones" />
               <IncentivosForm incentivos={incentivos} onChange={setIncentivos} />
             </section>
+          </div>
+
+          <div className="space-y-4 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-24">
+            <ResultadoNeto state={calculosState} />
+            {calculosState.status === 'success' && (
+              <div className="print:hidden">
+                <ExportarPDF />
+              </div>
+            )}
           </div>
         </main>
 

@@ -39,17 +39,19 @@ y loading. Ningún componente puede inventar un color o clase no declarada.
 
 ## Composición responsive
 
-- Móvil: encabezado → resumen de resultado → configuración → horas → incentivos → detalles.
-- Escritorio: formulario y resultado en dos columnas, con el resultado sticky solo cuando no
-  oculte foco ni teclado.
-- **Orden DOM y foco (FE-08, 2026-09-20)**: el resultado precede a la captura **en el DOM**
-  (no solo visualmente). Prohibido usar `order-*` de Tailwind para invertir columnas: el orden
-  CSS engaña al ojo pero el orden de teclado y lector sigue el DOM. En escritorio la inversión
-  visual se logra con colocación explícita de grid (`col-start`/`row-start`), manteniendo el
-  formulario a la izquierda y el resultado a la derecha. El orden de foco es constante en ambos
-  breakpoints (resultado → captura → detalles) y coincide con el orden de lectura móvil; no
-  depende de CSS `order`. Prueba de regresión: orden DOM (posición relativa en el árbol) y
-  navegación por teclado (primer elemento enfocable dentro de `<main>` pertenece al resultado).
+- Móvil: encabezado → configuración → horas → incentivos → resumen de resultado → detalles.
+- Escritorio: formulario a la izquierda y resultado a la derecha, en dos columnas, con el
+  resultado sticky solo cuando no oculte foco ni teclado.
+- **Orden DOM y foco (FE-08, revisado 2026-10-18)**: el orden del DOM coincide con el orden
+  visual móvil: la captura (configuración → horas → incentivos) **precede** al resultado. Así
+  el orden de lectura, de foco y de lector de pantalla es el mismo que el visual en móvil
+  (WCAG 2.4.3 Orden del foco y 1.3.2 Secuencia significativa). Prohibido usar `order-*` de
+  Tailwind para reordenar columnas. En escritorio la disposición en dos columnas se logra con
+  colocación explícita de grid (`col-start`/`row-start`): formulario en col 1, resultado en
+  col 2. El orden de foco es captura → resultado → detalles en ambos breakpoints. Pruebas de
+  regresión: orden DOM (posición relativa en el árbol), colocación de grid en escritorio y
+  navegación por teclado (el primer control de `<main>` pertenece a la captura).
+  Supersede la versión de 2026-09-20 que ponía el resultado primero en el DOM.
 - Ancho mínimo probado: 320 px; zoom 200 % sin pérdida de información o desplazamiento horizontal
   accidental.
 - Objetivos táctiles y controles de icono: preferir 44×44 CSS px, nunca texto diminuto como única
